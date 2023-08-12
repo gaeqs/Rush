@@ -1,0 +1,17 @@
+waiting to take filesystem lock on C:\Users\gaelr\.clion-vcpkg\vcpkg\.vcpkg-root...
+Detecting compiler hash for triplet x64-windows...
+All requested packages are currently installed.
+Restored 0 package(s) from C:\Users\gaelr\AppData\Local\vcpkg\archives in 351.1 us. Use --debug to see more details.
+Total install time: 412 us
+catch2 provides CMake targets:
+
+    # this is heuristically generated, and may not be correct
+    find_package(Catch2 CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE Catch2::Catch2 Catch2::Catch2WithMain)
+
+glm provides CMake targets:
+
+    # this is heuristically generated, and may not be correct
+    find_package(glm CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE glm::glm)
+

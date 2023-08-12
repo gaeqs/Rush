@@ -1,0 +1,13 @@
+{
+  "name" : "rush",
+  "version-string" : "1.0.0",
+  "builtin-baseline" : "2a95acc16158abbcf67452dedb0bce59f2163b9c",
+  "dependencies" : [ {
+    "name" : "glm",
+    "version>=" : "0.9.9.8#2",
+    "$comment" : "    # this is heuristically generated, and may not be correct\n\n    find_package(glm CONFIG REQUIRED)\n\n    target_link_libraries(main PRIVATE glm::glm)\n"
+  }, {
+    "name" : "catch2",
+    "version>=" : "3.3.1"
+  } ]
+}

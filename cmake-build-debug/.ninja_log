@@ -1,0 +1,6 @@
+# ninja log v5
+3033	3717	7130822795733636	tests/rush-tests.exe	e0a85de3c973a0e5
+2	3020	7130822788707861	tests/CMakeFiles/rush-tests.dir/matrix.cpp.obj	323bf5339cda0d57
+3033	3717	7130822795733636	C:/Users/gaelr/CLionProjects/rush/cmake-build-debug/tests/rush-tests_tests-b12d07c.cmake	e0a85de3c973a0e5
+10	3033	7130822788837908	tests/CMakeFiles/rush-tests.dir/vector.cpp.obj	5ada6333527684f
+3033	3717	7130822795733636	tests/rush-tests_tests-b12d07c.cmake	e0a85de3c973a0e5
