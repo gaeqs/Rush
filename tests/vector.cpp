@@ -149,8 +149,6 @@ TEST_CASE("Vector assign operations", "[vector]") {
 TEST_CASE("Vector iterator", "[vector]") {
     V5 o = {4, 3, 2, 1, 0};
 
-    o.y();
-
     size_t i = 0;
     for (const auto& item: o) {
         REQUIRE(item == o[i++]);
