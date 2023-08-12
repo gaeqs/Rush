@@ -5,6 +5,8 @@
 #ifndef RUSH_VEC_IMPL_H
 #define RUSH_VEC_IMPL_H
 
+#include <bit>
+
 namespace rush {
 
     template<size_t Size, typename Type>
@@ -157,7 +159,7 @@ namespace rush {
     template<size_t Size, typename Type>
     requires (Size > 0)
     Type Vec<Size, Type>::squaredLength() const {
-        return *this % *this;
+        return this->dot(*this);
     }
 
     template<size_t Size, typename Type>
@@ -166,6 +168,52 @@ namespace rush {
     Return Vec<Size, Type>::length() const requires (
     std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>) {
         return std::sqrt(squaredLength());
+    }
+
+    template<size_t Size, typename Type>
+    requires (Size > 0)
+    template<typename Return, Algorithm A>
+    Return Vec<Size, Type>::inverseLength() const requires (
+    std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>) {
+        if constexpr (A.precision == Precision::High) {
+            return 1.0f / std::sqrt(squaredLength());
+        }
+
+        if constexpr (std::is_same_v<Return, float>) {
+            auto y = static_cast<float>(squaredLength());
+
+#ifdef _INCLUDED_IMM
+            if constexpr (A.useIntrinsics()) {
+                return _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(y)));
+            }
+#endif
+
+            float x2 = y * 0.5f;
+            // what the fuck?
+            uint32_t i = 0x5f3759df - (std::bit_cast<uint32_t>(y) >> 1);
+            y = std::bit_cast<float>(i);
+            return y * (1.5f - x2 * y * y);
+        } else if constexpr (std::is_same_v<Return, double>) {
+            auto y = static_cast<double >(squaredLength());
+            double x2 = y * 0.5f;
+            // what the fuck?
+            uint64_t i = 0x5fe6eb50c7b537a9 - (std::bit_cast<uint64_t>(y) >> 1);
+            y = std::bit_cast<double>(i);
+            return y * (1.5f - x2 * y * y);
+        }
+
+        return 1.0f / std::sqrt(squaredLength());
+    }
+
+    template<size_t Size, typename Type>
+    requires (Size > 0)
+    template<typename Return, Algorithm A>
+    Vec<Size, Return>
+    Vec<Size, Type>::normalized() const requires HasMul<Return> {
+        Return invLen = inverseLength<Return, A>();
+        return Vec<Size, Return>([invLen, this](size_t i) {
+            return static_cast<Return>(data[i]) * invLen;
+        });
     }
 
     template<size_t Size, typename Type>
@@ -589,7 +637,7 @@ namespace rush {
 
     template<size_t Size, typename Type>
     requires (Size > 0)
-    Type Vec<Size, Type>::dot(const Vec::Self& other) {
+    Type Vec<Size, Type>::dot(const Vec::Self& other) const {
         return *this % other;
     }
 

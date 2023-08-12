@@ -20,6 +20,7 @@ set(RUSH_HEADERS
         src/rush/quaternion/quat_base.h
         src/rush/quaternion/quat_impl.h
         src/rush/vector/vec_math.h
+        src/rush/algorithm.h
 )
 
 add_library(rush INTERFACE ${RUSH_HEADERS})

@@ -14,6 +14,7 @@
 
 #include <rush/concepts.h>
 #include <rush/vector/vec_ref.h>
+#include <rush/algorithm.h>
 
 namespace rush {
 
@@ -158,6 +159,45 @@ namespace rush {
         inline Return length() const requires (
         std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>);
 
+        /**
+         * Returns the inverse of the length (or modulus) of this vector.
+         * The length is defined the as the squared root of the sum of all
+         * entries of this vector multiplied by themselves.
+         * <p>
+         * You can select the precision of the algorithm.
+         * A high precision algorithm will provide a high precision
+         * result in exchange of more computational cost.
+         * A low precision algorithm will be faster, but it may provide
+         * poorer results.
+         * <p>
+         * You can also select whether the algorithm will use pure C++ code
+         * or it will try to use intrinsic processor instructions.
+         *
+         * @return the length.
+         *
+         */
+        template<typename Return = Type, Algorithm Algorithm = Algorithm()>
+        Return inverseLength() const requires (
+        std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>);
+
+        /**
+         * Returns a normalized version of this vector.
+         * <p>
+         * You can select the precision of the algorithm.
+         * A high precision algorithm will provide a high precision
+         * result in exchange of more computational cost.
+         * A low precision algorithm will be faster, but it may provide
+         * poorer results.
+         * <p>
+         * You can also select whether the algorithm will use pure C++ code
+         * or it will try to use intrinsic processor instructions.
+         *
+         * @return the normalized vector.
+         *
+         */
+        template<typename Return = Type, Algorithm Algorithm = Algorithm()>
+        Vec<Size, Return> normalized() const requires HasMul<Return>;
+
         // UNARY
 
         inline Self& operator+();
@@ -214,7 +254,7 @@ namespace rush {
         inline Self operator||(const Self& other) const requires HasOr<Type>;
 
         // DOT
-        inline Type dot(const Self& other);
+        inline Type dot(const Self& other) const;
 
         inline Type operator%(const Self& other) const requires (
         HasAdd<Type> && HasMul<Type>);

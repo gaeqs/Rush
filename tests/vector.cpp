@@ -2,12 +2,16 @@
 #include <unordered_set>
 
 #include <catch2/catch_test_macros.hpp>
-#include <rush/vector/vec.h>
+#include <rush/rush.h>
 
 using V1 = rush::Vec<1, int>;
 using V2 = rush::Vec<2, int>;
 using V3 = rush::Vec<3, int>;
 using V5 = rush::Vec<5, int>;
+
+inline void requireSimilar(auto a, auto b) {
+    REQUIRE(std::abs(a - b) < 0.01f);
+}
 
 TEST_CASE("Vector creation", "[vector]") {
     REQUIRE_NOTHROW(V5());
@@ -162,4 +166,45 @@ TEST_CASE("Vector print", "[vector]") {
     ss << o;
 
     REQUIRE(ss.str() == "(4, 3, 2, 1, 0)");
+}
+
+TEST_CASE("Vector inverse length (float)", "[vector]") {
+    V5 o = {4, 3, 2, 1, 0};
+    float invLengthManual = 1.0f / o.length<float>();
+    float invLengthHigh = o.inverseLength<float, rush::HIGH_INTRINSICS>();
+    float invLengthLowIntrinsics = o.inverseLength<float, rush::LOW_INTRINSICS>();
+    float invLengthLowGeneral = o.inverseLength<float, rush::LOW_GENERAL>();
+
+    requireSimilar(invLengthManual, invLengthHigh);
+    requireSimilar(invLengthManual, invLengthLowIntrinsics);
+    requireSimilar(invLengthManual, invLengthLowGeneral);
+}
+
+TEST_CASE("Vector inverse length (double)", "[vector]") {
+    V5 o = {4, 3, 2, 1, 0};
+    double invLengthManual = 1.0f / o.length<double>();
+    double invLengthHigh = o.inverseLength<double, rush::HIGH_INTRINSICS>();
+    double invLengthLowIntrinsics = o.inverseLength<double, rush::LOW_INTRINSICS>();
+    double invLengthLowGeneral = o.inverseLength<double, rush::LOW_GENERAL>();
+
+    requireSimilar(invLengthManual, invLengthHigh);
+    requireSimilar(invLengthManual, invLengthLowIntrinsics);
+    requireSimilar(invLengthManual, invLengthLowGeneral);
+}
+
+TEST_CASE("Vector normalization (float)", "[vector]") {
+    V5 o = {4, 3, 2, 1, 0};
+    auto normalized = o.normalized<float, rush::HIGH_INTRINSICS>();
+    auto normalizedLowIntrinsics = o.normalized<float, rush::LOW_INTRINSICS>();
+    auto normalizedLowGeneral = o.normalized<float, rush::LOW_GENERAL>();
+    auto normalizedLowDouble = normalizedLowIntrinsics
+            .normalized<float, rush::LOW_INTRINSICS>();
+    std::cout << normalized << std::endl;
+    std::cout << normalized.length() << std::endl;
+    std::cout << normalizedLowIntrinsics << std::endl;
+    std::cout << normalizedLowIntrinsics.length() << std::endl;
+    std::cout << normalizedLowGeneral << std::endl;
+    std::cout << normalizedLowGeneral.length() << std::endl;
+    std::cout << normalizedLowDouble << std::endl;
+    std::cout << normalizedLowDouble.length() << std::endl;
 }
