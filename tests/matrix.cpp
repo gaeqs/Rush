@@ -1,5 +1,3 @@
-#include <iostream>
-#include <random>
 #include <unordered_set>
 
 #include <catch2/catch_test_macros.hpp>
@@ -69,16 +67,19 @@ TEST_CASE("Matrix - scale operations (float)", "[matrix]") {
     SECTION("Addition") {
         rush::Mat<2, 2, float> r(3.0f, 4.0f, 5.0f, 6.0f);
         requireSimilar(a + b, r);
+        requireSimilar(a + b, b + a);
     }
 
     SECTION("Subtract") {
         rush::Mat<2, 2, float> r(-1.0f, 0.0f, 1.0f, 2.0f);
         requireSimilar(a - b, r);
+        requireSimilar(a - b, -(b - a));
     }
 
     SECTION("Multiplication") {
         rush::Mat<2, 2, float> r(2.0f, 4.0f, 6.0f, 8.0f);
         requireSimilar(a * b, r);
+        requireSimilar(a * b, b * a);
     }
 
     SECTION("Division") {
@@ -104,16 +105,19 @@ TEST_CASE("Matrix - scale operations (int)", "[matrix]") {
     SECTION("Shift and") {
         rush::Mat<2, 2, int> r(1 & b, 2 & b, 3 & b, 4 & b);
         REQUIRE((a & b) == r);
+        REQUIRE((a & b) == (b & a));
     }
 
     SECTION("Shift or") {
         rush::Mat<2, 2, int> r(1 | b, 2 | b, 3 | b, 4 | b);
         REQUIRE((a | b) == r);
+        REQUIRE((a | b) == (b | a));
     }
 
     SECTION("Shift xor") {
         rush::Mat<2, 2, int> r(1 ^ b, 2 ^ b, 3 ^ b, 4 ^ b);
         REQUIRE((a ^ b) == r);
+        REQUIRE((a ^ b) == (b ^ a));
     }
 }
 
@@ -125,6 +129,9 @@ TEST_CASE("Matrix - scale operations (bool)", "[matrix]") {
         rush::Mat<2, 2, bool> f(false, false, false, false);
         REQUIRE((a && true) == t);
         REQUIRE((a && false) == f);
+
+        REQUIRE((a && true) == (true && a));
+        REQUIRE((a && false) == (false && a));
     }
 
     SECTION("Shift or") {
@@ -132,6 +139,8 @@ TEST_CASE("Matrix - scale operations (bool)", "[matrix]") {
         rush::Mat<2, 2, bool> f(false, false, true, true);
         REQUIRE((a || true) == t);
         REQUIRE((a || false) == f);
+        REQUIRE((a || true) == (true || a));
+        REQUIRE((a || false) == (false || a));
     }
 }
 

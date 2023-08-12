@@ -42,4 +42,140 @@ struct std::hash<rush::Mat<C, R, Type>> {
     }
 };
 
+// REGION EXTRA OPERATIONS
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasAdd<Type>
+inline rush::Mat<Columns, Rows, Type> operator+(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s + m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasSub<Type>
+inline rush::Mat<Columns, Rows, Type> operator-(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s - m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasMul<Type>
+inline rush::Mat<Columns, Rows, Type> operator*(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s * m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasDiv<Type>
+inline rush::Mat<Columns, Rows, Type> operator/(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s / m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasShl<Type>
+inline rush::Mat<Columns, Rows, Type> operator<<(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s << m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasShr<Type>
+inline rush::Mat<Columns, Rows, Type> operator>>(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s >> m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasBitAnd<Type>
+inline rush::Mat<Columns, Rows, Type> operator&(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s & m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasBitOr<Type>
+inline rush::Mat<Columns, Rows, Type> operator|(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s | m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasBitXor<Type>
+inline rush::Mat<Columns, Rows, Type> operator^(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s ^ m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasAnd<Type>
+inline rush::Mat<Columns, Rows, Type> operator&&(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s && m[i];
+    }
+    return result;
+}
+
+template<size_t Columns, size_t Rows, typename Type>
+requires rush::HasOr<Type>
+inline rush::Mat<Columns, Rows, Type> operator||(
+        const Type& s,
+        const rush::Mat<Columns, Rows, Type>& m) {
+    rush::Mat<Columns, Rows, Type> result;
+    for (size_t i = 0; i < Columns; ++i) {
+        result[i] = s || m[i];
+    }
+    return result;
+}
+
+// ENDREGION
+
 #endif //RUSH_MAT_EXTRA_H
