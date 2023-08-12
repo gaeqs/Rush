@@ -133,4 +133,6 @@ namespace rush {
 
 }
 
+#include <rush/matrix/mat_impl.h>
+
 #endif //RUSH_MAT_BASE_H

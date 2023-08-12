@@ -16,6 +16,10 @@ set(RUSH_HEADERS
         src/rush/vector/vec_impl.h
         src/rush/matrix/mat_impl.h
         src/rush/rush.h
+        src/rush/quaternion/quat.h
+        src/rush/quaternion/quat_base.h
+        src/rush/quaternion/quat_impl.h
+        src/rush/vector/vec_math.h
 )
 
 add_library(rush INTERFACE ${RUSH_HEADERS})

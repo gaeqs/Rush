@@ -145,7 +145,7 @@ namespace rush {
          *
          * @return the squared length.
          */
-        [[nodiscard]] Type squaredLength() const;
+        inline Type squaredLength() const;
 
         /**
          * Returns the length (or modulus) of this vector.
@@ -155,7 +155,7 @@ namespace rush {
          * @return the length.
          */
         template<typename Return = Type>
-        [[nodiscard]] Return length() const requires (
+        inline Return length() const requires (
         std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>);
 
         // UNARY
