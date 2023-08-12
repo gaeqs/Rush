@@ -1,5 +1,0 @@
-if(EXISTS "C:/Users/gaelr/CLionProjects/rush/cmake-build-debug/tests/rush-tests_tests-b12d07c.cmake")
-  include("C:/Users/gaelr/CLionProjects/rush/cmake-build-debug/tests/rush-tests_tests-b12d07c.cmake")
-else()
-  add_test(rush-tests_NOT_BUILT-b12d07c rush-tests_NOT_BUILT-b12d07c)
-endif()

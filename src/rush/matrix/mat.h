@@ -7,5 +7,6 @@
 
 #include <rush/matrix/mat_base.h>
 #include <rush/matrix/mat_extra.h>
+#include <rush/matrix/mat_impl.h>
 
 #endif //RUSH_MAT_H

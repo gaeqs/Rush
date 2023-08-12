@@ -18,7 +18,8 @@ TEST_CASE("Vector creation", "[vector]") {
     V2 v;
     REQUIRE(v[0] == 0);
     REQUIRE(v[1] == 0);
-    REQUIRE(V5([](size_t i) { return i; }) == V5(0, 1, 2, 3, 4));
+    REQUIRE(V5([](size_t i) { return static_cast<int>(i); }) ==
+            V5(0, 1, 2, 3, 4));
 }
 
 TEST_CASE("Vector access", "[vector]") {

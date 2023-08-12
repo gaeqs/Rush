@@ -14,6 +14,7 @@ set(RUSH_HEADERS
         src/rush/matrix/mat.h
         src/rush/matrix/mat_base.h
         src/rush/vector/vec_impl.h
+        src/rush/matrix/mat_impl.h
 )
 
 add_library(rush INTERFACE ${RUSH_HEADERS})

@@ -164,6 +164,8 @@ namespace rush {
         inline const Self& operator+() const;
         inline Self operator-() const requires HasSub<Type>;
 
+        // ASSIGN VECTOR - SCALE
+
         inline Self& operator+=(const Type& s) requires HasAdd<Type>;
         inline Self& operator-=(const Type& s) requires HasSub<Type>;
         inline Self& operator*=(const Type& s) requires HasMul<Type>;
@@ -173,6 +175,9 @@ namespace rush {
         inline Self& operator&=(const Type& s) requires HasBitAnd<Type>;
         inline Self& operator|=(const Type& s) requires HasBitOr<Type>;
         inline Self& operator^=(const Type& s) requires HasBitXor<Type>;
+
+        // ASSIGN VECTOR - VECTOR
+
         inline Self& operator+=(const Self& o) requires HasAdd<Type>;
         inline Self& operator-=(const Self& o) requires HasSub<Type>;
         inline Self& operator*=(const Self& o) requires HasMul<Type>;
