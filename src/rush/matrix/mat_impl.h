@@ -7,29 +7,29 @@
 
 namespace rush {
 
-    template<size_t Columns, size_t Rows, typename Type>
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     template<typename... T>
     requires (std::is_convertible_v<std::common_type_t<T...>, Type>
               && sizeof...(T) <= Columns * Rows)
-    Mat<Columns, Rows, Type>::Mat(T... list) {
+    Mat<Columns, Rows, Type, Allocator>::Mat(T... list) {
         Type* ptr = toPointer();
         ((*ptr++ = list), ...);
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Mat() : data() {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Mat() : data() {
 
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Mat(Type diagonal) : data() {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Mat(Type diagonal) : data() {
         for (size_t i = 0; i < std::min(Columns, Rows); ++i) {
             data[i][i] = diagonal;
         }
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Mat(
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Mat(
             std::function<Type(size_t, size_t)> populator) {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
@@ -38,8 +38,8 @@ namespace rush {
         }
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Mat(
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Mat(
             std::function<Type(size_t, size_t, size_t, size_t)> populator) {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
@@ -48,36 +48,36 @@ namespace rush {
         }
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    constexpr size_t Mat<Columns, Rows, Type>::size() const {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    constexpr size_t Mat<Columns, Rows, Type, Allocator>::size() const {
         return Columns * Rows;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    const Type* Mat<Columns, Rows, Type>::toPointer() const {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    const Type* Mat<Columns, Rows, Type, Allocator>::toPointer() const {
         return data[0].toPointer();
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Type* Mat<Columns, Rows, Type>::toPointer() {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Type* Mat<Columns, Rows, Type, Allocator>::toPointer() {
         return data[0].toPointer();
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    const typename Mat<Columns, Rows, Type>::ColumnType&
-    Mat<Columns, Rows, Type>::column(size_t column) const {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    const typename Mat<Columns, Rows, Type, Allocator>::ColumnType&
+    Mat<Columns, Rows, Type, Allocator>::column(size_t column) const {
         return (*this)[column];
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::ColumnType&
-    Mat<Columns, Rows, Type>::column(size_t column) {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::ColumnType&
+    Mat<Columns, Rows, Type, Allocator>::column(size_t column) {
         return (*this)[column];
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     Vec<Columns, Type, StaticAllocator<Columns, Type>>
-    Mat<Columns, Rows, Type>::row(size_t row) const {
+    Mat<Columns, Rows, Type, Allocator>::row(size_t row) const {
         Vec<Columns, Type, StaticAllocator<Columns, Type>> vec;
         for (size_t i = 0; i < Columns; ++i) {
             vec[i] = data[i][row];
@@ -85,8 +85,8 @@ namespace rush {
         return vec;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    VecRef<Columns, Type> Mat<Columns, Rows, Type>::row(size_t row) {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    VecRef<Columns, Type> Mat<Columns, Rows, Type, Allocator>::row(size_t row) {
         VecRef<Columns, Type> vec;
         for (size_t i = 0; i < Columns; ++i) {
             vec.references[i] = &data[i][row];
@@ -94,36 +94,39 @@ namespace rush {
         return vec;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    const typename Mat<Columns, Rows, Type>::ColumnType&
-    Mat<Columns, Rows, Type>::operator[](size_t column) const {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    const typename Mat<Columns, Rows, Type, Allocator>::ColumnType&
+    Mat<Columns, Rows, Type, Allocator>::operator[](size_t column) const {
         return data[column];
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::ColumnType&
-    Mat<Columns, Rows, Type>::operator[](size_t column) {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::ColumnType&
+    Mat<Columns, Rows, Type, Allocator>::operator[](size_t column) {
         return data[column];
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Type& Mat<Columns, Rows, Type>::operator()(size_t column, size_t row) {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Type&
+    Mat<Columns, Rows, Type, Allocator>::operator()(size_t column, size_t row) {
         return data[column][row];
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     const Type&
-    Mat<Columns, Rows, Type>::operator()(size_t column, size_t row) const {
+    Mat<Columns, Rows, Type, Allocator>::operator()(size_t column,
+                                                    size_t row) const {
         return data[column][row];
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Type Mat<Columns, Rows, Type>::determinant() const requires HasAdd<Type> &&
-                                                                HasSub<Type> &&
-                                                                HasMul<Type> &&
-                                                                HasDiv<Type> &&
-                                                                (Columns ==
-                                                                 Rows) {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Type Mat<Columns, Rows, Type, Allocator>::determinant() const requires
+    HasAdd<Type> &&
+    HasSub<Type> &&
+    HasMul<Type> &&
+    HasDiv<Type> &&
+    (Columns ==
+     Rows) {
         if constexpr (Columns == 1) {
             return data[0][0];
         } else if constexpr (Columns == 2) {
@@ -170,20 +173,22 @@ namespace rush {
         }
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Rows, Columns, Type> Mat<Columns, Rows, Type>::transpose() const {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Rows, Columns, Type>
+    Mat<Columns, Rows, Type, Allocator>::transpose() const {
         return Mat{[this](size_t c, size_t r) { return operator()(r, c); }};
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::inverse() const requires HasAdd<Type> &&
-                                                       HasSub<Type> &&
-                                                       HasMul<Type> &&
-                                                       HasDiv<Type> &&
-                                                       (Columns ==
-                                                        Rows) &&
-                                                       (Columns < 5) {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::inverse() const requires
+    HasAdd<Type> &&
+    HasSub<Type> &&
+    HasMul<Type> &&
+    HasDiv<Type> &&
+    (Columns ==
+     Rows) &&
+    (Columns < 5) {
         auto& d = data;
         if constexpr (Columns == 1) {
             return {Type(1) / d[0][0]};
@@ -250,21 +255,21 @@ namespace rush {
         }
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator+() {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator+() {
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator+() const {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator+() const {
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator-() const requires HasSub<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator-() const requires HasSub<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
             result[i] = -data[i];
@@ -272,63 +277,69 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator+=(const Type& s) requires HasAdd<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator+=(
+            const Type& s) requires HasAdd<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] += s;
         }
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator-=(const Type& s) requires HasSub<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator-=(
+            const Type& s) requires HasSub<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] -= s;
         }
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator*=(const Type& s) requires HasMul<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator*=(
+            const Type& s) requires HasMul<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] *= s;
         }
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator/=(const Type& s) requires HasDiv<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator/=(
+            const Type& s) requires HasDiv<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] /= s;
         }
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator<<=(const Type& s) requires HasShl<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator<<=(
+            const Type& s) requires HasShl<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] <<= s;
         }
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator>>=(const Type& s) requires HasShr<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator>>=(
+            const Type& s) requires HasShr<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] >>= s;
         }
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator&=(
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator&=(
             const Type& s) requires HasBitAnd<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] &= s;
@@ -336,9 +347,9 @@ namespace rush {
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator|=(
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator|=(
             const Type& s) requires HasBitOr<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] |= s;
@@ -346,9 +357,9 @@ namespace rush {
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator^=(
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    typename Mat<Columns, Rows, Type, Allocator>::Self&
+    Mat<Columns, Rows, Type, Allocator>::operator^=(
             const Type& s) requires HasBitXor<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] ^= s;
@@ -356,29 +367,31 @@ namespace rush {
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator+=(
-            const Mat::Self& o) requires HasAdd<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<typename OAlloc>
+    Mat<Columns, Rows, Type, Allocator>&
+    Mat<Columns, Rows, Type, Allocator>::operator+=(
+            const Mat<Columns, Rows, Type, OAlloc>& o) requires HasAdd<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] += o.data[i];
         }
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    typename Mat<Columns, Rows, Type>::Self&
-    Mat<Columns, Rows, Type>::operator-=(
-            const Mat::Self& o) requires HasSub<Type> {
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<typename OAlloc>
+    Mat<Columns, Rows, Type, Allocator>&
+    Mat<Columns, Rows, Type, Allocator>::operator-=(
+            const Mat<Columns, Rows, Type, OAlloc>& o) requires HasSub<Type> {
         for (size_t i = 0; i < Columns; ++i) {
             data[i] -= o.data[i];
         }
         return *this;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator+(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator+(const Type& s) const requires
     HasAdd<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -387,9 +400,9 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator-(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator-(const Type& s) const requires
     HasSub<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -398,9 +411,9 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator*(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator*(const Type& s) const requires
     HasMul<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -409,9 +422,9 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator/(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator/(const Type& s) const requires
     HasDiv<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -420,9 +433,10 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator<<(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator<<(
+            const Type& s) const requires
     HasShl<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -431,9 +445,10 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator>>(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator>>(
+            const Type& s) const requires
     HasShr<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -442,9 +457,9 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator&(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator&(const Type& s) const requires
     HasBitAnd<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -453,9 +468,9 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator|(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator|(const Type& s) const requires
     HasBitOr<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -464,9 +479,9 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator^(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator^(const Type& s) const requires
     HasBitXor<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -475,9 +490,10 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator&&(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator&&(
+            const Type& s) const requires
     HasAnd<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -486,9 +502,10 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator||(const Type& s) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>::Self
+    Mat<Columns, Rows, Type, Allocator>::operator||(
+            const Type& s) const requires
     HasOr<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -497,10 +514,11 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator+(
-            const typename Mat<Columns, Rows, Type>::Self& other) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<typename OAlloc>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::operator+(
+            const Mat<Columns, Rows, Type, OAlloc>& other) const requires
     HasAdd<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -509,10 +527,11 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    Mat<Columns, Rows, Type>::Self
-    Mat<Columns, Rows, Type>::operator-(
-            const typename Mat<Columns, Rows, Type>::Self& other) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<typename OAlloc>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::operator-(
+            const Mat<Columns, Rows, Type, OAlloc>& other) const requires
     HasSub<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
@@ -521,29 +540,76 @@ namespace rush {
         return result;
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    template<size_t OC, size_t OR>
-    Mat<OC, Rows, Type> Mat<Columns, Rows, Type>::operator*(
-            const Mat<OC, OR, Type>& other) const requires
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<size_t OC, size_t OR, typename OAlloc>
+    Mat<OC, Rows, Type> Mat<Columns, Rows, Type, Allocator>::operator*(
+            const Mat<OC, OR, Type, OAlloc>& other) const requires
     (Columns == OR && HasAdd<Type> && HasMul<Type>) {
         return rush::Mat<OC, Rows, Type>([&](size_t c, size_t r) {
             return this->row(r) % other.column(c);
         });
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    bool Mat<Columns, Rows, Type>::operator==(
-            const typename Mat<Columns, Rows, Type>::Self& other) const {
-        if (this == &other) return true;
-        return std::memcmp(data, other.data, sizeof(data)) == 0;
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<typename OAlloc>
+    bool Mat<Columns, Rows, Type, Allocator>::operator==(
+            const Mat<Columns, Rows, Type, OAlloc>& other) const {
+        if constexpr (std::is_same_v<Mat, Mat<Columns, Rows, Type, OAlloc>>) {
+            if (this == &other) return true;
+        }
+        return std::equal(cbegin(), cend(), other.cbegin());
     }
 
-    template<size_t Columns, size_t Rows, typename Type>
-    bool Mat<Columns, Rows, Type>::operator!=(
-            const typename Mat<Columns, Rows, Type>::Self& other) const {
-        if (this == &other) return false;
-        return std::memcmp(data, other.data, sizeof(data)) != 0;
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<typename OAlloc>
+    bool Mat<Columns, Rows, Type, Allocator>::operator!=(
+            const Mat<Columns, Rows, Type, OAlloc>& other) const {
+        if constexpr (std::is_same_v<Mat, Mat<Columns, Rows, Type, OAlloc>>) {
+            if (this == &other) return false;
+        }
+        return !std::equal(cbegin(), cend(), other.cbegin());
     }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    auto Mat<Columns, Rows, Type, Allocator>::begin() {
+        return data.begin();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    auto Mat<Columns, Rows, Type, Allocator>::end() {
+        return data.end();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    auto Mat<Columns, Rows, Type, Allocator>::cbegin() const {
+        return data.cbegin();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    auto Mat<Columns, Rows, Type, Allocator>::cend() const {
+        return data.cend();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    auto Mat<Columns, Rows, Type, Allocator>::rbegin() {
+        return data.rbegin();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    auto Mat<Columns, Rows, Type, Allocator>::rend() {
+        return data.rend();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    auto Mat<Columns, Rows, Type, Allocator>::crbegin() const {
+        return data.crbegin();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    auto Mat<Columns, Rows, Type, Allocator>::crend() const {
+        return data.crend();
+    }
+
 
 }
 

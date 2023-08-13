@@ -15,16 +15,23 @@
 
 namespace rush {
 
-    template<size_t Columns, size_t Rows, typename Type>
+    template<size_t Columns, size_t Rows, typename Type,
+            typename Allocator = StaticAllocator<Columns, rush::Vec<Rows, Type>>>
     struct Mat {
 
         static_assert(Columns > 0, "Column amount cannot be zero.");
         static_assert(Rows > 0, "Row amount cannot be zero.");
 
-        using Self = Mat<Columns, Rows, Type>;
-        using ColumnType = rush::Vec<Rows, Type, StaticAllocator<Rows, Type>>;
+        static_assert(
+                std::is_same_v<typename Allocator::AllocType, rush::Vec<Rows, Type>>,
+                "Allocator type is not the same as the matrix type.");
+        static_assert(Columns == Allocator::size(),
+                      "Allocator size is not the same as the matrix size.");
 
-        ColumnType data[Columns];
+        using Self = Mat<Columns, Rows, Type>;
+        using ColumnType = rush::Vec<Rows, Type>;
+
+        Allocator data;
 
         template<typename... T>
         requires (std::is_convertible_v<std::common_type_t<T...>, Type>
@@ -99,8 +106,13 @@ namespace rush {
 
         // ASSIGN VECTOR - VECTOR
 
-        inline Self& operator+=(const Self& o) requires HasAdd<Type>;
-        inline Self& operator-=(const Self& o) requires HasSub<Type>;
+        template<typename OAlloc>
+        inline Mat& operator+=(
+                const Mat<Columns, Rows, Type, OAlloc>& o) requires HasAdd<Type>;
+
+        template<typename OAlloc>
+        inline Mat& operator-=(
+                const Mat<Columns, Rows, Type, OAlloc>& o)requires HasSub<Type>;
 
         // MATRIX - SCALE
 
@@ -118,18 +130,42 @@ namespace rush {
 
         // MATRIX - MATRIX
 
-        inline Self operator+(const Self& other) const requires HasAdd<Type>;
-        inline Self operator-(const Self& other) const requires HasSub<Type>;
+        template<typename OAlloc>
+        inline Mat operator+(const Mat<Columns, Rows, Type, OAlloc>& other)
+        const requires HasAdd<Type>;
 
-        template<size_t OC, size_t OR>
+        template<typename OAlloc>
+        inline Mat operator-(const Mat<Columns, Rows, Type, OAlloc>& other)
+        const requires HasSub<Type>;
+
+        template<size_t OC, size_t OR, typename OAlloc = Allocator>
         rush::Mat<OC, Rows, Type>
-        operator*(const rush::Mat<OC, OR, Type>& other) const requires
+        operator*(const rush::Mat<OC, OR, Type, OAlloc>& other) const requires
         (Columns == OR && HasAdd<Type> && HasMul<Type>);
 
-        inline bool operator==(const Self& other) const;
-        inline bool operator!=(const Self& other) const;
+        template<typename OAlloc>
+        inline bool
+        operator==(const Mat<Columns, Rows, Type, OAlloc>& other) const;
+
+        template<typename OAlloc>
+        inline bool
+        operator!=(const Mat<Columns, Rows, Type, OAlloc>& other) const;
 
         // ENDREGION
+
+        // REGION ITERATOR
+
+        inline auto begin();
+        inline auto end();
+        inline auto cbegin() const;
+        inline auto cend() const;
+        inline auto rbegin();
+        inline auto rend();
+        inline auto crbegin() const;
+        inline auto crend() const;
+
+        // ENDREGION
+
     };
 
 }

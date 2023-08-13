@@ -20,15 +20,17 @@ using Mat3f = rush::Mat<3, 3, float>;
 using Mat4f = rush::Mat<4, 4, float>;
 
 TEST_CASE("Big matrix multiplication (double)", "[!benchmark]") {
-    BENCHMARK_ADVANCED("100")(Catch::Benchmark::Chronometer meter) {
+    using BigMat = rush::Mat<1000, 1000, double, rush::HeapAllocator<
+            1000, rush::Vec<1000, double>>>;
+    BENCHMARK_ADVANCED("1000")(Catch::Benchmark::Chronometer meter) {
             std::random_device rd;
             std::mt19937 gen(rd());
             std::uniform_real_distribution<> distr(0.0, 1.0);
 
-            rush::Mat<100, 100, double> a([&](size_t c, size_t r) {
+            BigMat a([&](size_t c, size_t r) {
                 return distr(gen);
             });
-            rush::Mat<100, 100, double> b([&](size_t c, size_t r) {
+            BigMat b([&](size_t c, size_t r) {
                 return distr(gen);
             });
 
