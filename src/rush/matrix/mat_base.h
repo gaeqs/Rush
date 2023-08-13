@@ -31,6 +31,10 @@ namespace rush {
         using Self = Mat<Columns, Rows, Type>;
         using ColumnType = rush::Vec<Rows, Type>;
 
+        template<size_t NC, size_t NR>
+        using WithSize = Mat<NC, NR, Type,
+                typename Allocator::template RawAlloc<NC, rush::Vec<NR, Type>>>;
+
         Allocator data;
 
         template<typename... T>
@@ -78,7 +82,7 @@ namespace rush {
                                           HasDiv<Type> &&
                                           (Columns == Rows);
 
-        Mat<Rows, Columns, Type> transpose() const;
+        WithSize<Rows, Columns> transpose() const;
 
         Self inverse() const requires HasAdd<Type> &&
                                       HasSub<Type> &&
@@ -139,7 +143,7 @@ namespace rush {
         const requires HasSub<Type>;
 
         template<size_t OC, size_t OR, typename OAlloc = Allocator>
-        rush::Mat<OC, Rows, Type>
+        WithSize<OC, Rows>
         operator*(const rush::Mat<OC, OR, Type, OAlloc>& other) const requires
         (Columns == OR && HasAdd<Type> && HasMul<Type>);
 

@@ -174,9 +174,11 @@ namespace rush {
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
-    Mat<Rows, Columns, Type>
+    Mat<Columns, Rows, Type, Allocator>::WithSize<Rows, Columns>
     Mat<Columns, Rows, Type, Allocator>::transpose() const {
-        return Mat{[this](size_t c, size_t r) { return operator()(r, c); }};
+        return WithSize<Rows, Columns>([this](size_t c, size_t r) {
+            return operator()(r, c);
+        });
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
@@ -542,11 +544,13 @@ namespace rush {
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     template<size_t OC, size_t OR, typename OAlloc>
-    Mat<OC, Rows, Type> Mat<Columns, Rows, Type, Allocator>::operator*(
+    Mat<Columns, Rows, Type, Allocator>::WithSize<OC, Rows>
+    Mat<Columns, Rows, Type, Allocator>::operator*(
             const Mat<OC, OR, Type, OAlloc>& other) const requires
     (Columns == OR && HasAdd<Type> && HasMul<Type>) {
-        return rush::Mat<OC, Rows, Type>([&](size_t c, size_t r) {
-            return this->row(r) % other.column(c);
+        auto transposed = transpose();
+        return WithSize<OC, Rows>([&](size_t c, size_t r) {
+            return transposed.column(r) % other.column(c);
         });
     }
 

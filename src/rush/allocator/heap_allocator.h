@@ -14,6 +14,9 @@ namespace rush {
     template<size_t Size, typename Type>
     struct HeapAllocator {
 
+        template<size_t OSize, typename OType>
+        using RawAlloc = HeapAllocator<OSize, OType>;
+
         using AllocType = Type;
         using Storage = std::array<Type, Size>;
 

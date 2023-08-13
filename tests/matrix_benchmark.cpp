@@ -8,6 +8,9 @@
 #include <random>
 #include <rush/rush.h>
 
+constexpr size_t ROW_DIM = 1000;
+using BigHeapAlloc = rush::HeapAllocator<ROW_DIM, rush::Vec<ROW_DIM, double>>;
+
 using V1 = rush::Vec<1, int>;
 using V2 = rush::Vec<2, int>;
 using V3 = rush::Vec<3, int>;
@@ -20,8 +23,7 @@ using Mat3f = rush::Mat<3, 3, float>;
 using Mat4f = rush::Mat<4, 4, float>;
 
 TEST_CASE("Big matrix multiplication (double)", "[!benchmark]") {
-    using BigMat = rush::Mat<1000, 1000, double, rush::HeapAllocator<
-            1000, rush::Vec<1000, double>>>;
+    using BigMat = rush::Mat<ROW_DIM, ROW_DIM, double, BigHeapAlloc>;
     BENCHMARK_ADVANCED("1000")(Catch::Benchmark::Chronometer meter) {
             std::random_device rd;
             std::mt19937 gen(rd());
