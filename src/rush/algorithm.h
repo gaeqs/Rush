@@ -5,9 +5,11 @@
 #ifndef RUSH_QUALITY_H
 #define RUSH_QUALITY_H
 
-#if defined(_M_IX86) || defined(_M_X64)
+#if defined(_M_IX86) || defined(_M_X64) || defined(__SSE__)
 
 #include <immintrin.h>
+
+#define RUSH_INTRINSICS
 
 constexpr bool IntrinsicsAvailable = true;
 

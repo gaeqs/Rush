@@ -2,6 +2,7 @@
 #include <unordered_set>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/benchmark/catch_benchmark.hpp>
 #include <rush/rush.h>
 
 using V1 = rush::Vec<1, int>;
@@ -9,8 +10,12 @@ using V2 = rush::Vec<2, int>;
 using V3 = rush::Vec<3, int>;
 using V5 = rush::Vec<5, int>;
 
-inline void requireSimilar(auto a, auto b) {
-    REQUIRE(std::abs(a - b) < 0.01f);
+inline void requireSimilar(float a, float b, float epsilon = 0.01f) {
+    REQUIRE(std::abs(a - b) < epsilon);
+}
+
+inline void requireSimilar(double a, double b, double epsilon = 0.01) {
+    REQUIRE(std::abs(a - b) < epsilon);
 }
 
 TEST_CASE("Vector creation", "[vector]") {
@@ -194,17 +199,26 @@ TEST_CASE("Vector inverse length (double)", "[vector]") {
 
 TEST_CASE("Vector normalization (float)", "[vector]") {
     V5 o = {4, 3, 2, 1, 0};
-    auto normalized = o.normalized<float, rush::HIGH_INTRINSICS>();
+    auto normalizedHighIntrinsics = o.normalized<float, rush::HIGH_INTRINSICS>();
+    auto normalizedHighGeneral = o.normalized<float, rush::HIGH_GENERAL>();
     auto normalizedLowIntrinsics = o.normalized<float, rush::LOW_INTRINSICS>();
     auto normalizedLowGeneral = o.normalized<float, rush::LOW_GENERAL>();
-    auto normalizedLowDouble = normalizedLowIntrinsics
-            .normalized<float, rush::LOW_INTRINSICS>();
-    std::cout << normalized << std::endl;
-    std::cout << normalized.length() << std::endl;
-    std::cout << normalizedLowIntrinsics << std::endl;
-    std::cout << normalizedLowIntrinsics.length() << std::endl;
-    std::cout << normalizedLowGeneral << std::endl;
-    std::cout << normalizedLowGeneral.length() << std::endl;
-    std::cout << normalizedLowDouble << std::endl;
-    std::cout << normalizedLowDouble.length() << std::endl;
+
+    requireSimilar(normalizedHighGeneral.length(), 1.0f);
+    requireSimilar(normalizedHighIntrinsics.length(), 1.0f);
+    requireSimilar(normalizedLowIntrinsics.length(), 1.0f);
+    requireSimilar(normalizedLowGeneral.length(), 1.0f);
+}
+
+TEST_CASE("Vector normalization (double)", "[vector]") {
+    V5 o = {4, 3, 2, 1, 0};
+    auto normalizedHighIntrinsics = o.normalized<double, rush::HIGH_INTRINSICS>();
+    auto normalizedHighGeneral = o.normalized<double, rush::HIGH_GENERAL>();
+    auto normalizedLowIntrinsics = o.normalized<double, rush::LOW_INTRINSICS>();
+    auto normalizedLowGeneral = o.normalized<double, rush::LOW_GENERAL>();
+
+    requireSimilar(normalizedHighGeneral.length(), 1.0);
+    requireSimilar(normalizedHighIntrinsics.length(), 1.0);
+    requireSimilar(normalizedLowIntrinsics.length(), 1.0);
+    requireSimilar(normalizedLowGeneral.length(), 1.0);
 }

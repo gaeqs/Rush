@@ -25,6 +25,6 @@ set(RUSH_HEADERS
 
 add_library(rush INTERFACE ${RUSH_HEADERS})
 include_directories(src)
-target_link_libraries(rush INTERFACE glm::glm)
+target_link_libraries(rush INTERFACE glm)
 
 add_subdirectory(tests)

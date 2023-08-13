@@ -14,10 +14,10 @@ using Mat2f = rush::Mat<2, 2, float>;
 using Mat3f = rush::Mat<3, 3, float>;
 using Mat4f = rush::Mat<4, 4, float>;
 
-const Mat4f random{8.1f, 1.3f, 9.0f, 8.3f,
-                   1.2f, 9.6f, 9.1f, 2.2f,
-                   6.3f, 3.0f, 0.9f, 5.4f,
-                   2.7f, 1.8f, 5.4f, 9.9f};
+const Mat4f randomMatrix{8.1f, 1.3f, 9.0f, 8.3f,
+                         1.2f, 9.6f, 9.1f, 2.2f,
+                         6.3f, 3.0f, 0.9f, 5.4f,
+                         2.7f, 1.8f, 5.4f, 9.9f};
 
 inline void requireSimilar(float a, float b) {
     REQUIRE(std::abs(a - b) < 0.01f);
@@ -172,7 +172,7 @@ TEST_CASE("Matrix operations", "[matrix]") {
 }
 
 TEST_CASE("Matrix determinant", "[matrix]") {
-    requireSimilar(random.determinant(), -4002.91f);
+    requireSimilar(randomMatrix.determinant(), -4002.91f);
 
     Mat3f nonInv([](size_t c, size_t r) {
         return static_cast<float>(r + c * 3);
@@ -182,8 +182,8 @@ TEST_CASE("Matrix determinant", "[matrix]") {
 }
 
 TEST_CASE("Matrix inverse", "[matrix]") {
-    Mat4f inverse = random.inverse();
-    Mat4f identity = random * inverse;
+    Mat4f inverse = randomMatrix.inverse();
+    Mat4f identity = randomMatrix * inverse;
 
     for (size_t i = 0; i < 4; i++) {
         requireSimilar(identity(i, i), 1.0f);

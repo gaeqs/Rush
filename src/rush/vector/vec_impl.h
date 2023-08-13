@@ -182,7 +182,7 @@ namespace rush {
         if constexpr (std::is_same_v<Return, float>) {
             auto y = static_cast<float>(squaredLength());
 
-#ifdef _INCLUDED_IMM
+#ifdef RUSH_INTRINSICS
             if constexpr (A.useIntrinsics()) {
                 return _mm_cvtss_f32(_mm_rsqrt_ss(_mm_set_ss(y)));
             }
@@ -211,9 +211,11 @@ namespace rush {
     Vec<Size, Return>
     Vec<Size, Type>::normalized() const requires HasMul<Return> {
         Return invLen = inverseLength<Return, A>();
-        return Vec<Size, Return>([invLen, this](size_t i) {
-            return static_cast<Return>(data[i]) * invLen;
-        });
+        Vec<Size, Return> result;
+        for (size_t i = 0; i < Size; ++i) {
+            result.data[i] = static_cast<Return>(data[i]) * invLen;
+        }
+        return result;
     }
 
     template<size_t Size, typename Type>
