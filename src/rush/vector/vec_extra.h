@@ -9,8 +9,9 @@
 #include <rush/vector/vec_ref.h>
 #include <ostream>
 
-template<size_t Size, typename Type>
-std::ostream& operator<<(std::ostream& os, const rush::Vec<Size, Type>& v) {
+template<size_t Size, typename Type, typename Allocator>
+std::ostream&
+operator<<(std::ostream& os, const rush::Vec<Size, Type, Allocator>& v) {
     os << "(";
     for (size_t i = 0; i < Size; ++i) {
         os << v[i];
@@ -35,9 +36,10 @@ std::ostream& operator<<(std::ostream& os, const rush::VecRef<Size, Type>& r) {
     return os;
 }
 
-template<size_t Size, typename Type>
-struct std::hash<rush::Vec<Size, Type>> {
-    std::size_t operator()(rush::Vec<Size, Type> const& s) const noexcept {
+template<size_t Size, typename Type, typename Allocator>
+struct std::hash<rush::Vec<Size, Type, Allocator>> {
+    std::size_t
+    operator()(rush::Vec<Size, Type, Allocator> const& s) const noexcept {
         std::hash<Type> hasher;
         size_t hash = 0;
         for (int i = 0; i < Size; ++i) {
@@ -49,132 +51,132 @@ struct std::hash<rush::Vec<Size, Type>> {
 
 // REGION EXTRA OPERATIONS
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasAdd<Type>
-inline rush::Vec<Size, Type> operator+(
+inline rush::Vec<Size, Type, Allocator> operator+(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s + v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasSub<Type>
-inline rush::Vec<Size, Type> operator-(
+inline rush::Vec<Size, Type, Allocator> operator-(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s - v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasMul<Type>
-inline rush::Vec<Size, Type> operator*(
+inline rush::Vec<Size, Type, Allocator> operator*(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s * v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasDiv<Type>
-inline rush::Vec<Size, Type> operator/(
+inline rush::Vec<Size, Type, Allocator> operator/(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s / v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasShl<Type>
-inline rush::Vec<Size, Type> operator<<(
+inline rush::Vec<Size, Type, Allocator> operator<<(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s << v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasShr<Type>
-inline rush::Vec<Size, Type> operator>>(
+inline rush::Vec<Size, Type, Allocator> operator>>(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s >> v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasBitAnd<Type>
-inline rush::Vec<Size, Type> operator&(
+inline rush::Vec<Size, Type, Allocator> operator&(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s & v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasBitOr<Type>
-inline rush::Vec<Size, Type> operator|(
+inline rush::Vec<Size, Type, Allocator> operator|(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s | v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasBitXor<Type>
-inline rush::Vec<Size, Type> operator^(
+inline rush::Vec<Size, Type, Allocator> operator^(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s ^ v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasAnd<Type>
-inline rush::Vec<Size, Type> operator&&(
+inline rush::Vec<Size, Type, Allocator> operator&&(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s && v[i];
     }
     return result;
 }
 
-template<size_t Size, typename Type>
+template<size_t Size, typename Type, typename Allocator>
 requires rush::HasOr<Type>
-inline rush::Vec<Size, Type> operator||(
+inline rush::Vec<Size, Type, Allocator> operator||(
         const Type& s,
-        const rush::Vec<Size, Type>& v) {
-    rush::Vec<Size, Type> result;
+        const rush::Vec<Size, Type, Allocator>& v) {
+    rush::Vec<Size, Type, Allocator> result;
     for (int i = 0; i < Size; ++i) {
         result[i] = s || v[i];
     }

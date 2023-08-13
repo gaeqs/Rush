@@ -21,6 +21,9 @@ set(RUSH_HEADERS
         src/rush/quaternion/quat_impl.h
         src/rush/vector/vec_math.h
         src/rush/algorithm.h
+        src/rush/allocator/allocator.h
+        src/rush/allocator/stack_allocator.h
+        src/rush/allocator/heap_allocator.h
 )
 
 add_library(rush INTERFACE ${RUSH_HEADERS})

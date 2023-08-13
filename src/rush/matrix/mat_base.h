@@ -22,7 +22,7 @@ namespace rush {
         static_assert(Rows > 0, "Row amount cannot be zero.");
 
         using Self = Mat<Columns, Rows, Type>;
-        using ColumnType = rush::Vec<Rows, Type>;
+        using ColumnType = rush::Vec<Rows, Type, StaticAllocator<Rows, Type>>;
 
         ColumnType data[Columns];
 
@@ -52,7 +52,8 @@ namespace rush {
         inline const ColumnType& column(size_t column) const;
 
         VecRef<Columns, Type> row(size_t row);
-        Vec<Columns, Type> row(size_t row) const;
+        Vec<Columns, Type, StaticAllocator<Columns, Type>>
+        row(size_t row) const;
 
         inline ColumnType& operator[](size_t column);
         inline const ColumnType& operator[](size_t column) const;

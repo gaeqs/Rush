@@ -9,171 +9,175 @@
 
 namespace rush {
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     template<typename... T>
     requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
              (sizeof...(T) <= Size)
-    Vec<Size, Type>::Vec(T... list) : data{list...} {
+    Vec<Size, Type, Allocator>::Vec(T... list) {
+        Type* ptr = toPointer();
+        ((*ptr++ = list), ...);
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Vec() : data() {
+    Vec<Size, Type, Allocator>::Vec() : data() {
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    template<size_t OSize>
+    template<size_t OSize, typename OAlloc>
     requires(Size < OSize)
-    Vec<Size, Type>::Vec(const Vec<OSize, Type>& other) {
-        std::copy_n(other.toPointer(), Size, data.data());
+    Vec<Size, Type, Allocator>::Vec(const Vec<OSize, Type, OAlloc>& other) {
+        std::copy_n(other.toPointer(), Size, toPointer());
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Vec(const VecRef<Size, Type>& ref) {
+    Vec<Size, Type, Allocator>::Vec(const VecRef<Size, Type>& ref) {
         for (size_t i = 0; i < Size; ++i) {
             data[i] = *ref.references[i];
         }
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Vec(std::function<Type(size_t)> populator) {
+    Vec<Size, Type, Allocator>::Vec(std::function<Type(size_t)> populator) {
         for (size_t i = 0; i < Size; ++i) {
             data[i] = populator(i);
         }
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Vec(std::function<Type(size_t, size_t)> populator) {
+    Vec<Size, Type, Allocator>::Vec(
+            std::function<Type(size_t, size_t)> populator) {
         for (size_t i = 0; i < Size; ++i) {
             data[i] = populator(i, Size);
         }
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    const Type& Vec<Size, Type>::x() const {
+    const Type& Vec<Size, Type, Allocator>::x() const {
         return data[0];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type& Vec<Size, Type>::x() {
+    Type& Vec<Size, Type, Allocator>::x() {
         return data[0];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    const Type& Vec<Size, Type>::y() const requires (Size >= 2) {
+    const Type& Vec<Size, Type, Allocator>::y() const requires (Size >= 2) {
         return data[1];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type& Vec<Size, Type>::y() requires (Size >= 2) {
+    Type& Vec<Size, Type, Allocator>::y() requires (Size >= 2) {
         return data[1];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    const Type& Vec<Size, Type>::z() const requires (Size >= 3) {
+    const Type& Vec<Size, Type, Allocator>::z() const requires (Size >= 3) {
         return data[2];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type& Vec<Size, Type>::z() requires (Size >= 3) {
+    Type& Vec<Size, Type, Allocator>::z() requires (Size >= 3) {
         return data[2];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    const Type& Vec<Size, Type>::w() const requires (Size >= 4) {
+    const Type& Vec<Size, Type, Allocator>::w() const requires (Size >= 4) {
         return data[3];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type& Vec<Size, Type>::w() requires (Size >= 4) {
+    Type& Vec<Size, Type, Allocator>::w() requires (Size >= 4) {
         return data[3];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    template<typename... Ts>
+    template<typename... Ts, typename OAlloc>
     requires std::is_convertible_v<std::common_type_t<Ts...>, size_t>
-    Vec<sizeof...(Ts), Type>
-    Vec<Size, Type>::operator()(Ts&& ... indices) const {
-        Vec<sizeof...(Ts), Type> vec;
+    Vec<sizeof...(Ts), Type, OAlloc>
+    Vec<Size, Type, Allocator>::operator()(Ts&& ... indices) const {
+        Vec<sizeof...(Ts), Type, OAlloc> vec;
         size_t i = 0;
-        ((vec.references[i++] = &(*this)[indices]), ...);
+        ((vec.references[i++] = &data[indices]), ...);
         return vec;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     template<typename... Ts>
     requires std::is_convertible_v<std::common_type_t<Ts...>, size_t>
-    VecRef<sizeof...(Ts), Type> Vec<Size, Type>::operator()(Ts&& ... indices) {
+    VecRef<sizeof...(Ts), Type>
+    Vec<Size, Type, Allocator>::operator()(Ts&& ... indices) {
         VecRef<sizeof...(Ts), Type> vec;
         size_t i = 0;
-        ((vec.references[i++] = &(*this)[indices]), ...);
+        ((vec.references[i++] = &data[indices]), ...);
         return vec;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type& Vec<Size, Type>::operator[](size_t index) {
+    Type& Vec<Size, Type, Allocator>::operator[](size_t index) {
         return data[index];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     const Type&
-    Vec<Size, Type>::operator[](size_t index) const {
+    Vec<Size, Type, Allocator>::operator[](size_t index) const {
         return data[index];
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    const Type* Vec<Size, Type>::toPointer() const {
-        return data.data();
+    const Type* Vec<Size, Type, Allocator>::toPointer() const {
+        return data.toPointer();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type* Vec<Size, Type>::toPointer() {
-        return data.data();
+    Type* Vec<Size, Type, Allocator>::toPointer() {
+        return data.toPointer();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    constexpr size_t Vec<Size, Type>::size() const {
+    constexpr size_t Vec<Size, Type, Allocator>::size() const {
         return Size;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type Vec<Size, Type>::squaredLength() const {
+    Type Vec<Size, Type, Allocator>::squaredLength() const {
         return this->dot(*this);
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     template<typename Return>
-    Return Vec<Size, Type>::length() const requires (
+    Return Vec<Size, Type, Allocator>::length() const requires (
     std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>) {
         return std::sqrt(squaredLength());
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     template<typename Return, Algorithm A>
-    Return Vec<Size, Type>::inverseLength() const requires (
+    Return Vec<Size, Type, Allocator>::inverseLength() const requires (
     std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>) {
         if constexpr (A.precision == Precision::High) {
             return 1.0f / std::sqrt(squaredLength());
@@ -205,448 +209,508 @@ namespace rush {
         return 1.0f / std::sqrt(squaredLength());
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    template<typename Return, Algorithm A>
-    Vec<Size, Return>
-    Vec<Size, Type>::normalized() const requires HasMul<Return> {
+    template<typename Return, Algorithm A, typename OAlloc>
+    Vec<Size, Return, OAlloc>
+    Vec<Size, Type, Allocator>::normalized() const requires HasMul<Return> {
         Return invLen = inverseLength<Return, A>();
-        Vec<Size, Return> result;
+        Vec<Size, Return, OAlloc> result;
         for (size_t i = 0; i < Size; ++i) {
             result.data[i] = static_cast<Return>(data[i]) * invLen;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self& Vec<Size, Type>::operator+() {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator+() {
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    const typename Vec<Size, Type>::Self& Vec<Size, Type>::operator+() const {
+    const Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator+() const {
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator-() const requires HasSub<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator-() const requires HasSub<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = -data[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator+=(const Type& s) requires HasAdd<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator+=(
+            const Type& s) requires HasAdd<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] += s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator-=(const Type& s) requires HasSub<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator-=(
+            const Type& s) requires HasSub<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] -= s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator*=(const Type& s) requires HasMul<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator*=(
+            const Type& s) requires HasMul<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] *= s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator/=(const Type& s) requires HasDiv<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator/=(
+            const Type& s) requires HasDiv<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] /= s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator<<=(const Type& s) requires HasShl<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator<<=(
+            const Type& s) requires HasShl<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] <<= s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator>>=(const Type& s) requires HasShr<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator>>=(
+            const Type& s) requires HasShr<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] >>= s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator&=(const Type& s) requires HasBitAnd<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator&=(
+            const Type& s) requires HasBitAnd<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] &= s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator|=(const Type& s) requires HasBitOr<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator|=(
+            const Type& s) requires HasBitOr<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] |= s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator^=(const Type& s) requires HasBitXor<Type> {
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator^=(
+            const Type& s) requires HasBitXor<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] ^= s;
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator+=(const Self& o) requires HasAdd<Type> {
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator+=(
+            const Vec<Size, Type, OAlloc>& o) requires HasAdd<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] += o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator-=(const Self& o) requires HasSub<Type> {
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator-=(
+            const Vec<Size, Type, OAlloc>& o) requires HasSub<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] -= o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator*=(const Self& o) requires HasMul<Type> {
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator*=(
+            const Vec<Size, Type, OAlloc>& o) requires HasMul<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] *= o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator/=(const Self& o) requires HasDiv<Type> {
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator/=(
+            const Vec<Size, Type, OAlloc>& o) requires HasDiv<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] /= o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator<<=(const Self& o) requires HasShl<Type> {
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator<<=(
+            const Vec<Size, Type, OAlloc>& o) requires HasShl<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] <<= o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator>>=(const Self& o) requires HasShr<Type> {
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator>>=(
+            const Vec<Size, Type, OAlloc>& o) requires HasShr<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] >>= o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
-    requires (Size > 0)typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator&=(const Self& o) requires HasBitAnd<Type> {
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator&=(
+            const Vec<Size, Type, OAlloc>& o) requires HasBitAnd<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] &= o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator|=(const Self& o) requires HasBitOr<Type> {
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator|=(
+            const Vec<Size, Type, OAlloc>& o) requires HasBitOr<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] |= o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    typename Vec<Size, Type>::Self&
-    Vec<Size, Type>::operator^=(const Self& o) requires HasBitXor<Type> {
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>&
+    Vec<Size, Type, Allocator>::operator^=(
+            const Vec<Size, Type, OAlloc>& o) requires HasBitXor<Type> {
         for (size_t i = 0; i < Size; ++i) {
             data[i] ^= o[i];
         }
         return *this;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator+(const Type& s) const requires HasAdd<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator+(
+            const Type& s) const requires HasAdd<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] + s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator-(const Type& s) const requires HasSub<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator-(
+            const Type& s) const requires HasSub<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] - s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator*(const Type& s) const requires HasMul<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator*(
+            const Type& s) const requires HasMul<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] * s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator/(const Type& s) const requires HasDiv<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator/(
+            const Type& s) const requires HasDiv<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] / s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator<<(const Type& s) const requires HasShl<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator<<(
+            const Type& s) const requires HasShl<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] << s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator>>(const Type& s) const requires HasShr<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator>>(
+            const Type& s) const requires HasShr<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] >> s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator&(const Type& s) const requires HasBitAnd<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator&(
+            const Type& s) const requires HasBitAnd<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] & s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator|(const Type& s) const requires HasBitOr<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator|(
+            const Type& s) const requires HasBitOr<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] | s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator^(const Type& s) const requires HasBitXor<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator^(
+            const Type& s) const requires HasBitXor<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] ^ s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator&&(const Type& s) const requires HasAnd<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator&&(
+            const Type& s) const requires HasAnd<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] && s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator||(const Type& s) const requires HasOr<Type> {
-        Self result;
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator||(
+            const Type& s) const requires HasOr<Type> {
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] || s;
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator+(const Vec::Self& other) const requires
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator+(
+            const Vec<Size, Type, OAlloc>& other) const requires
     HasAdd<Type> {
-        Self result;
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] + other[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator-(const Vec::Self& other) const requires
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator-(
+            const Vec<Size, Type, OAlloc>& other) const requires
     HasSub<Type> {
-        Self result;
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] - other[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator*(const Vec::Self& other) const requires
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator*(
+            const Vec<Size, Type, OAlloc>& other) const requires
     HasMul<Type> {
-        Self result;
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] * other[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator/(const Vec::Self& other) const requires
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator/(
+            const Vec<Size, Type, OAlloc>& other) const requires
     HasDiv<Type> {
-        Self result;
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] / other[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator<<(const Vec::Self& other) const requires
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator<<(
+            const Vec<Size, Type, OAlloc>& other) const requires
     HasShl<Type> {
-        Self result;
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] << other[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator>>(const Vec::Self& other) const requires
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator>>(
+            const Vec<Size, Type, OAlloc>& other) const requires
     HasShr<Type> {
-        Self result;
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] >> other[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator&&(const Vec::Self& other) const requires
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator&&(
+            const Vec<Size, Type, OAlloc>& other) const requires
     HasAnd<Type> {
-        Self result;
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] && other[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator||(const Vec::Self& other) const requires
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator||(
+            const Vec<Size, Type, OAlloc>& other) const requires
     HasOr<Type> {
-        Self result;
+        Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] || other[i];
         }
         return result;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type Vec<Size, Type>::dot(const Vec::Self& other) const {
+    template<typename OAlloc>
+    Type Vec<Size, Type, Allocator>::dot(
+            const Vec<Size, Type, OAlloc>& other) const {
         return *this % other;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Type
-    Vec<Size, Type>::operator%(const Vec::Self& other) const requires (
+    template<typename OAlloc>
+    Type Vec<Size, Type, Allocator>::operator%(
+            const Vec<Size, Type, OAlloc>& other) const requires (
     HasAdd<Type> && HasMul<Type>) {
         Type v = data[0] * other[0];
         for (size_t i = 1; i < Size; ++i) {
@@ -655,87 +719,115 @@ namespace rush {
         return v;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::cross(const Vec::Self& other) const requires (
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::cross(
+            const Vec<Size, Type, OAlloc>& other) const requires (
     Size == 3 && HasAdd<Type> && HasMul<Type>) {
         return *this ^ other;
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Self
-    Vec<Size, Type>::operator^(const Vec::Self& o) const requires (
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator^(
+            const Vec<Size, Type, OAlloc>& o) const requires (
     Size == 3 && HasAdd<Type> && HasMul<Type>) {
         return {y() * o.z() - o.y() * z(),
                 z() * o.x() - o.z() * x(),
                 x() * o.y() - o.x() * y()};
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    bool Vec<Size, Type>::operator==(const Vec::Self& other) const {
-        if (this == &other) return true;
-        return std::equal(std::begin(data), std::end(data),
-                          std::begin(other.data));
+    template<typename OAlloc>
+    bool Vec<Size, Type, Allocator>::operator==(
+            const Vec<Size, Type, OAlloc>& other) const {
+        if constexpr (std::is_same_v<Vec, Vec<Size, Type, OAlloc>>) {
+            if (this == &other) return true;
+        }
+        return std::equal(cbegin(), cend(), other.cbegin());
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    bool Vec<Size, Type>::operator!=(const Vec::Self& other) const {
-        if (this == &other) return false;
-        return !std::equal(std::begin(data), std::end(data),
-                           std::begin(other.data));
+    template<typename OAlloc>
+    bool Vec<Size, Type, Allocator>::operator!=(
+            const Vec<Size, Type, OAlloc>& other) const {
+        if constexpr (std::is_same_v<Vec, Vec<Size, Type, OAlloc>>) {
+            if (this == &other) return false;
+        }
+        return !std::equal(cbegin(), cend(), other.cbegin());
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Storage::iterator Vec<Size, Type>::begin() {
+    bool Vec<Size, Type, Allocator>::operator==(
+            const VecRef<Size, Type>& other) const {
+        for (int i = 0; i < Size; ++i) {
+            if (data[i] != *other.references[i]) return false;
+        }
+        return true;
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    bool Vec<Size, Type, Allocator>::operator!=(
+            const VecRef<Size, Type>& other) const {
+        for (int i = 0; i < Size; ++i) {
+            if (data[i] != *other.references[i]) return true;
+        }
+        return false;
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    auto Vec<Size, Type, Allocator>::begin() {
         return data.begin();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Storage::iterator Vec<Size, Type>::end() {
+    auto Vec<Size, Type, Allocator>::end() {
         return data.end();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Storage::const_iterator Vec<Size, Type>::cbegin() const {
+    auto Vec<Size, Type, Allocator>::cbegin() const {
         return data.cbegin();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Storage::const_iterator Vec<Size, Type>::cend() const {
+    auto Vec<Size, Type, Allocator>::cend() const {
         return data.cend();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Storage::reverse_iterator Vec<Size, Type>::rbegin() {
+    auto Vec<Size, Type, Allocator>::rbegin() {
         return data.rbegin();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Storage::reverse_iterator Vec<Size, Type>::rend() {
+    auto Vec<Size, Type, Allocator>::rend() {
         return data.rend();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Storage::const_reverse_iterator
-    Vec<Size, Type>::crbegin() const {
+    auto Vec<Size, Type, Allocator>::crbegin() const {
         return data.crbegin();
     }
 
-    template<size_t Size, typename Type>
+    template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type>::Storage::const_reverse_iterator
-    Vec<Size, Type>::crend() const {
+    auto Vec<Size, Type, Allocator>::crend() const {
         return data.crend();
     }
 

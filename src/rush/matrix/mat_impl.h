@@ -76,8 +76,9 @@ namespace rush {
     }
 
     template<size_t Columns, size_t Rows, typename Type>
-    Vec<Columns, Type> Mat<Columns, Rows, Type>::row(size_t row) const {
-        Vec<Columns, Type> vec;
+    Vec<Columns, Type, StaticAllocator<Columns, Type>>
+    Mat<Columns, Rows, Type>::row(size_t row) const {
+        Vec<Columns, Type, StaticAllocator<Columns, Type>> vec;
         for (size_t i = 0; i < Columns; ++i) {
             vec[i] = data[i][row];
         }

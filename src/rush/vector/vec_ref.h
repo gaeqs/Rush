@@ -5,8 +5,11 @@
 #ifndef RUSH_VEC_REF_H
 #define RUSH_VEC_REF_H
 
+#include <iostream>
+#include <rush/allocator/allocator.h>
+
 namespace rush {
-    template<size_t Size, typename Type> requires(Size > 0)
+    template<size_t Size, typename Type, typename Allocator> requires(Size > 0)
     struct Vec;
 
     template<size_t Size, typename Type> requires (Size > 0)
@@ -22,18 +25,25 @@ namespace rush {
         explicit VecRef(T... list) : references{list...} {
         }
 
-        operator Vec<Size, Type>() const {
-            return **this;
+        template<typename Allocator = StaticAllocator<Size, Type>>
+        operator Vec<Size, Type, Allocator>() const {
+            return toVec<Allocator>();
         }
 
-        Vec<Size, Type> operator*() const {
-            return Vec<Size, Type>(*this);
+        template<typename Allocator = StaticAllocator<Size, Type>>
+        Vec<Size, Type, Allocator> operator*() const {
+            return Vec<Size, Type, Allocator>(*this);
         }
 
-        VecRef& operator=(Vec<Size, Type> vec) {
+        template<typename Allocator = StaticAllocator<Size, Type>>
+        Vec<Size, Type, Allocator> toVec() const {
+            return Vec<Size, Type, Allocator>(*this);
+        }
+
+        template<typename Allocator>
+        VecRef& operator=(Vec<Size, Type, Allocator> vec) {
             // Ask for a value, not a reference!
             // This avoids aliasing.
-
             for (int i = 0; i < Size; ++i) {
                 *references[i] = vec[i];
             }
@@ -45,51 +55,65 @@ namespace rush {
 
             // We must transform the reference to avoid aliasing.
             // o(0, 1) = o(1, 0) will fail if this is not done.
-            Vec<Size, Type> vec = ref;
-
+            Vec<Size, Type, StaticAllocator<Size, Type>> vec = ref;
             for (int i = 0; i < Size; ++i) {
                 *references[i] = vec[i];
             }
             return *this;
         }
 
-        Vec<Size, Type> operator+(const Vec<Size, Type>& other) {
-            return **this + other;
+        template<typename AllA, typename AllB = AllA>
+        Vec<Size, Type, AllB>
+        operator+(const Vec<Size, Type, AllA>& other) {
+            return toVec<AllB>() + other;
         }
 
-        Vec<Size, Type> operator+(const VecRef<Size, Type>& other) {
+        template<typename Allocator = StaticAllocator<Size, Type>>
+        Vec<Size, Type, Allocator> operator+(const VecRef<Size, Type>& other) {
             return **this + *other;
         }
 
-        Vec<Size, Type> operator-(const Vec<Size, Type>& other) {
-            return **this - other;
+        template<typename AllA, typename AllB = AllA>
+        Vec<Size, Type, AllB>
+        operator-(const Vec<Size, Type, AllA>& other) {
+            return toVec<AllB>() - other;
         }
 
-        Vec<Size, Type> operator-(const VecRef<Size, Type>& other) {
+        template<typename Allocator = StaticAllocator<Size, Type>>
+        Vec<Size, Type, Allocator> operator-(const VecRef<Size, Type>& other) {
             return **this - *other;
         }
 
-        Vec<Size, Type> operator*(const Vec<Size, Type>& other) {
-            return **this * other;
+        template<typename AllA, typename AllB = AllA>
+        Vec<Size, Type, AllB>
+        operator*(const Vec<Size, Type, AllA>& other) {
+            return toVec<AllB>() * other;
         }
 
-        Vec<Size, Type> operator*(const VecRef<Size, Type>& other) {
+        template<typename Allocator = StaticAllocator<Size, Type>>
+        Vec<Size, Type, Allocator> operator*(const VecRef<Size, Type>& other) {
             return **this * *other;
         }
 
-        Vec<Size, Type> operator/(const Vec<Size, Type>& other) {
-            return **this / other;
+        template<typename AllA, typename AllB = AllA>
+        Vec<Size, Type, AllB>
+        operator/(const Vec<Size, Type, AllA>& other) {
+            return toVec<AllB>() / other;
         }
 
-        Vec<Size, Type> operator/(const VecRef<Size, Type>& other) {
+        template<typename Allocator = StaticAllocator<Size, Type>>
+        Vec<Size, Type, Allocator> operator/(const VecRef<Size, Type>& other) {
             return **this / *other;
         }
 
-        Vec<Size, Type> operator%(const Vec<Size, Type>& other) {
-            return **this % other;
+        template<typename AllA, typename AllB = AllA>
+        Vec<Size, Type, AllB>
+        operator%(const Vec<Size, Type, AllA>& other) {
+            return toVec<AllB>() % other;
         }
 
-        Vec<Size, Type> operator%(const VecRef<Size, Type>& other) {
+        template<typename Allocator = StaticAllocator<Size, Type>>
+        Vec<Size, Type, Allocator> operator%(const VecRef<Size, Type>& other) {
             return **this % *other;
         }
 

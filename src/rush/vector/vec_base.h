@@ -18,13 +18,20 @@
 
 namespace rush {
 
-    template<size_t Size, typename Type> requires (Size > 0)
+    template<size_t Size,
+            typename Type,
+            typename Allocator =
+            StaticAllocator<Size, Type>> requires (Size > 0)
     struct Vec {
 
-        using Self = Vec<Size, Type>;
-        using Storage = std::array<Type, Size>;
+        static_assert(std::is_same_v<typename Allocator::AllocType, Type>,
+                      "Allocator type is not the same as the vector type.");
+        static_assert(Size == Allocator::size(),
+                      "Allocator size is not the same as the vector size.");
 
-        Storage data;
+        using Storage = Allocator;
+
+        Allocator data;
 
         template<typename... T>
         requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
@@ -33,9 +40,9 @@ namespace rush {
 
         Vec();
 
-        template<size_t OSize>
+        template<size_t OSize, typename OAlloc>
         requires(Size < OSize)
-        Vec(const Vec<OSize, Type>& other);
+        Vec(const Vec<OSize, Type, OAlloc>& other);
 
         explicit Vec(const VecRef<Size, Type>& ref);
 
@@ -130,9 +137,9 @@ namespace rush {
          * @param indices the indices.
          * @return the new vector.
          */
-        template<typename... Ts>
+        template<typename... Ts, typename OAlloc = Allocator>
         requires std::is_convertible_v<std::common_type_t<Ts...>, size_t>
-        Vec<sizeof...(Ts), Type>
+        Vec<sizeof...(Ts), Type, OAlloc>
         operator()(Ts&& ... indices) const;
 
         // ENDREGION
@@ -195,92 +202,152 @@ namespace rush {
          * @return the normalized vector.
          *
          */
-        template<typename Return = Type, Algorithm Algorithm = Algorithm()>
-        Vec<Size, Return> normalized() const requires HasMul<Return>;
+        template<typename Return = Type, Algorithm Algorithm = Algorithm(),
+                typename OAlloc = StaticAllocator<Size, Return>>
+        Vec<Size, Return, OAlloc> normalized() const requires HasMul<Return>;
 
         // UNARY
 
-        inline Self& operator+();
-        inline const Self& operator+() const;
-        inline Self operator-() const requires HasSub<Type>;
+        inline Vec& operator+();
+        inline const Vec& operator+() const;
+        inline Vec operator-() const requires HasSub<Type>;
 
         // ASSIGN VECTOR - SCALE
 
-        inline Self& operator+=(const Type& s) requires HasAdd<Type>;
-        inline Self& operator-=(const Type& s) requires HasSub<Type>;
-        inline Self& operator*=(const Type& s) requires HasMul<Type>;
-        inline Self& operator/=(const Type& s) requires HasDiv<Type>;
-        inline Self& operator<<=(const Type& s) requires HasShl<Type>;
-        inline Self& operator>>=(const Type& s) requires HasShr<Type>;
-        inline Self& operator&=(const Type& s) requires HasBitAnd<Type>;
-        inline Self& operator|=(const Type& s) requires HasBitOr<Type>;
-        inline Self& operator^=(const Type& s) requires HasBitXor<Type>;
+        inline Vec& operator+=(const Type& s) requires HasAdd<Type>;
+        inline Vec& operator-=(const Type& s) requires HasSub<Type>;
+        inline Vec& operator*=(const Type& s) requires HasMul<Type>;
+        inline Vec& operator/=(const Type& s) requires HasDiv<Type>;
+        inline Vec& operator<<=(const Type& s) requires HasShl<Type>;
+        inline Vec& operator>>=(const Type& s) requires HasShr<Type>;
+        inline Vec& operator&=(const Type& s) requires HasBitAnd<Type>;
+        inline Vec& operator|=(const Type& s) requires HasBitOr<Type>;
+        inline Vec& operator^=(const Type& s) requires HasBitXor<Type>;
 
         // ASSIGN VECTOR - VECTOR
 
-        inline Self& operator+=(const Self& o) requires HasAdd<Type>;
-        inline Self& operator-=(const Self& o) requires HasSub<Type>;
-        inline Self& operator*=(const Self& o) requires HasMul<Type>;
-        inline Self& operator/=(const Self& o) requires HasDiv<Type>;
-        inline Self& operator<<=(const Self& o) requires HasShl<Type>;
-        inline Self& operator>>=(const Self& o) requires HasShr<Type>;
-        inline Self& operator&=(const Self& o) requires HasBitAnd<Type>;
-        inline Self& operator|=(const Self& o) requires HasBitOr<Type>;
-        inline Self& operator^=(const Self& o) requires HasBitXor<Type>;
+        template<typename OAlloc>
+        inline Vec&
+        operator+=(const Vec<Size, Type, OAlloc>& o) requires HasAdd<Type>;
+
+        template<typename OAlloc>
+        inline Vec&
+        operator-=(const Vec<Size, Type, OAlloc>& o) requires HasSub<Type>;
+
+        template<typename OAlloc>
+        inline Vec&
+        operator*=(const Vec<Size, Type, OAlloc>& o) requires HasMul<Type>;
+
+        template<typename OAlloc>
+        inline Vec&
+        operator/=(const Vec<Size, Type, OAlloc>& o) requires HasDiv<Type>;
+
+        template<typename OAlloc>
+        inline Vec&
+        operator<<=(const Vec<Size, Type, OAlloc>& o) requires HasShl<Type>;
+
+        template<typename OAlloc>
+        inline Vec&
+        operator>>=(const Vec<Size, Type, OAlloc>& o) requires HasShr<Type>;
+
+        template<typename OAlloc>
+        inline Vec&
+        operator&=(const Vec<Size, Type, OAlloc>& o) requires HasBitAnd<Type>;
+
+        template<typename OAlloc>
+        inline Vec&
+        operator|=(const Vec<Size, Type, OAlloc>& o) requires HasBitOr<Type>;
+
+        template<typename OAlloc>
+        inline Vec&
+        operator^=(const Vec<Size, Type, OAlloc>& o) requires HasBitXor<Type>;
 
         // VECTOR - SCALE
 
-        inline Self operator+(const Type& s) const requires HasAdd<Type>;
-        inline Self operator-(const Type& s) const requires HasSub<Type>;
-        inline Self operator*(const Type& s) const requires HasMul<Type>;
-        inline Self operator/(const Type& s) const requires HasDiv<Type>;
-        inline Self operator<<(const Type& s) const requires HasShl<Type>;
-        inline Self operator>>(const Type& s) const requires HasShr<Type>;
-        inline Self operator&(const Type& s) const requires HasBitAnd<Type>;
-        inline Self operator|(const Type& s) const requires HasBitOr<Type>;
-        inline Self operator^(const Type& s) const requires HasBitXor<Type>;
-        inline Self operator&&(const Type& s) const requires HasAnd<Type>;
-        inline Self operator||(const Type& s) const requires HasOr<Type>;
+        inline Vec operator+(const Type& s) const requires HasAdd<Type>;
+        inline Vec operator-(const Type& s) const requires HasSub<Type>;
+        inline Vec operator*(const Type& s) const requires HasMul<Type>;
+        inline Vec operator/(const Type& s) const requires HasDiv<Type>;
+        inline Vec operator<<(const Type& s) const requires HasShl<Type>;
+        inline Vec operator>>(const Type& s) const requires HasShr<Type>;
+        inline Vec operator&(const Type& s) const requires HasBitAnd<Type>;
+        inline Vec operator|(const Type& s) const requires HasBitOr<Type>;
+        inline Vec operator^(const Type& s) const requires HasBitXor<Type>;
+        inline Vec operator&&(const Type& s) const requires HasAnd<Type>;
+        inline Vec operator||(const Type& s) const requires HasOr<Type>;
 
         // VECTOR - VECTOR
+        template<typename OAlloc>
+        inline Vec operator+(const Vec<Size, Type, OAlloc>& other)
+        const requires HasAdd<Type>;
 
-        inline Self operator+(const Self& other) const requires HasAdd<Type>;
-        inline Self operator-(const Self& other) const requires HasSub<Type>;
-        inline Self operator*(const Self& other) const requires HasMul<Type>;
-        inline Self operator/(const Self& other) const requires HasDiv<Type>;
-        inline Self operator<<(const Self& other) const requires HasShl<Type>;
-        inline Self operator>>(const Self& other) const requires HasShr<Type>;
-        inline Self operator&&(const Self& other) const requires HasAnd<Type>;
-        inline Self operator||(const Self& other) const requires HasOr<Type>;
+        template<typename OAlloc>
+        inline Vec operator-(const Vec<Size, Type, OAlloc>& other)
+        const requires HasSub<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator*(const Vec<Size, Type, OAlloc>& other)
+        const requires HasMul<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator/(const Vec<Size, Type, OAlloc>& other)
+        const requires HasDiv<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator<<(const Vec<Size, Type, OAlloc>& other)
+        const requires HasShl<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator>>(const Vec<Size, Type, OAlloc>& other)
+        const requires HasShr<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator&&(const Vec<Size, Type, OAlloc>& other)
+        const requires HasAnd<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator||(const Vec<Size, Type, OAlloc>& other)
+        const requires HasOr<Type>;
 
         // DOT
-        inline Type dot(const Self& other) const;
+        template<typename OAlloc>
+        inline Type dot(const Vec<Size, Type, OAlloc>& other) const;
 
-        inline Type operator%(const Self& other) const requires (
+        template<typename OAlloc>
+        inline Type
+        operator%(const Vec<Size, Type, OAlloc>& other) const requires (
         HasAdd<Type> && HasMul<Type>);
 
         // CROSS
-        inline Self cross(const Self& other) const requires (
+        template<typename OAlloc>
+        inline Vec cross(const Vec<Size, Type, OAlloc>& other) const requires (
         Size == 3 && HasAdd<Type> && HasMul<Type>);
 
-        inline Self operator^(const Self& o) const requires (
+        template<typename OAlloc>
+        inline Vec operator^(const Vec<Size, Type, OAlloc>& o) const requires (
         Size == 3 && HasAdd<Type> && HasMul<Type>);
 
-        inline bool operator==(const Self& other) const;
-        inline bool operator!=(const Self& other) const;
+        template<typename OAlloc>
+        inline bool operator==(const Vec<Size, Type, OAlloc>& other) const;
+
+        template<typename OAlloc>
+        inline bool operator!=(const Vec<Size, Type, OAlloc>& other) const;
+
+        inline bool operator==(const VecRef<Size, Type>& other) const;
+        inline bool operator!=(const VecRef<Size, Type>& other) const;
 
         // ENDREGION
 
         // REGION ITERATOR
 
-        inline Storage::iterator begin();
-        inline Storage::iterator end();
-        inline Storage::const_iterator cbegin() const;
-        inline Storage::const_iterator cend() const;
-        inline Storage::reverse_iterator rbegin();
-        inline Storage::reverse_iterator rend();
-        inline Storage::const_reverse_iterator crbegin() const;
-        inline Storage::const_reverse_iterator crend() const;
+        inline auto begin();
+        inline auto end();
+        inline auto cbegin() const;
+        inline auto cend() const;
+        inline auto rbegin();
+        inline auto rend();
+        inline auto crbegin() const;
+        inline auto crend() const;
 
         // ENDREGION
 

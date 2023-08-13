@@ -8,7 +8,8 @@
 using V1 = rush::Vec<1, int>;
 using V2 = rush::Vec<2, int>;
 using V3 = rush::Vec<3, int>;
-using V5 = rush::Vec<5, int>;
+using V5 = rush::Vec<5, int, rush::HeapAllocator<5, int>>;
+using V5S = rush::Vec<5, int, rush::StaticAllocator<5, int>>;
 
 inline void requireSimilar(float a, float b, float epsilon = 0.01f) {
     REQUIRE(std::abs(a - b) < epsilon);
@@ -45,8 +46,9 @@ TEST_CASE("Vector access", "[vector]") {
     REQUIRE(o == V5(4, 3, 30, 50, 0));
     REQUIRE(o[4] == 0);
 
+    o = {0, 1, 2, 3, 4};
     o(0, 1) = o(1, 2);
-    REQUIRE(o == V5(3, 30, 30, 50, 0));
+    REQUIRE(o == V5(1, 2, 2, 3, 4));
 
     // Check aliasing
     V2 swap = {0, 1};
@@ -68,7 +70,7 @@ TEST_CASE("Vector length", "[vector]") {
 
 TEST_CASE("Vector operations", "[vector]") {
     V5 o = {4, 3, 2, 1, 0};
-    V5 p = {10, 12, 14, 0, 0};
+    V5S p = {10, 12, 14, 0, 0};
 
     SECTION("Addition") {
         REQUIRE(o + p == V5(14, 15, 16, 1, 0));
