@@ -8,8 +8,8 @@
 using V1 = rush::Vec<1, int>;
 using V2 = rush::Vec<2, int>;
 using V3 = rush::Vec<3, int>;
-using V5 = rush::Vec<5, int, rush::HeapAllocator<5, int>>;
-using V5S = rush::Vec<5, int, rush::StaticAllocator<5, int>>;
+using V5 = rush::Vec<5, int, rush::HeapAllocator>;
+using V5S = rush::Vec<5, int, rush::StaticAllocator>;
 
 inline void requireSimilar(float a, float b, float epsilon = 0.01f) {
     REQUIRE(std::abs(a - b) < epsilon);

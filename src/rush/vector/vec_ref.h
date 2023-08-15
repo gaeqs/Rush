@@ -25,17 +25,17 @@ namespace rush {
         explicit VecRef(T... list) : references{list...} {
         }
 
-        template<typename Allocator = StaticAllocator<Size, Type>>
+        template<typename Allocator = StaticAllocator>
         operator Vec<Size, Type, Allocator>() const {
             return toVec<Allocator>();
         }
 
-        template<typename Allocator = StaticAllocator<Size, Type>>
+        template<typename Allocator = StaticAllocator>
         Vec<Size, Type, Allocator> operator*() const {
             return Vec<Size, Type, Allocator>(*this);
         }
 
-        template<typename Allocator = StaticAllocator<Size, Type>>
+        template<typename Allocator = StaticAllocator>
         Vec<Size, Type, Allocator> toVec() const {
             return Vec<Size, Type, Allocator>(*this);
         }
@@ -55,7 +55,7 @@ namespace rush {
 
             // We must transform the reference to avoid aliasing.
             // o(0, 1) = o(1, 0) will fail if this is not done.
-            Vec<Size, Type, StaticAllocator<Size, Type>> vec = ref;
+            Vec<Size, Type, StaticAllocator> vec = ref;
             for (int i = 0; i < Size; ++i) {
                 *references[i] = vec[i];
             }
@@ -68,7 +68,7 @@ namespace rush {
             return toVec<AllB>() + other;
         }
 
-        template<typename Allocator = StaticAllocator<Size, Type>>
+        template<typename Allocator = StaticAllocator>
         Vec<Size, Type, Allocator> operator+(const VecRef<Size, Type>& other) {
             return **this + *other;
         }
@@ -79,7 +79,7 @@ namespace rush {
             return toVec<AllB>() - other;
         }
 
-        template<typename Allocator = StaticAllocator<Size, Type>>
+        template<typename Allocator = StaticAllocator>
         Vec<Size, Type, Allocator> operator-(const VecRef<Size, Type>& other) {
             return **this - *other;
         }
@@ -90,7 +90,7 @@ namespace rush {
             return toVec<AllB>() * other;
         }
 
-        template<typename Allocator = StaticAllocator<Size, Type>>
+        template<typename Allocator = StaticAllocator>
         Vec<Size, Type, Allocator> operator*(const VecRef<Size, Type>& other) {
             return **this * *other;
         }
@@ -101,7 +101,7 @@ namespace rush {
             return toVec<AllB>() / other;
         }
 
-        template<typename Allocator = StaticAllocator<Size, Type>>
+        template<typename Allocator = StaticAllocator>
         Vec<Size, Type, Allocator> operator/(const VecRef<Size, Type>& other) {
             return **this / *other;
         }
@@ -112,7 +112,7 @@ namespace rush {
             return toVec<AllB>() % other;
         }
 
-        template<typename Allocator = StaticAllocator<Size, Type>>
+        template<typename Allocator = StaticAllocator>
         Vec<Size, Type, Allocator> operator%(const VecRef<Size, Type>& other) {
             return **this % *other;
         }

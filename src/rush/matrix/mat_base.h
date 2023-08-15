@@ -16,26 +16,16 @@
 namespace rush {
 
     template<size_t Columns, size_t Rows, typename Type,
-            typename Allocator = StaticAllocator<Columns, rush::Vec<Rows, Type>>>
+            typename Allocator = StaticAllocator>
     struct Mat {
 
         static_assert(Columns > 0, "Column amount cannot be zero.");
         static_assert(Rows > 0, "Row amount cannot be zero.");
 
-        static_assert(
-                std::is_same_v<typename Allocator::AllocType, rush::Vec<Rows, Type>>,
-                "Allocator type is not the same as the matrix type.");
-        static_assert(Columns == Allocator::size(),
-                      "Allocator size is not the same as the matrix size.");
-
         using Self = Mat<Columns, Rows, Type>;
         using ColumnType = rush::Vec<Rows, Type>;
 
-        template<size_t NC, size_t NR>
-        using WithSize = Mat<NC, NR, Type,
-                typename Allocator::template RawAlloc<NC, rush::Vec<NR, Type>>>;
-
-        Allocator data;
+        Allocator::template AllocatedData<Columns, rush::Vec<Rows, Type>> data;
 
         template<typename... T>
         requires (std::is_convertible_v<std::common_type_t<T...>, Type>
@@ -63,7 +53,7 @@ namespace rush {
         inline const ColumnType& column(size_t column) const;
 
         VecRef<Columns, Type> row(size_t row);
-        Vec<Columns, Type, StaticAllocator<Columns, Type>>
+        Vec<Columns, Type, StaticAllocator>
         row(size_t row) const;
 
         inline ColumnType& operator[](size_t column);
@@ -82,7 +72,7 @@ namespace rush {
                                           HasDiv<Type> &&
                                           (Columns == Rows);
 
-        WithSize<Rows, Columns> transpose() const;
+        Mat<Rows, Columns, Type, Allocator> transpose() const;
 
         Self inverse() const requires HasAdd<Type> &&
                                       HasSub<Type> &&
@@ -143,7 +133,7 @@ namespace rush {
         const requires HasSub<Type>;
 
         template<size_t OC, size_t OR, typename OAlloc = Allocator>
-        WithSize<OC, Rows>
+        Mat<OC, Rows, Type, Allocator>
         operator*(const rush::Mat<OC, OR, Type, OAlloc>& other) const requires
         (Columns == OR && HasAdd<Type> && HasMul<Type>);
 

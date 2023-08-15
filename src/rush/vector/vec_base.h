@@ -20,18 +20,12 @@ namespace rush {
 
     template<size_t Size,
             typename Type,
-            typename Allocator =
-            StaticAllocator<Size, Type>> requires (Size > 0)
+            typename Allocator = StaticAllocator> requires (Size > 0)
     struct Vec {
-
-        static_assert(std::is_same_v<typename Allocator::AllocType, Type>,
-                      "Allocator type is not the same as the vector type.");
-        static_assert(Size == Allocator::size(),
-                      "Allocator size is not the same as the vector size.");
 
         using Storage = Allocator;
 
-        Allocator data;
+        Allocator::template AllocatedData<Size, Type> data;
 
         template<typename... T>
         requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
@@ -203,7 +197,7 @@ namespace rush {
          *
          */
         template<typename Return = Type, Algorithm Algorithm = Algorithm(),
-                typename OAlloc = StaticAllocator<Size, Return>>
+                typename OAlloc = StaticAllocator>
         Vec<Size, Return, OAlloc> normalized() const requires HasMul<Return>;
 
         // UNARY

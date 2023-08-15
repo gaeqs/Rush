@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.25)
 project(rush)
 set(CMAKE_CXX_STANDARD 20)
 
-find_package(glm REQUIRED)
-
 set(RUSH_HEADERS
         src/rush/vector/vec_base.h
         src/rush/vector/vec.h
@@ -28,6 +26,4 @@ set(RUSH_HEADERS
 
 add_library(rush INTERFACE ${RUSH_HEADERS})
 include_directories(src)
-target_link_libraries(rush INTERFACE glm)
-
 add_subdirectory(tests)
