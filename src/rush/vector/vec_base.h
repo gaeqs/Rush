@@ -140,6 +140,8 @@ namespace rush {
 
         // REGION OPERATIONS
 
+        // UNARY
+
         /**
          * Returns the squared length (or squared modulus) of this vector.
          * The squared length is defined the as the sum of all
@@ -199,8 +201,6 @@ namespace rush {
         template<typename Return = Type, Algorithm Algorithm = Algorithm(),
                 typename OAlloc = StaticAllocator>
         Vec<Size, Return, OAlloc> normalized() const requires HasMul<Return>;
-
-        // UNARY
 
         inline Vec& operator+();
         inline const Vec& operator+() const;
@@ -271,6 +271,11 @@ namespace rush {
         inline Vec operator||(const Type& s) const requires HasOr<Type>;
 
         // VECTOR - VECTOR
+
+        template<typename Return = Type, Algorithm Algorithm = Algorithm(),
+                typename OAlloc>
+        Return angle(const Vec<Size, Type, OAlloc>& other);
+
         template<typename OAlloc>
         inline Vec operator+(const Vec<Size, Type, OAlloc>& other)
         const requires HasAdd<Type>;

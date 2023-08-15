@@ -588,6 +588,24 @@ namespace rush {
 
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
+    template<typename Return, Algorithm A, typename OAlloc>
+    Return
+    Vec<Size, Type, Allocator>::angle(const Vec<Size, Type, OAlloc>& other) {
+        if constexpr (A.precision == Precision::High && Size == 3) {
+            // Use atan2!
+            Return m = Return(1.0) / std::sqrt(squaredLength()
+                                               * other.squaredLength());
+            Return c = dot(other) * m;
+            Return s = cross(other).length() * m;
+            return std::atan2(s, c);
+        }
+
+        Return inv = std::sqrt(squaredLength() * other.squaredLength());
+        return std::acos(dot(other) / inv);
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
     template<typename OAlloc>
     Vec<Size, Type, Allocator>
     Vec<Size, Type, Allocator>::operator+(

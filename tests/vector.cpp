@@ -1,5 +1,6 @@
 #include <iostream>
 #include <unordered_set>
+#include <numbers>
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/benchmark/catch_benchmark.hpp>
@@ -8,6 +9,7 @@
 using V1 = rush::Vec<1, int>;
 using V2 = rush::Vec<2, int>;
 using V3 = rush::Vec<3, int>;
+using V4 = rush::Vec<4, int>;
 using V5 = rush::Vec<5, int, rush::HeapAllocator>;
 using V5S = rush::Vec<5, int, rush::StaticAllocator>;
 
@@ -223,4 +225,36 @@ TEST_CASE("Vector normalization (double)", "[vector]") {
     requireSimilar(normalizedHighIntrinsics.length(), 1.0);
     requireSimilar(normalizedLowIntrinsics.length(), 1.0);
     requireSimilar(normalizedLowGeneral.length(), 1.0);
+}
+
+TEST_CASE("Vector angle (3D)", "[vector]") {
+    constexpr double ANGLE = 45.0 * std::numbers::pi / 180.0;
+
+    V3 o = {1, 1, 0};
+    V3 p = {1, 0, 0};
+    auto angleHighIntrinsics = o.angle<double, rush::HIGH_INTRINSICS>(p);
+    auto angleHighGeneral = o.angle<double, rush::HIGH_GENERAL>(p);
+    auto angleLowIntrinsics = o.angle<double, rush::LOW_INTRINSICS>(p);
+    auto angleLowGeneral = o.angle<double, rush::LOW_GENERAL>(p);
+
+    requireSimilar(angleHighIntrinsics, ANGLE);
+    requireSimilar(angleHighGeneral, ANGLE);
+    requireSimilar(angleLowIntrinsics, ANGLE);
+    requireSimilar(angleLowGeneral, ANGLE);
+}
+
+TEST_CASE("Vector angle (4D)", "[vector]") {
+    constexpr double ANGLE = 35.26438 * std::numbers::pi / 180.0;
+
+    V4 o = {1, 1, 0, 1};
+    V4 p = {1, 0, 0, 1};
+    auto angleHighIntrinsics = o.angle<double, rush::HIGH_INTRINSICS>(p);
+    auto angleHighGeneral = o.angle<double, rush::HIGH_GENERAL>(p);
+    auto angleLowIntrinsics = o.angle<double, rush::LOW_INTRINSICS>(p);
+    auto angleLowGeneral = o.angle<double, rush::LOW_GENERAL>(p);
+
+    requireSimilar(angleHighIntrinsics, ANGLE);
+    requireSimilar(angleHighGeneral, ANGLE);
+    requireSimilar(angleLowIntrinsics, ANGLE);
+    requireSimilar(angleLowGeneral, ANGLE);
 }
