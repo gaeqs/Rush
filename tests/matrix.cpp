@@ -1,7 +1,7 @@
 #include <unordered_set>
-
-#include <catch2/catch_test_macros.hpp>
 #include <rush/matrix/mat.h>
+
+#include "test_common.h"
 
 using V1 = rush::Vec<1, int>;
 using V2 = rush::Vec<2, int>;
@@ -19,19 +19,6 @@ const Mat4f randomMatrix{8.1f, 1.3f, 9.0f, 8.3f,
                          6.3f, 3.0f, 0.9f, 5.4f,
                          2.7f, 1.8f, 5.4f, 9.9f};
 
-inline void requireSimilar(float a, float b) {
-    REQUIRE(std::abs(a - b) < 0.01f);
-}
-
-template<size_t C, size_t R, typename Type>
-inline void requireSimilar(rush::Mat<C, R, Type> a, rush::Mat<C, R, Type> b) {
-    for (int c = 0; c < C; ++c) {
-        for (int r = 0; r < R; ++r) {
-            requireSimilar(a(c, r), b(c, r));
-        }
-    }
-}
-
 TEST_CASE("Matrix creation", "[matrix]") {
     REQUIRE_NOTHROW(Mat3());
     REQUIRE_NOTHROW(Mat3(1));
@@ -44,6 +31,11 @@ TEST_CASE("Matrix creation", "[matrix]") {
 
     REQUIRE(Mat3([](size_t c, size_t r) { return static_cast<int>(r + c * 3); })
             == Mat3(0, 1, 2, 3, 4, 5, 6, 7, 8));
+
+    Mat2 mat(0, 1, 2, 3);
+    REQUIRE(Mat3(mat, 1) == Mat3(0, 1, 0, 2, 3, 0, 0, 0, 1));
+    REQUIRE(rush::Mat<3, 2, int>(mat, 1) ==
+            rush::Mat<3, 2, int>(0, 1, 2, 3, 0, 0));
 }
 
 TEST_CASE("Matrix accessors", "[matrix]") {

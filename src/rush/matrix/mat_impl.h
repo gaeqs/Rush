@@ -49,6 +49,19 @@ namespace rush {
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<size_t OColumns, size_t ORows, typename OAlloc>
+    requires(Columns > OColumns || Rows > ORows)
+    Mat<Columns, Rows, Type, Allocator>::Mat(
+            const Mat<OColumns, ORows, Type, OAlloc>& other, Type diagonal) :
+            Mat<Columns, Rows, Type, Allocator>(diagonal) {
+        for (size_t c = 0; c < std::min(Columns, OColumns); ++c) {
+            for (size_t r = 0; r < std::min(Rows, ORows); ++r) {
+                data[c][r] = other.data[c][r];
+            }
+        }
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     constexpr size_t Mat<Columns, Rows, Type, Allocator>::size() const {
         return Columns * Rows;
     }

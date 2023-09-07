@@ -41,6 +41,11 @@ namespace rush {
         explicit Mat(std::function<Type(size_t, size_t, size_t, size_t)>
                      populator);
 
+        template<size_t OColumns, size_t ORows, typename OAlloc>
+        requires(Columns > OColumns || Rows > ORows)
+        explicit Mat(const Mat<OColumns, ORows, Type, OAlloc>& other,
+                     Type diagonal);
+
         constexpr size_t size() const;
 
         inline const Type* toPointer() const;

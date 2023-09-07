@@ -171,7 +171,7 @@ namespace rush {
     template<typename Return>
     Return Vec<Size, Type, Allocator>::length() const requires (
     std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>) {
-        return std::sqrt(squaredLength());
+        return static_cast<Return>(std::sqrt(squaredLength()));
     }
 
     template<size_t Size, typename Type, typename Allocator>
