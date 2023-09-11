@@ -189,9 +189,10 @@ namespace rush {
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     Mat<Rows, Columns, Type, Allocator>
     Mat<Columns, Rows, Type, Allocator>::transpose() const {
-        return Mat<Rows, Columns, Type, Allocator>([this](size_t c, size_t r) {
-            return operator()(r, c);
-        });
+        return Mat<Rows, Columns, Type, Allocator>
+                ([this](size_t c, size_t r) {
+                    return operator()(r, c);
+                });
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
@@ -627,6 +628,66 @@ namespace rush {
         return data.crend();
     }
 
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::translate(
+            const rush::Vec<3, Type>& t) requires (Columns == 4 && Rows == 4) {
+        Type o = Type(1);
+        Type z = Type(0);
+        return Mat(
+                o, z, z, t[0],
+                z, o, z, t[1],
+                z, z, o, t[2],
+                z, z, z, o
+        );
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::rotationX(Type radians) requires (
+    Columns == 4 && Rows == 4) {
+        Type c = std::cos(radians);
+        Type s = std::sin(radians);
+        Type o = Type(1);
+        Type z = Type(0);
+        return Mat(
+                o, z, z, z,
+                z, c, s, z,
+                z, -s, c, z,
+                z, z, z, o
+        );
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::rotationY(Type radians) requires (
+    Columns == 4 && Rows == 4) {
+        Type c = std::cos(radians);
+        Type s = std::sin(radians);
+        Type o = Type(1);
+        Type z = Type(0);
+        return Mat(
+                c, z, -s, z,
+                z, o, z, z,
+                s, z, c, o
+        );
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::rotationZ(Type radians) requires (
+    Columns == 4 && Rows == 4) {
+        Type c = std::cos(radians);
+        Type s = std::sin(radians);
+        Type o = Type(1);
+        Type z = Type(0);
+        return Mat(
+                c, s, z, z,
+                -s, c, z, z,
+                z, z, o, z,
+                z, z, z, o
+        );
+    }
 
 }
 

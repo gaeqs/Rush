@@ -165,6 +165,22 @@ namespace rush {
 
         // ENDREGION
 
+        // REGION STATIC CREATION
+
+        inline static Mat
+        translate(const rush::Vec<3, Type>& t) requires (Columns == 4 && Rows == 4);
+
+        inline static Mat
+        rotationX(Type radians) requires (Columns == 4 && Rows == 4);
+
+        inline static Mat
+        rotationY(Type radians) requires (Columns == 4 && Rows == 4);
+
+        inline static Mat
+        rotationZ(Type radians) requires (Columns == 4 && Rows == 4);
+
+        // ENDREGION
+
     };
 
 }

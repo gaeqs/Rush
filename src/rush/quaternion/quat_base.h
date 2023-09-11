@@ -239,6 +239,19 @@ namespace rush {
 
         // ENDREGION
 
+        // REGION ITERATOR
+
+        inline auto begin();
+        inline auto end();
+        inline auto cbegin() const;
+        inline auto cend() const;
+        inline auto rbegin();
+        inline auto rend();
+        inline auto crbegin() const;
+        inline auto crend() const;
+
+        // ENDREGION
+
         // REGION STATIC CREATION
 
         inline static Quat angleAxis(Type angle, const Vec<3, Type>& axis);
@@ -253,19 +266,6 @@ namespace rush {
 
         inline static Quat
         fromTo(const Vec<3, Type>& from, const Vec<3, Type>& to);
-
-        // ENDREGION
-
-        // REGION ITERATOR
-
-        inline auto begin();
-        inline auto end();
-        inline auto cbegin() const;
-        inline auto cend() const;
-        inline auto rbegin();
-        inline auto rend();
-        inline auto crbegin() const;
-        inline auto crend() const;
 
         // ENDREGION
 
