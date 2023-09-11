@@ -258,7 +258,7 @@ namespace rush {
 
         /**
          * Creates a quaternion that reproduces the rotation
-         * defined by the given euler angles (in ZYX order).
+         * defined by the given euler angles.
          * @param angles the angles (pitch, yaw, roll)
          * @return the quaternion.
          */

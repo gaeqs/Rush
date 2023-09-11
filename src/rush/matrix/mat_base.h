@@ -201,22 +201,63 @@ namespace rush {
 
         // REGION STATIC CREATION
 
+        /**
+         * Creates a translation matrix that moves
+         * points the given amount of units.
+         * @param t the amount of units.
+         * @return the translation matrix.
+         */
         inline static Mat
         translate(const rush::Vec<3, Type>& t) requires (
         Columns == 4 && Rows == 4);
 
+        /**
+         * Creates a scale matrix that scales
+         * points the given amount of units.
+         * @param s the given mount of units.
+         * @return the scale matrix.
+         */
         inline static Mat
         scale(const rush::Vec<3, Type>& s) requires (Columns == 4 && Rows == 4);
 
+        /**
+         * Creates a rotation matrix that rotates
+         * points the given amount of radians in the
+         * X axis.
+         * @param radians the angle.
+         * @return the rotation matrix.
+         */
         inline static Mat
         rotationX(Type radians) requires (Columns == 4 && Rows == 4);
 
+        /**
+         * Creates a rotation matrix that rotates
+         * points the given amount of radians in the
+         * Y axis.
+         * @param radians the angle.
+         * @return the rotation matrix.
+         */
         inline static Mat
         rotationY(Type radians) requires (Columns == 4 && Rows == 4);
 
+        /**
+         * Creates a rotation matrix that rotates
+         * points the given amount of radians in the
+         * X axis.
+         * @param radians the angle.
+         * @return the rotation matrix.
+         */
         inline static Mat
         rotationZ(Type radians) requires (Columns == 4 && Rows == 4);
 
+        /**
+         * Creates a model matrix that transforms points
+         * using the given scale, rotation and translation.
+         * @param s the scale.
+         * @param r the rotation.
+         * @param t the translation.
+         * @return the model matrix.
+         */
         inline static Mat
         model(const rush::Vec<3, Type>& s,
               const rush::Quat<Type>& r,

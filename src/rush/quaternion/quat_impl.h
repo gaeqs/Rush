@@ -10,7 +10,7 @@
 namespace rush {
 
     template<typename Type>
-    Quat<Type>::Quat() : s(Type(0)), x(Type(1)), y(Type(0)), z(Type(0)) {
+    Quat<Type>::Quat() : s(Type(1)), x(Type(0)), y(Type(0)), z(Type(0)) {
     }
 
     template<typename Type>

@@ -236,8 +236,15 @@ TEST_CASE("Matrix rotation Z", "[matrix]") {
 }
 
 TEST_CASE("Matrix model", "[matrix]") {
-    Mat4f m = Mat4f::model({1.0f, 1.0f, 1.0f},
-                           rush::Quat<float>(),
-                           {0.0f, 1.0f, 0.0f});
-    std::cout << m << std::endl;
+    auto s = Mat4f::scale({2.0f, -1.0f, 3.0f});
+    auto rX = Mat4f::rotationX(1.0f);
+    auto rY = Mat4f::rotationY(0.2f);
+    auto rZ = Mat4f::rotationZ(2.0f);
+    auto t = Mat4f::translate({10.0f, 50.0f, -20.0f});
+    Mat4f m1 = t * rZ * rY * rX * s;
+
+    Mat4f m2 = Mat4f::model({2.0f, -1.0f, 3.0f},
+                           rush::Quat<float>::euler({1.0f, 0.2f, 2.0f}),
+                           {10.0f, 50.0f, -20.0f});
+    requireSimilar(m1, m2);
 }
