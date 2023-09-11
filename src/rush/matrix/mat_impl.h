@@ -532,6 +532,19 @@ namespace rush {
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     template<typename OAlloc>
+    Vec<Columns, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::operator*(
+            const Vec<Columns, Type, OAlloc>& other) const requires
+    (HasAdd<Type> && HasMul<Type>) {
+        auto transposed = transpose();
+        return Vec<Columns, Type, Allocator>([&](size_t r) {
+            return transposed.column(r) % other;
+        });
+
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<typename OAlloc>
     Mat<Columns, Rows, Type, Allocator>
     Mat<Columns, Rows, Type, Allocator>::operator+(
             const Mat<Columns, Rows, Type, OAlloc>& other) const requires
@@ -635,9 +648,23 @@ namespace rush {
         Type o = Type(1);
         Type z = Type(0);
         return Mat(
-                o, z, z, t[0],
-                z, o, z, t[1],
-                z, z, o, t[2],
+                o, z, z, z,
+                z, o, z, z,
+                z, z, o, z,
+                t[0], t[1], t[2], o
+        );
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::scale(
+            const rush::Vec<3, Type>& s) requires (Columns == 4 && Rows == 4) {
+        Type o = Type(1);
+        Type z = Type(0);
+        return Mat(
+                s[0], z, z, z,
+                z, s[1], z, z,
+                z, z, s[2], z,
                 z, z, z, o
         );
     }
@@ -669,7 +696,8 @@ namespace rush {
         return Mat(
                 c, z, -s, z,
                 z, o, z, z,
-                s, z, c, o
+                s, z, c, z,
+                z, z, z, o
         );
     }
 

@@ -55,16 +55,20 @@ namespace rush {
         // REGION ACCESSORS
 
         inline ColumnType& column(size_t column);
+
         inline const ColumnType& column(size_t column) const;
 
         VecRef<Columns, Type> row(size_t row);
+
         Vec<Columns, Type, StaticAllocator>
         row(size_t row) const;
 
         inline ColumnType& operator[](size_t column);
+
         inline const ColumnType& operator[](size_t column) const;
 
         inline Type& operator()(size_t column, size_t row);
+
         inline const Type& operator()(size_t column, size_t row) const;
 
         // REGION OPERATORS
@@ -87,20 +91,30 @@ namespace rush {
                                       (Columns < 5);
 
         inline Self& operator+();
+
         inline Self& operator+() const;
+
         inline Self operator-() const requires HasSub<Type>;
 
 
         // ASSIGN MATRIX - SCALE
 
         inline Self& operator+=(const Type& s) requires HasAdd<Type>;
+
         inline Self& operator-=(const Type& s) requires HasSub<Type>;
+
         inline Self& operator*=(const Type& s) requires HasMul<Type>;
+
         inline Self& operator/=(const Type& s) requires HasDiv<Type>;
+
         inline Self& operator<<=(const Type& s) requires HasShl<Type>;
+
         inline Self& operator>>=(const Type& s) requires HasShr<Type>;
+
         inline Self& operator&=(const Type& s) requires HasBitAnd<Type>;
+
         inline Self& operator|=(const Type& s) requires HasBitOr<Type>;
+
         inline Self& operator^=(const Type& s) requires HasBitXor<Type>;
 
         // ASSIGN VECTOR - VECTOR
@@ -116,16 +130,33 @@ namespace rush {
         // MATRIX - SCALE
 
         inline Self operator+(const Type& s) const requires HasAdd<Type>;
+
         inline Self operator-(const Type& s) const requires HasSub<Type>;
+
         inline Self operator*(const Type& s) const requires HasMul<Type>;
+
         inline Self operator/(const Type& s) const requires HasDiv<Type>;
+
         inline Self operator<<(const Type& s) const requires HasShl<Type>;
+
         inline Self operator>>(const Type& s) const requires HasShr<Type>;
+
         inline Self operator&(const Type& s) const requires HasBitAnd<Type>;
+
         inline Self operator|(const Type& s) const requires HasBitOr<Type>;
+
         inline Self operator^(const Type& s) const requires HasBitXor<Type>;
+
         inline Self operator&&(const Type& s) const requires HasAnd<Type>;
+
         inline Self operator||(const Type& s) const requires HasOr<Type>;
+
+        // MATRIX - VECTOR
+
+        template<typename OAlloc = Allocator>
+        Vec<Columns, Type, Allocator>
+        operator*(const rush::Vec<Columns, Type, OAlloc>& other) const requires
+        (HasAdd<Type> && HasMul<Type>);
 
         // MATRIX - MATRIX
 
@@ -168,7 +199,11 @@ namespace rush {
         // REGION STATIC CREATION
 
         inline static Mat
-        translate(const rush::Vec<3, Type>& t) requires (Columns == 4 && Rows == 4);
+        translate(const rush::Vec<3, Type>& t) requires (
+        Columns == 4 && Rows == 4);
+
+        inline static Mat
+        scale(const rush::Vec<3, Type>& s) requires (Columns == 4 && Rows == 4);
 
         inline static Mat
         rotationX(Type radians) requires (Columns == 4 && Rows == 4);

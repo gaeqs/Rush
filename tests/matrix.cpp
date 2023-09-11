@@ -1,4 +1,4 @@
-#include <unordered_set>
+#include <numbers>
 #include <rush/matrix/mat.h>
 
 #include "test_common.h"
@@ -6,7 +6,9 @@
 using V1 = rush::Vec<1, int>;
 using V2 = rush::Vec<2, int>;
 using V3 = rush::Vec<3, int>;
+using V4 = rush::Vec<4, int>;
 using V5 = rush::Vec<5, int>;
+using V4f = rush::Vec<4, float>;
 using Mat2 = rush::Mat<2, 2, int>;
 using Mat3 = rush::Mat<3, 3, int>;
 using Mat4 = rush::Mat<4, 4, int>;
@@ -52,7 +54,7 @@ TEST_CASE("Matrix multiplication", "[matrix]") {
     REQUIRE(a * b == r);
 }
 
-TEST_CASE("Matrix - scale operations (float)", "[matrix]") {
+TEST_CASE("Matrix - scalar operations (float)", "[matrix]") {
     rush::Mat<2, 2, float> a(1.0f, 2.0f, 3.0f, 4.0f);
     float b = 2.0f;
 
@@ -80,7 +82,7 @@ TEST_CASE("Matrix - scale operations (float)", "[matrix]") {
     }
 }
 
-TEST_CASE("Matrix - scale operations (int)", "[matrix]") {
+TEST_CASE("Matrix - scalar operations (int)", "[matrix]") {
     rush::Mat<2, 2, int> a(1, 2, 3, 4);
     int b = 2;
 
@@ -113,7 +115,7 @@ TEST_CASE("Matrix - scale operations (int)", "[matrix]") {
     }
 }
 
-TEST_CASE("Matrix - scale operations (bool)", "[matrix]") {
+TEST_CASE("Matrix - scalar operations (bool)", "[matrix]") {
     rush::Mat<2, 2, bool> a(false, false, true, true);
 
     SECTION("Shift and") {
@@ -180,4 +182,55 @@ TEST_CASE("Matrix inverse", "[matrix]") {
     for (size_t i = 0; i < 4; i++) {
         requireSimilar(identity(i, i), 1.0f);
     }
+}
+
+TEST_CASE("Matrix translation", "[matrix]") {
+    V4f vec = {10.0f, 20.0f, 30.0f, 1.0f};
+    Mat4f trans = Mat4f::translate({-10.0f, -5.0f, 1.0f});
+    requireSimilar(trans * vec, {0.0f, 15.0f, 31.0f, 1.0f});
+    requireSimilar(trans.inverse(), Mat4f::translate({10.0f, 5.0f, -1.0f}));
+}
+
+TEST_CASE("Matrix scale", "[matrix]") {
+    Mat4f scale = Mat4f::scale({1.0f, 2.0f, 1.0f});
+    V4f vec = {10.0f, 20.0f, 30.0f, 1.0f};
+    requireSimilar(scale * vec, {10.0f, 40.0f, 30.0f, 1.0f});
+    requireSimilar(scale, {1.0f, 0.0f, 0.0f, 0.0f,
+                           0.0f, 2.0f, 0.0f, 0.0f,
+                           0.0f, 0.0f, 1.0f, 0.0f,
+                           0.0f, 0.0f, 0.0f, 1.0f});
+    requireSimilar(scale.inverse(), Mat4f::scale({1.0f, 0.5f, 1.0f}));
+}
+
+TEST_CASE("Matrix rotation X", "[matrix]") {
+    V4f vec = {0.0f, 1.0f, 0.0f, 1.0f};
+    Mat4f rotX = Mat4f::rotationX(std::numbers::pi_v<float> / 2.0f);
+    requireSimilar(rotX * vec, {0.0f, 0.0f, 1.0f, 1.0f});
+    requireSimilar(rotX.inverse(), rotX.transpose());
+    requireSimilar(rotX.inverse(),
+                   Mat4f::rotationX(std::numbers::pi_v<float> / -2.0f));
+    requireSimilar(rotX * rotX * rotX * rotX * vec, vec);
+    requireSimilar((rotX * rotX) * (rotX * rotX * vec), vec);
+}
+
+TEST_CASE("Matrix rotation Y", "[matrix]") {
+    V4f vec = {1.0f, 0.0f, 0.0f, 1.0f};
+    Mat4f rotY = Mat4f::rotationY(std::numbers::pi_v<float> / 2.0f);
+    requireSimilar(rotY * vec, {0.0f, 0.0f, -1.0f, 1.0f});
+    requireSimilar(rotY.inverse(), rotY.transpose());
+    requireSimilar(rotY.inverse(),
+                   Mat4f::rotationY(std::numbers::pi_v<float> / -2.0f));
+    requireSimilar(rotY * rotY * rotY * rotY * vec, vec);
+    requireSimilar((rotY * rotY) * (rotY * rotY * vec), vec);
+}
+
+TEST_CASE("Matrix rotation Z", "[matrix]") {
+    V4f vec = {1.0f, 0.0f, 0.0f, 1.0f};
+    Mat4f rotZ = Mat4f::rotationZ(std::numbers::pi_v<float> / 2.0f);
+    requireSimilar(rotZ * vec, {0.0f, 1.0f, 0.0f, 1.0f});
+    requireSimilar(rotZ.inverse(), rotZ.transpose());
+    requireSimilar(rotZ.inverse(),
+                   Mat4f::rotationZ(std::numbers::pi_v<float> / -2.0f));
+    requireSimilar(rotZ * rotZ * rotZ * rotZ * vec, vec);
+    requireSimilar((rotZ * rotZ) * (rotZ * rotZ * vec), vec);
 }
