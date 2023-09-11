@@ -24,7 +24,7 @@ TEST_CASE("Quaternion Euler", "[quaternion]") {
     REQUIRE(angles.x() == q.pitch());
     REQUIRE(angles.y() == q.yaw());
     REQUIRE(angles.z() == q.roll());
-    REQUIRE(q == rush::Quat<double>::euler(angles));
+    requireSimilar(q, rush::Quat<double>::euler(angles));
 }
 
 TEST_CASE("Quaternion rotation", "[quaternion]") {

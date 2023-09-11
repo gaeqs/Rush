@@ -111,8 +111,8 @@ namespace rush {
     Type Quat<Type>::pitch() const {
         Type rY = Type(2) * (y * z + s * x);
         Type rX = s * s - x * x - y * y + z * z;
-        if (rY < FLT_EPSILON && rY > -FLT_EPSILON &&
-            rX < FLT_EPSILON && rY > -FLT_EPSILON)
+        if (rY < EPSILON && rY > -EPSILON &&
+            rX < EPSILON && rY > -EPSILON)
             return Type(2) * std::atan2(x, s);
         return std::atan2(rY, rX);
     }
@@ -127,8 +127,8 @@ namespace rush {
     Type Quat<Type>::roll() const {
         Type rY = Type(2) * (x * y + s * z);
         Type rX = s * s + x * x - y * y - z * z;
-        if (rY < FLT_EPSILON && rY > -FLT_EPSILON &&
-            rX < FLT_EPSILON && rY > -FLT_EPSILON)
+        if (rY < EPSILON && rY > -EPSILON &&
+            rX < EPSILON && rY > -EPSILON)
             return Type(0);
         return std::atan2(rY, rX);
     }

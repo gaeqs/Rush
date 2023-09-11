@@ -19,6 +19,8 @@ constexpr bool IntrinsicsAvailable = false;
 
 #endif
 
+constexpr float EPSILON = 0.0001f;
+
 namespace rush {
 
     enum class Precision {
