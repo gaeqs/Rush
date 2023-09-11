@@ -5,6 +5,8 @@
 #ifndef RUSH_MAT_IMPL_H
 #define RUSH_MAT_IMPL_H
 
+#include <rush/quaternion/quat.h>
+
 namespace rush {
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
@@ -715,6 +717,17 @@ namespace rush {
                 z, z, o, z,
                 z, z, z, o
         );
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::model(const Vec<3, Type>& s,
+                                               const Quat<Type>& r,
+                                               const Vec<3, Type>& t) requires (
+    Columns == 4 && Rows == 4) {
+        Mat sr = r.rotationMatrix4() * scale(s);
+        sr.column(3)(0, 1, 2) = t;
+        return sr;
     }
 
 }

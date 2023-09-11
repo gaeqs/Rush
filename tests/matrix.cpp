@@ -234,3 +234,10 @@ TEST_CASE("Matrix rotation Z", "[matrix]") {
     requireSimilar(rotZ * rotZ * rotZ * rotZ * vec, vec);
     requireSimilar((rotZ * rotZ) * (rotZ * rotZ * vec), vec);
 }
+
+TEST_CASE("Matrix model", "[matrix]") {
+    Mat4f m = Mat4f::model({1.0f, 1.0f, 1.0f},
+                           rush::Quat<float>(),
+                           {0.0f, 1.0f, 0.0f});
+    std::cout << m << std::endl;
+}

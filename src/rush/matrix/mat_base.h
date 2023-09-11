@@ -15,6 +15,9 @@
 
 namespace rush {
 
+    template<typename Type>
+    struct Quat;
+
     template<size_t Columns, size_t Rows, typename Type,
             typename Allocator = StaticAllocator>
     struct Mat {
@@ -213,6 +216,12 @@ namespace rush {
 
         inline static Mat
         rotationZ(Type radians) requires (Columns == 4 && Rows == 4);
+
+        inline static Mat
+        model(const rush::Vec<3, Type>& s,
+              const rush::Quat<Type>& r,
+              const rush::Vec<3, Type>& t) requires (
+        Columns == 4 && Rows == 4);
 
         // ENDREGION
 
