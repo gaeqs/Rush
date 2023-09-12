@@ -730,6 +730,176 @@ namespace rush {
         return sr;
     }
 
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<Hand H>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::lookAt(
+            const Vec<3, Type>& origin,
+            const Vec<3, Type>& direction,
+            const Vec<3, Type>& up) requires (Columns == 4 && Rows == 4) {
+        Vec<3, Type> f = direction.normalized();
+        Vec<3, Type> s = up.cross(f).normalized();
+        Vec<3, Type> u = f.cross(s);
+
+        Mat m(Type(1));
+        m(0, 0) = s[0];
+        m(1, 0) = s[1];
+        m(2, 0) = s[2];
+        m(0, 1) = u[0];
+        m(1, 1) = u[1];
+        m(2, 1) = u[2];
+
+        if constexpr (H == Hand::Left) {
+            m(0, 2) = f[0];
+            m(1, 2) = f[1];
+            m(2, 2) = f[2];
+            m(3, 0) = -s.dot(origin);
+            m(3, 1) = -u.dot(origin);
+            m(3, 2) = -f.dot(origin);
+        } else {
+            m(0, 2) = -f[0];
+            m(1, 2) = -f[1];
+            m(2, 2) = -f[2];
+            m(3, 0) = -s.dot(origin);
+            m(3, 1) = -u.dot(origin);
+            m(3, 2) = f.dot(origin);
+        }
+        return m;
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<Hand Hand, ProjectionFormat Format>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::frustum(
+            Type left, Type right,
+            Type bottom, Type top,
+            Type near, Type far) requires (Columns == 4 && Rows == 4) {
+        Mat m = Mat();
+        m(0, 0) = Type(2) * near / (right - left);
+        m(1, 1) = Type(2) * near / (top - bottom);
+
+        if constexpr (Format == ProjectionFormat::DirectX) {
+            if constexpr (Hand == Hand::Left) {
+                m(2, 0) = -(right + left) / (right - left);
+                m(2, 1) = -(top + bottom) / (top - bottom);
+                m(2, 2) = far / (far - near);
+                m(2, 3) = Type(1);
+                m(3, 2) = -far * near / (far - near);
+            } else {
+                m(2, 0) = (right + left) / (right - left);
+                m(2, 1) = (top + bottom) / (top - bottom);
+                m(2, 2) = far / (far - near);
+                m(2, 3) = -Type(1);
+                m(3, 2) = -far * near / (far - near);
+            }
+        } else {
+            if constexpr (Hand == Hand::Left) {
+                m(2, 0) = -(right + left) / (right - left);
+                m(2, 1) = -(top + bottom) / (top - bottom);
+                m(2, 2) = (far + near) / (far - near);
+                m(2, 3) = Type(1);
+                m(3, 2) = -Type(2) * far * near / (far - near);
+            } else {
+                m(2, 0) = (right + left) / (right - left);
+                m(2, 1) = (top + bottom) / (top - bottom);
+                m(2, 2) = -(far + near) / (far - near);
+                m(2, 3) = -Type(1);
+                m(3, 2) = -Type(2) * far * near / (far - near);
+            }
+        }
+
+        if constexpr (Format == ProjectionFormat::Vulkan) {
+            m(1, 1) *= -1;
+        }
+
+        return m;
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<Hand Hand, ProjectionFormat Format>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::orthogonal(
+            Type left, Type right,
+            Type bottom, Type top,
+            Type near, Type far) requires (Columns == 4 && Rows == 4) {
+
+        Mat m = Mat(Type(1));
+        m(0, 0) = Type(2) / (right - left);
+        m(1, 1) = Type(2) / (top - bottom);
+
+        if constexpr (Format == ProjectionFormat::DirectX) {
+            if constexpr (Hand == Hand::Left) {
+                m(2, 2) = Type(1) / (far - near);
+                m(3, 0) = -(right + left) / (right - left);
+                m(3, 1) = -(top + bottom) / (top - bottom);
+                m(3, 2) = -near / (far - near);
+            } else {
+                m(2, 2) = -Type(1) / (far - near);
+                m(3, 0) = -(right + left) / (right - left);
+                m(3, 1) = -(top + bottom) / (top - bottom);
+                m(3, 2) = -near / (far - near);
+            }
+        } else {
+            if constexpr (Hand == Hand::Left) {
+                m(2, 2) = Type(2) / (far - near);
+                m(3, 0) = -(right + left) / (right - left);
+                m(3, 1) = -(top + bottom) / (top - bottom);
+                m(3, 2) = -(far + near) / (far - near);
+            } else {
+                m(2, 2) = -Type(2) / (far - near);
+                m(3, 0) = -(right + left) / (right - left);
+                m(3, 1) = -(top + bottom) / (top - bottom);
+                m(3, 2) = -(far + near) / (far - near);
+            }
+        }
+
+        if constexpr (Format == ProjectionFormat::Vulkan) {
+            m(1, 1) *= -1;
+        }
+
+        return m;
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<Hand Hand, ProjectionFormat Format>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::perspective(Type fovY,
+                                                     Type aspectRatio,
+                                                     Type near,
+                                                     Type far) requires (
+    Columns == 4 && Rows == 4) {
+        Type top = std::tan(fovY / Type(2)) * near;
+        Type right = top * aspectRatio;
+        return frustum(-right, right, -top, top, near, far);
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<Hand Hand>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::infinitePerspective(
+            Type fovY, Type aspectRatio, Type near) requires (
+    Columns == 4 && Rows == 4) {
+        Type top = std::tan(fovY / Type(2)) * near;
+        Type right = top * aspectRatio;
+
+        Mat m = Mat();
+        m(0, 0) = near / right;
+        m(1, 1) = near / top;
+
+        m(3, 2) = -Type(2) * near;
+
+        if constexpr (Hand == Hand::Left) {
+            m(2, 2) = Type(1);
+            m(2, 3) = Type(1);
+        } else {
+            m(2, 2) = -Type(1);
+            m(2, 3) = -Type(1);
+        }
+
+        return m;
+    }
+
 }
 
 #endif //RUSH_MAT_IMPL_H

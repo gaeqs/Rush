@@ -48,6 +48,24 @@ namespace rush {
     constexpr Algorithm LOW_INTRINSICS = Algorithm(Precision::Low);
     constexpr Algorithm LOW_GENERAL = Algorithm(Precision::Low, Mode::General);
 
+    /**
+     * Enum used to specify whether an algorithm should use
+     * a left-handed or right-handed coordinate system.
+     */
+    enum class Hand {
+        Right,
+        Left
+    };
+
+    /**
+     * Enum used to specify the projection matrix format.
+     */
+    enum class ProjectionFormat {
+        OpenGL,
+        Vulkan,
+        DirectX
+    };
+
 }
 
 #endif //RUSH_QUALITY_H

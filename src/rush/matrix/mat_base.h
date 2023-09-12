@@ -11,6 +11,7 @@
 #include <string>
 #include <stdexcept>
 
+#include <rush/algorithm.h>
 #include <rush/vector/vec.h>
 
 namespace rush {
@@ -264,10 +265,51 @@ namespace rush {
               const rush::Vec<3, Type>& t) requires (
         Columns == 4 && Rows == 4);
 
+        /**
+         * Creates a view matrix for a camera that at
+         * the given origin that is looking at the given
+         * direction.
+         * @tparam Hand whether the algorithm should be right-handed or left-handed.
+         * @param origin the position of the camera.
+         * @param direction the direction the camera is looking at.
+         * @param up the up vector of the camera.
+         * @return the view matrix.
+         */
+        template<Hand Hand = Hand::Right>
+        inline static Mat lookAt(
+                const rush::Vec<3, Type>& origin,
+                const rush::Vec<3, Type>& direction,
+                const rush::Vec<3, Type>& up) requires (
+        Columns == 4 && Rows == 4);
+
+        template<Hand Hand = Hand::Right,
+                ProjectionFormat Format = ProjectionFormat::OpenGL>
+        inline static Mat frustum(Type left, Type right,
+                                  Type bottom, Type top,
+                                  Type near, Type far) requires (
+        Columns == 4 && Rows == 4);
+
+        template<Hand Hand = Hand::Right,
+                ProjectionFormat Format = ProjectionFormat::OpenGL>
+        inline static Mat orthogonal(Type left, Type right,
+                                  Type bottom, Type top,
+                                  Type near, Type far) requires (
+        Columns == 4 && Rows == 4);
+
+        template<Hand Hand = Hand::Right,
+                ProjectionFormat Format = ProjectionFormat::OpenGL>
+        inline static Mat perspective(Type fovY, Type aspectRatio,
+                                      Type near, Type far) requires (
+        Columns == 4 && Rows == 4);
+
+        template<Hand Hand = Hand::Right>
+        inline static Mat infinitePerspective(Type fovY, Type aspectRatio,
+                                              Type near) requires (
+        Columns == 4 && Rows == 4);
+
         // ENDREGION
 
     };
-
 }
 
 #include <rush/matrix/mat_impl.h>
