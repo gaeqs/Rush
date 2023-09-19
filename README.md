@@ -57,3 +57,38 @@ Just like vectors, _Rush_ can create matrices of any type and size.
 Depending on the matrix's type, _Rush_ can perform operations
 such as additions, matrix multiplications or iterations.
 Matrices are stored in colum-major format.
+
+```c++
+rush::Mat<2, 3, float> mat1 = {1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f};
+
+//        | 1.0 4.0 |
+// mat1 = | 2.0 5.0 |
+//        | 3.0 6.0 |
+
+float a = mat1(1, 2); // 6.0
+
+rush::Vec<3, float> col = mat1[0]; // {1.0, 2.0, 3.0}
+rush::Vec<2, float> row = mat1.row(0); // {1.0, 4.0}
+
+mat1.row(0) = col(2, 1);
+
+//        | 3.0 2.0 |
+// mat1 = | 2.0 5.0 |
+//        | 3.0 6.0 |
+
+rush::Mat<3, 3, float> squared([](size_t c, size_t r) {
+    return float(c * 3 + r + 1);
+});
+
+//           | 1.0 4.0 7.0 |
+// squared = | 2.0 5.0 8.0 |
+//           | 3.0 6.0 9.0 |
+
+// Basic matrix operations.
+float det = squared.determinant();
+rush::Mat<3, 3, float> inverse = squared.inverse();
+
+// You can also use basic operators
+rush::Mat<2, 3, float> mul = squared * mat1;
+rush::Mat<2, 3, float> add = mul + mat1;
+```
