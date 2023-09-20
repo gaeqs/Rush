@@ -725,9 +725,53 @@ namespace rush {
                                                const Quat<Type>& r,
                                                const Vec<3, Type>& t) requires (
     Columns == 4 && Rows == 4) {
-        Mat sr = r.rotationMatrix4() * scale(s);
-        sr.column(3)(0, 1, 2) = t;
-        return sr;
+        Mat result;
+        Type* p = result.toPointer();
+        *p = (Type(1) - Type(2) * (r.y * r.y + r.z * r.z)) * s.x();
+        *++p = (r.x * r.y + r.z * r.s) * s.x() * Type(2);
+        *++p = (r.x * r.z - r.y * r.s) * s.x() * Type(2);
+        *++p = Type(0);
+        *++p = (r.x * r.y - r.z * r.s) * s.y() * Type(2);
+        *++p = (Type(1) - Type(2) * (r.x * r.x + r.z * r.z)) * s.y();
+        *++p = (r.y * r.z + r.x * r.s) * s.y() * Type(2);
+        *++p = Type(0);
+        *++p = (r.x * r.z + r.y * r.s) * s.z() * Type(2);
+        *++p = (r.y * r.z - r.x * r.s) * s.z() * Type(2);
+        *++p = (Type(1) - Type(2) * (r.x * r.x + r.y * r.y)) * s.z();
+        *++p = Type(0);
+        *++p = t.x();
+        *++p = t.y();
+        *++p = t.z();
+        *++p = Type(1);
+        return result;
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    Mat<Columns, Rows, Type, Allocator>
+    Mat<Columns, Rows, Type, Allocator>::normal(const Vec<3, Type>& s,
+                                                const Quat<Type>& r) requires (
+    Columns == 4 && Rows == 4) {
+        Vec<3, Type> si = Type(1) / s;
+
+        Mat result;
+        Type* p = result.toPointer();
+        *p = (Type(1) - Type(2) * (r.y * r.y + r.z * r.z)) * si.x();
+        *++p = (r.x * r.y + r.z * r.s) * si.x() * Type(2);
+        *++p = (r.x * r.z - r.y * r.s) * si.x() * Type(2);
+        *++p = Type(0);
+        *++p = (r.x * r.y - r.z * r.s) * si.y() * Type(2);
+        *++p = (Type(1) - Type(2) * (r.x * r.x + r.z * r.z)) * si.y();
+        *++p = (r.y * r.z + r.x * r.s) * si.y() * Type(2);
+        *++p = Type(0);
+        *++p = (r.x * r.z + r.y * r.s) * si.z() * Type(2);
+        *++p = (r.y * r.z - r.x * r.s) * si.z() * Type(2);
+        *++p = (Type(1) - Type(2) * (r.x * r.x + r.y * r.y)) * si.z();
+        *++p = Type(0);
+        *++p = Type(0);
+        *++p = Type(0);
+        *++p = Type(0);
+        *++p = Type(1);
+        return result;
     }
 
 
