@@ -92,3 +92,25 @@ rush::Mat<3, 3, float> inverse = squared.inverse();
 rush::Mat<2, 3, float> mul = squared * mat1;
 rush::Mat<2, 3, float> add = mul + mat1;
 ```
+
+### Quaternions
+
+Quaternions are usually used to represent rotations in a tridimensional space.
+_Rush_ can create quaternions of any type.
+
+```c++
+rush::Quat<double> q = rush::Quat<double>::euler({1.5, 0.2, 0.4});
+rush::Quat<double> r = rush::Quat<double>::angleAxis(std::numbers::pi / 2.0, {0.0, 1.0, 0.0});
+
+// Creates a quaternion that applies both rotations.
+rush::Quat<double> t = q * r;
+
+rush::Vec<3, double> v = {1.0, 0.0, 0.0};
+
+// Applies the rotation to the vector. 
+// This operation performs the operation t * v * t*.
+rush::Vec<3, double> result = t * v;
+
+// Creates a rotation matrix.
+rush::Mat<4, 4, double> mat = t.rotationMatrix4();
+```
