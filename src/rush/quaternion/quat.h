@@ -8,4 +8,9 @@
 #include <rush/quaternion/quat_base.h>
 #include <rush/quaternion/quat_extra.h>
 
+namespace rush {
+    using Quatf = rush::Quat<float>;
+}
+
+
 #endif //RUSH_QUAT_H
