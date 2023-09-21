@@ -5,6 +5,8 @@
 #ifndef RUSH_QUAT_IMPL_H
 #define RUSH_QUAT_IMPL_H
 
+#include <numbers>
+
 #include <rush/quaternion/quat_base.h>
 
 namespace rush {
