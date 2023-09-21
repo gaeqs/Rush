@@ -357,6 +357,25 @@ namespace rush {
     }
 
     template<typename Type>
+    Quat<Type> Quat<Type>::lookAt(Vec<3, Type> direction) {
+        static const Vec<3, Type> F = {Type(0), Type(0), Type(-1)};
+        static const Vec<3, Type> UP = {Type(0), Type(1), Type(0)};
+        Type dot = F.dot(direction);
+
+        if (dot < -Type(0.9999)) {
+            return Quat::angleAxis(std::numbers::pi_v<Type>, UP);
+        }
+        if (dot > Type(0.9999)) {
+            return Quat();
+        }
+
+        Type angle = std::acos(dot);
+        Vec<3, Type> axis = F.cross(direction);
+
+        return Quat::angleAxis(angle, axis);
+    }
+
+    template<typename Type>
     auto Quat<Type>::begin() {
         return &s;
     }
