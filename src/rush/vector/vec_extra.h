@@ -42,7 +42,7 @@ struct std::hash<rush::Vec<Size, Type, Allocator>> {
     operator()(rush::Vec<Size, Type, Allocator> const& s) const noexcept {
         std::hash<Type> hasher;
         size_t h = 0;
-        for (int i = 0; i < Size; ++i) {
+        for (size_t i = 0; i < Size; ++i) {
             h ^= hasher(s[i]) + 0x9e3779b9 + (h << 6) + (h >> 2);
         }
         return h;
@@ -57,7 +57,7 @@ inline rush::Vec<Size, Type, Allocator> operator+(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s + v[i];
     }
     return result;
@@ -69,7 +69,7 @@ inline rush::Vec<Size, Type, Allocator> operator-(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s - v[i];
     }
     return result;
@@ -81,7 +81,7 @@ inline rush::Vec<Size, Type, Allocator> operator*(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s * v[i];
     }
     return result;
@@ -93,7 +93,7 @@ inline rush::Vec<Size, Type, Allocator> operator/(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s / v[i];
     }
     return result;
@@ -105,7 +105,7 @@ inline rush::Vec<Size, Type, Allocator> operator<<(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s << v[i];
     }
     return result;
@@ -117,7 +117,7 @@ inline rush::Vec<Size, Type, Allocator> operator>>(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s >> v[i];
     }
     return result;
@@ -129,7 +129,7 @@ inline rush::Vec<Size, Type, Allocator> operator&(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s & v[i];
     }
     return result;
@@ -141,7 +141,7 @@ inline rush::Vec<Size, Type, Allocator> operator|(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s | v[i];
     }
     return result;
@@ -153,7 +153,7 @@ inline rush::Vec<Size, Type, Allocator> operator^(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s ^ v[i];
     }
     return result;
@@ -165,7 +165,7 @@ inline rush::Vec<Size, Type, Allocator> operator&&(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s && v[i];
     }
     return result;
@@ -177,7 +177,7 @@ inline rush::Vec<Size, Type, Allocator> operator||(
         const Type& s,
         const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
-    for (int i = 0; i < Size; ++i) {
+    for (size_t i = 0; i < Size; ++i) {
         result[i] = s || v[i];
     }
     return result;
