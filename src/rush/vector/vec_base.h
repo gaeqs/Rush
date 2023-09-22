@@ -199,8 +199,11 @@ namespace rush {
          *
          */
         template<typename Return = Type, Algorithm Algorithm = Algorithm(),
-                typename OAlloc = StaticAllocator>
+                typename OAlloc = Allocator>
         Vec<Size, Return, OAlloc> normalized() const requires HasMul<Return>;
+
+        template<typename To, typename OAlloc = Allocator>
+        Vec<Size, To, OAlloc> cast() const;
 
         inline Vec& operator+();
         inline const Vec& operator+() const;

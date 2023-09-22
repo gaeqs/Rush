@@ -224,6 +224,15 @@ namespace rush {
 
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
+    template<typename To, typename OAlloc>
+    Vec<Size, To, OAlloc> Vec<Size, Type, Allocator>::cast() const {
+        return Vec<Size, To, OAlloc>([this](size_t i) {
+            return static_cast<To>(data[i]);
+        });
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
     Vec<Size, Type, Allocator>&
     Vec<Size, Type, Allocator>::operator+() {
         return *this;

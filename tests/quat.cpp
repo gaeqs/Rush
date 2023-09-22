@@ -102,9 +102,20 @@ TEST_CASE("Quaternion iterator", "[quaternion]") {
     }
     {   // FOR LOOP
         size_t i = 0;
-        for (double d : q1) {
+        for (double d: q1) {
             REQUIRE(d == q1[i++]);
         }
     }
+}
 
+TEST_CASE("Quaternion matrix", "[quaternion]") {
+    auto q1 = rush::Quat<double>::euler({2.0, 1.0, 0.5});
+    auto rX = rush::Mat4d::rotationX(2.0);
+    auto rY = rush::Mat4d::rotationY(1.0);
+    auto rZ = rush::Mat4d::rotationZ(0.5);
+
+    auto mat1 = rZ * rY * rX;
+    auto mat2 = q1.rotationMatrix4();
+
+    requireSimilar(mat1, mat2);
 }

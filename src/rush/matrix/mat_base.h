@@ -33,7 +33,7 @@ namespace rush {
 
         template<typename... T>
         requires (std::is_convertible_v<std::common_type_t<T...>, Type>
-                  && sizeof...(T) <= Columns * Rows)
+                  && sizeof...(T) <= Columns * Rows && sizeof...(T) > 1)
         Mat(T... list);
 
         Mat();
@@ -93,6 +93,9 @@ namespace rush {
                                       HasDiv<Type> &&
                                       (Columns == Rows) &&
                                       (Columns < 5);
+
+        template<typename To, typename OAlloc = Allocator>
+        Mat<Columns, Rows, To, OAlloc> cast() const;
 
         inline Self& operator+();
 
@@ -266,6 +269,19 @@ namespace rush {
         Columns == 4 && Rows == 4);
 
         /**
+         * Creates a normal matrix that transforms normals
+         * using the given scale, rotation and translation.
+         * @param s the scale.
+         * @param r the rotation.
+         * @param t the translation.
+         * @return the model matrix.
+         */
+        inline static Mat
+        normal(const rush::Vec<3, Type>& s,
+               const rush::Quat<Type>& r) requires (
+        Columns == 4 && Rows == 4);
+
+        /**
          * Creates a view matrix for a camera that at
          * the given origin that is looking at the given
          * direction.
@@ -292,8 +308,8 @@ namespace rush {
         template<Hand Hand = Hand::Right,
                 ProjectionFormat Format = ProjectionFormat::OpenGL>
         inline static Mat orthogonal(Type left, Type right,
-                                  Type bottom, Type top,
-                                  Type near, Type far) requires (
+                                     Type bottom, Type top,
+                                     Type near, Type far) requires (
         Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right,

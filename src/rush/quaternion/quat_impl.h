@@ -5,6 +5,8 @@
 #ifndef RUSH_QUAT_IMPL_H
 #define RUSH_QUAT_IMPL_H
 
+#include <numbers>
+
 #include <rush/quaternion/quat_base.h>
 
 namespace rush {
@@ -152,25 +154,16 @@ namespace rush {
 
         Type o = Type(1);
         Type t = Type(2);
-        Type xx(x* x);
-        Type yy(y* y);
-        Type zz(z* z);
-        Type xz(x* z);
-        Type xy(x* y);
-        Type yz(y* z);
-        Type wx(s* x);
-        Type wy(s* y);
-        Type wz(s* z);
 
-        r(0, 0) = o - t * (yy + zz);
-        r(0, 1) = t * (xy + wz);
-        r(0, 2) = t * (xz - wy);
-        r(1, 0) = t * (xy - wz);
-        r(1, 1) = o - t * (xx + zz);
-        r(1, 2) = t * (yz + wx);
-        r(2, 0) = t * (xz + wy);
-        r(2, 1) = t * (yz - wx);
-        r(2, 2) = o - t * (xx + yy);
+        r(0, 0) = o - t * (y * y + z * z);
+        r(0, 1) = t * (x * y + s * z);
+        r(0, 2) = t * (x * z - s * y);
+        r(1, 0) = t * (x * y - s * z);
+        r(1, 1) = o - t * (x * x + z * z);
+        r(1, 2) = t * (y * z + s * x);
+        r(2, 0) = t * (x * z + s * y);
+        r(2, 1) = t * (y * z - s * x);
+        r(2, 2) = o - t * (x * x + y * y);
 
         return r;
     }
@@ -178,30 +171,20 @@ namespace rush {
     template<typename Type>
     template<typename Alloc>
     Mat<4, 4, Type, Alloc> Quat<Type>::rotationMatrix4() const {
-        Mat<4, 4, Type, Alloc> r;
+        Mat<4, 4, Type, Alloc> r(Type(1.0));
 
         Type o = Type(1);
         Type t = Type(2);
-        Type xx(x* x);
-        Type yy(y* y);
-        Type zz(z* z);
-        Type xz(x* z);
-        Type xy(x* y);
-        Type yz(y* z);
-        Type wx(s* x);
-        Type wy(s* y);
-        Type wz(s* z);
 
-        r(0, 0) = o - t * (yy + zz);
-        r(0, 1) = t * (xy + wz);
-        r(0, 2) = t * (xz - wy);
-        r(1, 0) = t * (xy - wz);
-        r(1, 1) = o - t * (xx + zz);
-        r(1, 2) = t * (yz + wx);
-        r(2, 0) = t * (xz + wy);
-        r(2, 1) = t * (yz - wx);
-        r(2, 2) = o - t * (xx + yy);
-        r(3, 3) = o;
+        r(0, 0) = o - t * (y * y + z * z);
+        r(0, 1) = t * (x * y + s * z);
+        r(0, 2) = t * (x * z - s * y);
+        r(1, 0) = t * (x * y - s * z);
+        r(1, 1) = o - t * (x * x + z * z);
+        r(1, 2) = t * (y * z + s * x);
+        r(2, 0) = t * (x * z + s * y);
+        r(2, 1) = t * (y * z - s * x);
+        r(2, 2) = o - t * (x * x + y * y);
 
         return r;
     }
@@ -210,6 +193,17 @@ namespace rush {
     template<typename Alloc>
     Vec<4, Type, Alloc> Quat<Type>::toVec() const {
         return Vec<4, Type, Alloc>(s, x, y, z);
+    }
+
+    template<typename Type>
+    template<typename To>
+    Quat<To> Quat<Type>::cast() const {
+        return Quat<To>(
+                static_cast<To>(s),
+                static_cast<To>(x),
+                static_cast<To>(y),
+                static_cast<To>(z)
+        );
     }
 
     template<typename Type>
@@ -354,6 +348,25 @@ namespace rush {
             u = from ^ to;
         }
         return Quat<Type>(real, u.x(), u.y(), u.z()).normalize();
+    }
+
+    template<typename Type>
+    Quat<Type> Quat<Type>::lookAt(Vec<3, Type> direction) {
+        static const Vec<3, Type> F = {Type(0), Type(0), Type(-1)};
+        static const Vec<3, Type> UP = {Type(0), Type(1), Type(0)};
+        Type dot = F.dot(direction);
+
+        if (dot < -Type(0.9999)) {
+            return Quat::angleAxis(std::numbers::pi_v<Type>, UP);
+        }
+        if (dot > Type(0.9999)) {
+            return Quat();
+        }
+
+        Type angle = std::acos(dot);
+        Vec<3, Type> axis = F.cross(direction);
+
+        return Quat::angleAxis(angle, axis);
     }
 
     template<typename Type>
