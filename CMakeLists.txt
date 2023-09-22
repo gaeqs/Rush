@@ -23,6 +23,7 @@ set(RUSH_HEADERS
         src/rush/allocator/stack_allocator.h
         src/rush/allocator/heap_allocator.h
         src/rush/quaternion/quat_extra.h
+        src/rush/scalar/scalar_math.h
 )
 
 add_library(rush INTERFACE ${RUSH_HEADERS})
