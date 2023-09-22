@@ -34,6 +34,19 @@ namespace rush {
 
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
+    template<size_t OSize, typename OAlloc, typename... T>
+    requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
+             (sizeof...(T) + OSize <= Size)
+    Vec<Size, Type, Allocator>::Vec(const Vec<OSize, Type, OAlloc>& other,
+                                    T... list) {
+        std::copy_n(other.toPointer(), OSize, toPointer());
+
+        Type* ptr = toPointer() + OSize;
+        ((*ptr++ = list), ...);
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
     Vec<Size, Type, Allocator>::Vec(const VecRef<Size, Type>& ref) {
         for (size_t i = 0; i < Size; ++i) {
             data[i] = *ref.references[i];
