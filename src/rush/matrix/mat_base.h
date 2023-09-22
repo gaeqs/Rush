@@ -94,6 +94,9 @@ namespace rush {
                                       (Columns == Rows) &&
                                       (Columns < 5);
 
+        template<typename To, typename OAlloc = Allocator>
+        Mat<Columns, Rows, To, OAlloc> cast() const;
+
         inline Self& operator+();
 
         inline Self& operator+() const;

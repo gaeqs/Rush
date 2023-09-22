@@ -274,6 +274,15 @@ namespace rush {
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
+    template<typename To, typename OAlloc>
+    Mat<Columns, Rows, To, OAlloc>
+    Mat<Columns, Rows, Type, Allocator>::cast() const {
+        return Mat<Columns, Rows, To, OAlloc>([this](size_t c, size_t r) {
+            return static_cast<To>(this->operator()(c, r));
+        });
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     typename Mat<Columns, Rows, Type, Allocator>::Self&
     Mat<Columns, Rows, Type, Allocator>::operator+() {
         return *this;

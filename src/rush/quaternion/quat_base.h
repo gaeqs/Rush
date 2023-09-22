@@ -209,6 +209,9 @@ namespace rush {
         template<typename Alloc = StaticAllocator>
         Vec<4, Type, Alloc> toVec() const;
 
+        template<typename To>
+        Quat<To> cast() const;
+
         // QUAT - SCALAR
 
         inline Quat operator+(const Type& o) const requires HasAdd<Type>;

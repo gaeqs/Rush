@@ -196,6 +196,17 @@ namespace rush {
     }
 
     template<typename Type>
+    template<typename To>
+    Quat<To> Quat<Type>::cast() const {
+        return Quat<To>(
+                static_cast<To>(s),
+                static_cast<To>(x),
+                static_cast<To>(y),
+                static_cast<To>(z)
+        );
+    }
+
+    template<typename Type>
     Quat<Type>
     Quat<Type>::operator+(const Type& o) const requires HasAdd<Type> {
         return {s + o, x + o, y + o, z + o};
