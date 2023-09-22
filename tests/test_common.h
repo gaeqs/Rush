@@ -54,7 +54,7 @@ inline void requireSimilar(rush::Mat<C, R, F> a, rush::Mat<C, R, F> b,
     for (int c = 0; c < C; ++c) {
         for (int r = 0; r < R; ++r) {
             if (std::abs(a(c, r) - b(c, r)) >= epsilon) {
-                FAIL(a << " != " << b);
+                FAIL(a << "\n!=\n" << b);
             }
         }
     }

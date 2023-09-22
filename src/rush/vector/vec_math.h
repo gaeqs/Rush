@@ -5,6 +5,8 @@
 #ifndef RUSH_VEC_MATH_H
 #define RUSH_VEC_MATH_H
 
+#include <numbers>
+
 #include <rush/vector/vec.h>
 
 namespace rush {
@@ -49,6 +51,20 @@ namespace rush {
     Vec<Size, Type, Allocator> atan(const Vec<Size, Type, Allocator>& v) {
         return Vec<Size, Type, Allocator>{
                 [v](size_t i) { return std::atan(v[i]); }};
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> degrees(const Vec<Size, Type, Allocator>& v) {
+        constexpr Type RELATION = Type(180) / std::numbers::pi_v<Type>;
+        return Vec<Size, Type, Allocator>{
+                [v](size_t i) { return v[i] * RELATION; }};
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> radians(const Vec<Size, Type, Allocator>& v) {
+        constexpr Type RELATION = std::numbers::pi_v<Type> / Type(180);
+        return Vec<Size, Type, Allocator>{
+                [v](size_t i) { return v[i] * RELATION; }};
     }
 
 }

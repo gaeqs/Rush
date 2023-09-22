@@ -33,7 +33,7 @@ namespace rush {
 
         template<typename... T>
         requires (std::is_convertible_v<std::common_type_t<T...>, Type>
-                  && sizeof...(T) <= Columns * Rows)
+                  && sizeof...(T) <= Columns * Rows && sizeof...(T) > 1)
         Mat(T... list);
 
         Mat();

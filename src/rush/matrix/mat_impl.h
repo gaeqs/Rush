@@ -12,7 +12,7 @@ namespace rush {
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>
     template<typename... T>
     requires (std::is_convertible_v<std::common_type_t<T...>, Type>
-              && sizeof...(T) <= Columns * Rows)
+              && sizeof...(T) <= Columns * Rows && sizeof...(T) > 1)
     Mat<Columns, Rows, Type, Allocator>::Mat(T... list) {
         Type* ptr = toPointer();
         ((*ptr++ = list), ...);
@@ -782,9 +782,13 @@ namespace rush {
             const Vec<3, Type>& origin,
             const Vec<3, Type>& direction,
             const Vec<3, Type>& up) requires (Columns == 4 && Rows == 4) {
-        Vec<3, Type> f = direction.normalized();
-        Vec<3, Type> s = up.cross(f).normalized();
-        Vec<3, Type> u = f.cross(s);
+        Vec<3, Type> f = -direction.normalized();
+        Vec<3, Type> u = (up - up.dot(f) / f.squaredLength() * f).normalized();
+        Vec<3, Type> s = u.cross(f);
+
+        if constexpr (H == Hand::Left) {
+            s = -s;
+        }
 
         Mat m(Type(1));
         m(0, 0) = s[0];
@@ -793,22 +797,13 @@ namespace rush {
         m(0, 1) = u[0];
         m(1, 1) = u[1];
         m(2, 1) = u[2];
+        m(0, 2) = f[0];
+        m(1, 2) = f[1];
+        m(2, 2) = f[2];
+        m(3, 0) = -s.dot(origin);
+        m(3, 1) = -u.dot(origin);
+        m(3, 2) = -f.dot(origin);
 
-        if constexpr (H == Hand::Left) {
-            m(0, 2) = f[0];
-            m(1, 2) = f[1];
-            m(2, 2) = f[2];
-            m(3, 0) = -s.dot(origin);
-            m(3, 1) = -u.dot(origin);
-            m(3, 2) = -f.dot(origin);
-        } else {
-            m(0, 2) = -f[0];
-            m(1, 2) = -f[1];
-            m(2, 2) = -f[2];
-            m(3, 0) = -s.dot(origin);
-            m(3, 1) = -u.dot(origin);
-            m(3, 2) = f.dot(origin);
-        }
         return m;
     }
 
@@ -915,7 +910,7 @@ namespace rush {
     Columns == 4 && Rows == 4) {
         Type top = std::tan(fovY / Type(2)) * near;
         Type right = top * aspectRatio;
-        return frustum(-right, right, -top, top, near, far);
+        return frustum<Hand, Format>(-right, right, -top, top, near, far);
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Allocator>

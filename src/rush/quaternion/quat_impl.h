@@ -154,25 +154,16 @@ namespace rush {
 
         Type o = Type(1);
         Type t = Type(2);
-        Type xx(x* x);
-        Type yy(y* y);
-        Type zz(z* z);
-        Type xz(x* z);
-        Type xy(x* y);
-        Type yz(y* z);
-        Type wx(s* x);
-        Type wy(s* y);
-        Type wz(s* z);
 
-        r(0, 0) = o - t * (yy + zz);
-        r(0, 1) = t * (xy + wz);
-        r(0, 2) = t * (xz - wy);
-        r(1, 0) = t * (xy - wz);
-        r(1, 1) = o - t * (xx + zz);
-        r(1, 2) = t * (yz + wx);
-        r(2, 0) = t * (xz + wy);
-        r(2, 1) = t * (yz - wx);
-        r(2, 2) = o - t * (xx + yy);
+        r(0, 0) = o - t * (y * y + z * z);
+        r(0, 1) = t * (x * y + s * z);
+        r(0, 2) = t * (x * z - s * y);
+        r(1, 0) = t * (x * y - s * z);
+        r(1, 1) = o - t * (x * x + z * z);
+        r(1, 2) = t * (y * z + s * x);
+        r(2, 0) = t * (x * z + s * y);
+        r(2, 1) = t * (y * z - s * x);
+        r(2, 2) = o - t * (x * x + y * y);
 
         return r;
     }
@@ -180,30 +171,20 @@ namespace rush {
     template<typename Type>
     template<typename Alloc>
     Mat<4, 4, Type, Alloc> Quat<Type>::rotationMatrix4() const {
-        Mat<4, 4, Type, Alloc> r;
+        Mat<4, 4, Type, Alloc> r(Type(1.0));
 
         Type o = Type(1);
         Type t = Type(2);
-        Type xx(x* x);
-        Type yy(y* y);
-        Type zz(z* z);
-        Type xz(x* z);
-        Type xy(x* y);
-        Type yz(y* z);
-        Type wx(s* x);
-        Type wy(s* y);
-        Type wz(s* z);
 
-        r(0, 0) = o - t * (yy + zz);
-        r(0, 1) = t * (xy + wz);
-        r(0, 2) = t * (xz - wy);
-        r(1, 0) = t * (xy - wz);
-        r(1, 1) = o - t * (xx + zz);
-        r(1, 2) = t * (yz + wx);
-        r(2, 0) = t * (xz + wy);
-        r(2, 1) = t * (yz - wx);
-        r(2, 2) = o - t * (xx + yy);
-        r(3, 3) = o;
+        r(0, 0) = o - t * (y * y + z * z);
+        r(0, 1) = t * (x * y + s * z);
+        r(0, 2) = t * (x * z - s * y);
+        r(1, 0) = t * (x * y - s * z);
+        r(1, 1) = o - t * (x * x + z * z);
+        r(1, 2) = t * (y * z + s * x);
+        r(2, 0) = t * (x * z + s * y);
+        r(2, 1) = t * (y * z - s * x);
+        r(2, 2) = o - t * (x * x + y * y);
 
         return r;
     }
