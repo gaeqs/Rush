@@ -20,6 +20,9 @@ namespace rush {
 
             Storage data;
 
+            AllocatedData() : data() {
+            }
+
             static constexpr size_t size() {
                 return Size;
             }
