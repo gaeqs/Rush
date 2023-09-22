@@ -41,11 +41,11 @@ struct std::hash<rush::Vec<Size, Type, Allocator>> {
     std::size_t
     operator()(rush::Vec<Size, Type, Allocator> const& s) const noexcept {
         std::hash<Type> hasher;
-        size_t hash = 0;
+        size_t h = 0;
         for (int i = 0; i < Size; ++i) {
-            hash ^= hasher(s[i]) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+            h ^= hasher(s[i]) + 0x9e3779b9 + (h << 6) + (h >> 2);
         }
-        return hash;
+        return h;
     }
 };
 

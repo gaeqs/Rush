@@ -81,12 +81,12 @@ namespace rush {
             v = std::bit_cast<float>(i);
             return v * (1.5f - x2 * v * v);
         } else if constexpr (std::is_same_v<Return, double>) {
-            auto y = static_cast<double >(squaredLength());
-            double x2 = y * 0.5f;
+            auto v = static_cast<double >(squaredLength());
+            double x2 = v * 0.5f;
             // what the fuck?
-            uint64_t i = 0x5fe6eb50c7b537a9 - (std::bit_cast<uint64_t>(y) >> 1);
-            y = std::bit_cast<double>(i);
-            return y * (1.5f - x2 * y * y);
+            uint64_t i = 0x5fe6eb50c7b537a9 - (std::bit_cast<uint64_t>(v) >> 1);
+            v = std::bit_cast<double>(i);
+            return v * (1.5f - x2 * v * v);
         }
 
         return 1.0f / std::sqrt(squaredLength());
