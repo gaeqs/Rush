@@ -14,6 +14,12 @@
 #include <rush/algorithm.h>
 #include <rush/vector/vec.h>
 
+#ifdef RUSH_GLM
+
+#include <glm/glm.hpp>
+
+#endif
+
 namespace rush {
 
     template<typename Type>
@@ -324,6 +330,41 @@ namespace rush {
         Columns == 4 && Rows == 4);
 
         // ENDREGION
+
+        // REGION GLM SUPPORT
+
+#ifdef RUSH_GLM
+
+        Mat(const glm::mat<Columns, Rows, Type>& o) {
+            for (int c = 0; c < Columns; ++c) {
+                for (int r = 0; r < Columns; ++r) {
+                    operator()(c, r) = o[c][r];
+                }
+            }
+        }
+
+        Mat(const glm::mat<Columns, Rows, Type>&& o) {
+            for (int c = 0; c < Columns; ++c) {
+                for (int r = 0; r < Columns; ++r) {
+                    operator()(c, r) = std::move(o[c][r]);
+                }
+            }
+        }
+
+        operator glm::mat<Columns, Rows, Type>() const {
+            glm::mat<Columns, Rows, Type> result;
+            for (int c = 0; c < Columns; ++c) {
+                for (int r = 0; r < Columns; ++r) {
+                    result[c][r] = operator()(c, r);
+                }
+            }
+            return result;
+        }
+
+#endif
+
+        // ENDREGION
+
 
     };
 }

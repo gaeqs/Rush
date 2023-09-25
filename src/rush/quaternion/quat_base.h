@@ -8,6 +8,12 @@
 #include <rush/vector/vec.h>
 #include <rush/matrix/mat.h>
 
+#ifdef RUSH_GLM
+
+#include <glm/glm.hpp>
+
+#endif
+
 namespace rush {
 
     template<typename Type>
@@ -292,6 +298,36 @@ namespace rush {
 
         // ENDREGION
 
+        // REGION GLM SUPPORT
+
+#ifdef RUSH_GLM
+
+        Quat(const glm::qua<Type>& o) {
+            s = o.w;
+            x = o.x;
+            y = o.y;
+            z = o.z;
+        }
+
+        Quat(const glm::qua<Type>&& o) {
+            s = o.w;
+            x = o.x;
+            y = o.y;
+            z = o.z;
+        }
+
+        operator glm::qua<Type>() const {
+            glm::qua<Type> result;
+            result.w = s;
+            result.x = x;
+            result.y = y;
+            result.z = z;
+            return result;
+        }
+
+#endif
+
+        // ENDREGION
     };
 
 }
