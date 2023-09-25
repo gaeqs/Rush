@@ -119,3 +119,28 @@ TEST_CASE("Quaternion matrix", "[quaternion]") {
 
     requireSimilar(mat1, mat2);
 }
+
+#ifdef RUSH_GLM
+
+#include <glm/glm.hpp>
+#include <glm/gtc/quaternion.hpp>
+
+void consumer(rush::Quatf) {
+}
+
+void consumerRef(const rush::Quatf&) {
+}
+
+TEST_CASE("Rush - GLM (Quaternion)", "[quaternion]") {
+    glm::quat glm(1.0f, 2.0f, 3.0f, 4.0f);
+
+    rush::Quatf rush = glm;
+    glm::quat back = rush;
+
+    REQUIRE(glm == back);
+
+    consumer(back);
+    consumerRef(back);
+}
+
+#endif

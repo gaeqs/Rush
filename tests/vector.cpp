@@ -250,3 +250,28 @@ TEST_CASE("Vector angle (4D)", "[vector]") {
     requireSimilar(angleLowIntrinsics, ANGLE);
     requireSimilar(angleLowGeneral, ANGLE);
 }
+
+
+#ifdef RUSH_GLM
+
+#include <glm/glm.hpp>
+
+void consumer(rush::Vec4f) {
+}
+
+void consumerRef(const rush::Vec4f&) {
+}
+
+TEST_CASE("Rush - GLM (Vector)", "[vector]") {
+    glm::vec4 glm(1.0f, 2.0f, 3.0f, 4.0f);
+
+    rush::Vec4f rush = glm;
+    glm::vec4 back = rush;
+
+    REQUIRE(glm == back);
+
+    consumer(back);
+    consumerRef(back);
+}
+
+#endif

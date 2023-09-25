@@ -244,7 +244,35 @@ TEST_CASE("Matrix model", "[matrix]") {
     Mat4f m1 = t * rZ * rY * rX * s;
 
     Mat4f m2 = Mat4f::model({2.0f, -1.0f, 3.0f},
-                           rush::Quat<float>::euler({1.0f, 0.2f, 2.0f}),
-                           {10.0f, 50.0f, -20.0f});
+                            rush::Quat<float>::euler({1.0f, 0.2f, 2.0f}),
+                            {10.0f, 50.0f, -20.0f});
     requireSimilar(m1, m2);
 }
+
+
+#ifdef RUSH_GLM
+
+#include <glm/glm.hpp>
+
+void consumer(rush::Mat4f) {
+}
+
+void consumerRef(const rush::Mat4f&) {
+}
+
+TEST_CASE("Rush - GLM (Matrix)", "[matrix]") {
+    glm::mat4 glm(1.0f, 2.0f, 3.0f, 4.0f,
+                  5.0f, 6.0f, 7.0f, 8.0f,
+                  1.0f, 2.0f, 3.0f, 4.0f,
+                  5.0f, 6.0f, 7.0f, 8.0f);
+
+    rush::Mat4f rush = glm;
+    glm::mat4 back = rush;
+
+    REQUIRE(glm == back);
+
+    consumer(back);
+    consumerRef(back);
+}
+
+#endif

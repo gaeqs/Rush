@@ -16,6 +16,12 @@
 #include <rush/vector/vec_ref.h>
 #include <rush/algorithm.h>
 
+#ifdef RUSH_GLM
+
+#include <glm/glm.hpp>
+
+#endif
+
 namespace rush {
 
     template<size_t Size,
@@ -355,6 +361,34 @@ namespace rush {
         inline auto rend();
         inline auto crbegin() const;
         inline auto crend() const;
+
+        // ENDREGION
+
+        // REGION GLM SUPPORT
+
+#ifdef RUSH_GLM
+
+        Vec(const glm::vec<Size, Type>& o) {
+            for (int i = 0; i < Size; ++i) {
+                data[i] = o[i];
+            }
+        }
+
+        Vec(const glm::vec<Size, Type>&& o) {
+            for (int i = 0; i < Size; ++i) {
+                data[i] = std::move(o[i]);
+            }
+        }
+
+        operator glm::vec<Size, Type>() const {
+            glm::vec<Size, Type> result;
+            for (int i = 0; i < Size; ++i) {
+                result[i] = data[i];
+            }
+            return result;
+        }
+
+#endif
 
         // ENDREGION
 
