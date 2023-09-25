@@ -15,4 +15,6 @@
 
 #include <rush/scalar/scalar_math.h>
 
+#include <rush/curve/curves.h>
+
 #endif //RUSH_RUSH_H
