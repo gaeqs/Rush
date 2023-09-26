@@ -5,6 +5,14 @@
 #include "test_common.h"
 
 
+TEST_CASE("Bézier segment default", "[bezier]") {
+    rush::BezierSegment<2, 3, double> seg;
+    for (const auto& item: seg.nodes) {
+        requireSimilar(item, rush::Vec3d());
+    }
+}
+
+
 TEST_CASE("Bézier segment 2", "[bezier]") {
     rush::BezierSegment<2, 3, double> seg{rush::Vec3d{1.0, 1.0, 1.0},
                                           rush::Vec3d{5.0, 0.0, 1.0}};
@@ -80,4 +88,26 @@ TEST_CASE("Bézier segment 5", "[bezier]") {
         requireSimilar(seg.fetch(d), value);
         d += 0.1;
     }
+}
+
+TEST_CASE("Bézier curve", "[bezier]") {
+    rush::BezierSegment<4, 3, double> seg1(
+            rush::Vec3d{1.0, 1.0, 1.0},
+            rush::Vec3d{5.0, 0.0, 1.0},
+            rush::Vec3d{10.0, -2.0, 3.0},
+            rush::Vec3d{10.0, -10.0, 4.0}
+    );
+
+    auto seg2 = rush::BezierSegment<4, 3, double>::continuousTo(
+            seg1,
+            rush::Vec3d{3.0, 0.0, 1.0},
+            rush::Vec3d{5.0, 2.0, 1.0}
+    );
+
+    rush::BezierCurve<2, 4, 3, double> curve(seg1, seg2);
+
+    requireSimilar(seg1.nodes[0], curve.fetch(0.0, true));
+    requireSimilar(seg1.nodes[3], curve.fetch(0.5, true));
+    requireSimilar(seg2.nodes[3], curve.fetch(1.0, true));
+    requireSimilar(curve.fetch(0.499999, true), curve.fetch(0.500001, true));
 }

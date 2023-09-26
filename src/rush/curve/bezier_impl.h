@@ -8,8 +8,7 @@
 template<size_t Size, size_t Dimensions, typename Type, typename Allocator>
 requires (Size > 0)
 template<typename... T>
-requires std::is_convertible_v<std::common_type_t<T...>,
-        rush::Vec<Dimensions, Type>> && (sizeof...(T) <= Size)
+requires (sizeof...(T) == Size)
 rush::BezierSegment<Size, Dimensions, Type, Allocator>::BezierSegment(
         T... list) {
     rush::Vec<Dimensions, Type>* ptr = nodes.toPointer();
@@ -61,5 +60,57 @@ rush::BezierSegment<Size, Dimensions, Type, Allocator>::fetch(Type t) const {
 
     return result;
 }
+
+template<size_t Size, size_t Dimensions, typename Type, typename Allocator>
+requires (Size > 0)
+template<size_t OSize, typename OAllocator, typename... T>
+requires (OSize > 1 && sizeof...(T) == Size - 2)
+rush::BezierSegment<Size, Dimensions, Type, Allocator>
+rush::BezierSegment<Size, Dimensions, Type, Allocator>::continuousTo(
+        rush::BezierSegment<OSize, Dimensions, Type, OAllocator> o, T... list) {
+
+    rush::BezierSegment<Size, Dimensions, Type, Allocator> result;
+
+    auto prev = o.nodes[o.nodes.size() - 2];
+    auto joint = o.nodes[o.nodes.size() - 1];
+
+    result.nodes[0] = joint;
+    result.nodes[1] = joint + (joint - prev);
+
+    rush::Vec<Dimensions, Type>* ptr = result.nodes.toPointer() + 2;
+    ((*ptr++ = list), ...);
+
+    return result;
+}
+
+template<size_t Segments, size_t Size, size_t Dimensions,
+        typename Type, typename Allocator, typename SegmentAllocator>
+template<typename... T>
+requires (sizeof...(T) == Segments)
+rush::BezierCurve<Segments, Size, Dimensions, Type,
+        Allocator, SegmentAllocator>::BezierCurve(T... list) {
+    Segment* ptr = segments.toPointer();
+    ((*ptr++ = list), ...);
+}
+
+
+template<size_t Segments, size_t Size, size_t Dimensions,
+        typename Type, typename Allocator, typename SegmentAllocator>
+rush::Vec<Dimensions, Type>
+rush::BezierCurve<Segments, Size, Dimensions, Type,
+        Allocator, SegmentAllocator>::fetch(
+        Type t, bool normalized) const {
+
+    if (normalized) {
+        // [0, 1] to [0, segments]
+        t *= segments.size();
+    }
+
+    auto index = std::min(static_cast<size_t>(t), Segments - 1);
+    Type offset = t - static_cast<Type>(index);
+
+    return segments[index].fetch(offset);
+}
+
 
 #endif //NEON_BEZIER_IMPL_H
