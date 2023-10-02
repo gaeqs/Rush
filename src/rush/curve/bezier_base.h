@@ -39,8 +39,17 @@ namespace rush {
 
         Allocator::template AllocatedData<Size, VectorType> nodes;
 
+        /**
+         * Creates an empty Bézier segment.
+         * All points are initialized to their default values.
+         */
         BezierSegment() = default;
 
+        /**
+         * Creates a Bézier segment using the given points.
+         * @tparam T the points' list's type.
+         * @param list the point list.
+         */
         template<typename... T>
         requires (sizeof...(T) == Size)
         BezierSegment(T... list);
@@ -117,6 +126,11 @@ namespace rush {
 
         Allocator::template AllocatedData<Segments, Segment> segments;
 
+        /**
+         * Creates a Bézier curve using the given segments.
+         * @tparam T the segments' list's type.
+         * @param list the segments' list.
+         */
         template<typename... T>
         requires (sizeof...(T) == Segments)
         BezierCurve(T... list);
@@ -126,9 +140,8 @@ namespace rush {
          * timestamp.
          * <p>
          * If normalized, the timestamp should be inside the range [0, 1].
-         * The timestamp 0 gives
-         * you the start of the curve, while timestamp 1 gives
-         * you the end.
+         * The timestamp 0 gives you the start of the curve,
+         * while timestamp 1 gives you the end.
          * Using a timestamp outside this range gives a undefined
          * behaviour.
          * <p>
