@@ -5,21 +5,25 @@
 #ifndef NEON_BEZIER_IMPL_H
 #define NEON_BEZIER_IMPL_H
 
-template<size_t Size, size_t Dimensions, typename Type, typename Allocator>
+template<size_t Size, size_t Dimensions, typename Type, typename Allocator,
+        typename PointAllocator>
 requires (Size > 0)
 template<typename... T>
 requires (sizeof...(T) == Size)
-rush::BezierSegment<Size, Dimensions, Type, Allocator>::BezierSegment(
+rush::BezierSegment<Size, Dimensions, Type, Allocator, PointAllocator>::
+BezierSegment(
         T... list) {
     rush::Vec<Dimensions, Type>* ptr = nodes.toPointer();
     ((*ptr++ = list), ...);
 }
 
 
-template<size_t Size, size_t Dimensions, typename Type, typename Allocator>
+template<size_t Size, size_t Dimensions, typename Type, typename Allocator,
+        typename PointAllocator>
 requires (Size > 0)
-rush::Vec<Dimensions, Type>
-rush::BezierSegment<Size, Dimensions, Type, Allocator>::fetch(Type t) const {
+rush::Vec<Dimensions, Type, PointAllocator>
+rush::BezierSegment<Size, Dimensions, Type, Allocator, PointAllocator>::
+fetch(Type t) const {
     if constexpr (Size == 1) {
         return nodes[0];
     }
@@ -61,15 +65,20 @@ rush::BezierSegment<Size, Dimensions, Type, Allocator>::fetch(Type t) const {
     return result;
 }
 
-template<size_t Size, size_t Dimensions, typename Type, typename Allocator>
+template<size_t Size, size_t Dimensions, typename Type, typename Allocator,
+        typename PointAllocator>
 requires (Size > 0)
-template<size_t OSize, typename OAllocator, typename... T>
+template<size_t OSize, typename OAllocator,
+        typename OPointAllocator, typename... T>
 requires (OSize > 1 && sizeof...(T) == Size - 2)
-rush::BezierSegment<Size, Dimensions, Type, Allocator>
-rush::BezierSegment<Size, Dimensions, Type, Allocator>::continuousTo(
-        rush::BezierSegment<OSize, Dimensions, Type, OAllocator> o, T... list) {
+rush::BezierSegment<Size, Dimensions, Type, Allocator, PointAllocator>
+rush::BezierSegment<Size, Dimensions, Type, Allocator, PointAllocator>::
+continuousTo(
+        rush::BezierSegment<OSize, Dimensions, Type,
+                OAllocator, OPointAllocator> o, T... list) {
 
-    rush::BezierSegment<Size, Dimensions, Type, Allocator> result;
+    rush::BezierSegment<Size, Dimensions, Type, Allocator,
+            OPointAllocator> result;
 
     auto prev = o.nodes[o.nodes.size() - 2];
     auto joint = o.nodes[o.nodes.size() - 1];
@@ -84,21 +93,23 @@ rush::BezierSegment<Size, Dimensions, Type, Allocator>::continuousTo(
 }
 
 template<size_t Segments, size_t Size, size_t Dimensions,
-        typename Type, typename Allocator, typename SegmentAllocator>
+        typename Type, typename Allocator, typename SegmentAllocator,
+        typename PointAllocator>
 template<typename... T>
 requires (sizeof...(T) == Segments)
 rush::BezierCurve<Segments, Size, Dimensions, Type,
-        Allocator, SegmentAllocator>::BezierCurve(T... list) {
+        Allocator, SegmentAllocator, PointAllocator>::BezierCurve(T... list) {
     Segment* ptr = segments.toPointer();
     ((*ptr++ = list), ...);
 }
 
 
 template<size_t Segments, size_t Size, size_t Dimensions,
-        typename Type, typename Allocator, typename SegmentAllocator>
+        typename Type, typename Allocator, typename SegmentAllocator,
+        typename PointAllocator>
 rush::Vec<Dimensions, Type>
 rush::BezierCurve<Segments, Size, Dimensions, Type,
-        Allocator, SegmentAllocator>::fetch(
+        Allocator, SegmentAllocator, PointAllocator>::fetch(
         Type t, bool normalized) const {
 
     if (normalized) {
