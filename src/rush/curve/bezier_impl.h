@@ -23,7 +23,7 @@ template<size_t Size, size_t Dimensions, typename Type, typename Allocator,
 requires (Size > 0)
 rush::Vec<Dimensions, Type, PointAllocator>
 rush::BezierSegment<Size, Dimensions, Type, Allocator, PointAllocator>::
-fetch(Type t) const {
+fetch(const Type& t) const {
     if constexpr (Size == 1) {
         return nodes[0];
     }
@@ -55,8 +55,6 @@ fetch(Type t) const {
         return b;
     };
 
-    Type m = Type(1) - t;
-
     rush::Vec<Dimensions, Type> result;
     for (size_t i = 0; i < Size; ++i) {
         result += nodes[i] * bin(i, Size - 1, t);
@@ -64,6 +62,50 @@ fetch(Type t) const {
 
     return result;
 }
+
+
+template<size_t Size, size_t Dimensions, typename Type, typename Allocator, typename PointAllocator>
+requires (Size > 0)
+rush::Vec<Dimensions, Type, PointAllocator>
+rush::BezierSegment<Size, Dimensions, Type, Allocator, PointAllocator>::
+fetchDerivative(const Type& t) const {
+    if constexpr (Size == 1) {
+        return rush::Vec<Dimensions, Type, PointAllocator>(Type(0));
+    }
+    if constexpr (Size == 2) {
+        return (nodes[1] - nodes[0]);
+    }
+    if constexpr (Size == 3) {
+        Type m = Type(1) - t;
+        return Type(2) * m * (nodes[1] - nodes[0])
+               + Type(2) * t * (nodes[2] - nodes[1]);
+    }
+    if constexpr (Size == 4) {
+        Type m = Type(1) - t;
+        return Type(3) * m * m * (nodes[1] - nodes[0])
+               + Type(6) * m * t * (nodes[2] - nodes[1])
+               + Type(3) * t * t * (nodes[3] - nodes[2]);
+    }
+
+    auto bin = [](size_t i, size_t n, Type t) {
+        Type b = rush::binomial(n, i);
+        for (size_t p = 0; p < i; ++p) {
+            b *= t;
+        }
+        for (size_t p = 0; p < n - i; ++p) {
+            b *= (Type(1) - t);
+        }
+        return b;
+    };
+
+    rush::Vec<Dimensions, Type> result;
+    for (size_t i = 0; i < Size - 1; ++i) {
+        result += (nodes[i + 1] - nodes[i]) * bin(i, Size - 2, t);
+    }
+
+    return result;
+}
+
 
 template<size_t Size, size_t Dimensions, typename Type, typename Allocator,
         typename PointAllocator>
@@ -109,8 +151,8 @@ template<size_t Segments, size_t Size, size_t Dimensions,
         typename PointAllocator>
 rush::Vec<Dimensions, Type>
 rush::BezierCurve<Segments, Size, Dimensions, Type,
-        Allocator, SegmentAllocator, PointAllocator>::fetch(
-        Type t, bool normalized) const {
+        Allocator, SegmentAllocator, PointAllocator>::
+fetch(Type t, bool normalized) const {
 
     if (normalized) {
         // [0, 1] to [0, segments]
@@ -121,6 +163,25 @@ rush::BezierCurve<Segments, Size, Dimensions, Type,
     Type offset = t - static_cast<Type>(index);
 
     return segments[index].fetch(offset);
+}
+
+template<size_t Segments, size_t Size, size_t Dimensions,
+        typename Type, typename Allocator, typename SegmentAllocator,
+        typename PointAllocator>
+rush::Vec<Dimensions, Type>
+rush::BezierCurve<Segments, Size, Dimensions, Type,
+        Allocator, SegmentAllocator, PointAllocator>::
+fetchDerivative(Type t, bool normalized) const {
+
+    if (normalized) {
+        // [0, 1] to [0, segments]
+        t *= segments.size();
+    }
+
+    auto index = std::min(static_cast<size_t>(t), Segments - 1);
+    Type offset = t - static_cast<Type>(index);
+
+    return segments[index].fetchDerivative(offset);
 }
 
 

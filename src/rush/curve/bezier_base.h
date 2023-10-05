@@ -68,7 +68,24 @@ namespace rush {
          * @param t the timestamp.
          * @return the point inside the curve.
          */
-        rush::Vec<Dimensions, Type, PointAllocator> fetch(Type t) const;
+        rush::Vec<Dimensions, Type, PointAllocator> fetch(const Type& t) const;
+
+        /**
+         * Fetches de derivative of a point inside the curve at the given
+         * timestamp.
+         * <p>
+         * The timestamp should be inside the range [0, 1].
+         * The timestamp 0 gives
+         * you the start of the curve, while timestamp 1 gives
+         * you the end.
+         * Using a timestamp outside this range gives a undefined
+         * behaviour.
+         *
+         * @param t the timestamp.
+         * @return the point inside the curve.
+         */
+        rush::Vec<Dimensions, Type, PointAllocator>
+        fetchDerivative(const Type& t) const;
 
         // REGION STATIC CONSTRUCTOR
 
@@ -152,6 +169,25 @@ namespace rush {
          * @return the point inside the curve.
          */
         rush::Vec<Dimensions, Type> fetch(Type t, bool normalized) const;
+
+        /**
+         * Fetches a point inside the curve at the given
+         * timestamp.
+         * <p>
+         * If normalized, the timestamp should be inside the range [0, 1].
+         * The timestamp 0 gives you the start of the curve,
+         * while timestamp 1 gives you the end.
+         * Using a timestamp outside this range gives a undefined
+         * behaviour.
+         * <p>
+         * The non-normalized range is [0, n], being <i>n</i> the
+         * amount of segments of this curve.
+         *
+         * @param t the timestamp.
+         * @return the point inside the curve.
+         */
+        rush::Vec<Dimensions, Type>
+        fetchDerivative(Type t, bool normalized) const;
 
     };
 }

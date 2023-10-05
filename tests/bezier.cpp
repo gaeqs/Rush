@@ -111,3 +111,23 @@ TEST_CASE("Bézier curve", "[bezier]") {
     requireSimilar(seg2.nodes[3], curve.fetch(1.0, true));
     requireSimilar(curve.fetch(0.499999, true), curve.fetch(0.500001, true));
 }
+
+TEST_CASE("Bézier derivative", "[bezier]") {
+    rush::BezierSegment<4, 3, double> seg1(
+            rush::Vec3d{1.0, 1.0, 1.0},
+            rush::Vec3d{5.0, 0.0, 1.0},
+            rush::Vec3d{10.0, -2.0, 3.0},
+            rush::Vec3d{10.0, -10.0, 4.0}
+    );
+
+    auto seg2 = rush::BezierSegment<4, 3, double>::continuousTo(
+            seg1,
+            rush::Vec3d{3.0, 0.0, 1.0},
+            rush::Vec3d{5.0, 2.0, 1.0}
+    );
+
+    rush::BezierCurve<2, 4, 3, double> curve(seg1, seg2);
+
+    requireSimilar(curve.fetchDerivative(0.49999, true),
+                   curve.fetchDerivative(0.50001, true));
+}
