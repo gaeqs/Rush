@@ -106,6 +106,17 @@ fetchDerivative(const Type& t) const {
     return result;
 }
 
+template<size_t Size, size_t Dimensions, typename Type, typename Allocator, typename PointAllocator>
+requires (Size > 0)
+template<size_t Samples, typename RAllocator>
+rush::RectifiedCurve<Samples, Type,
+        rush::BezierSegment<Size, Dimensions, Type, Allocator, PointAllocator>,
+        RAllocator>
+rush::BezierSegment<Size, Dimensions, Type, Allocator, PointAllocator>::
+rectified() {
+    return RectifiedCurve<Samples, Type, BezierSegment, RAllocator>(*this);
+}
+
 
 template<size_t Size, size_t Dimensions, typename Type, typename Allocator,
         typename PointAllocator>
@@ -152,14 +163,13 @@ template<size_t Segments, size_t Size, size_t Dimensions,
 rush::Vec<Dimensions, Type>
 rush::BezierCurve<Segments, Size, Dimensions, Type,
         Allocator, SegmentAllocator, PointAllocator>::
-fetch(Type t, bool normalized) const {
+fetch(Type t) const {
 
-    if (normalized) {
-        // [0, 1] to [0, segments]
-        t *= segments.size();
-    }
+    // [0, 1] to [0, segments]
+    t *= segments.size();
 
-    auto index = std::min(static_cast<size_t>(t), Segments - 1);
+    auto index = std::clamp(static_cast<size_t>(t),
+                            static_cast<size_t>(0), Segments - 1);
     Type offset = t - static_cast<Type>(index);
 
     return segments[index].fetch(offset);
@@ -171,18 +181,28 @@ template<size_t Segments, size_t Size, size_t Dimensions,
 rush::Vec<Dimensions, Type>
 rush::BezierCurve<Segments, Size, Dimensions, Type,
         Allocator, SegmentAllocator, PointAllocator>::
-fetchDerivative(Type t, bool normalized) const {
+fetchDerivative(Type t) const {
 
-    if (normalized) {
-        // [0, 1] to [0, segments]
-        t *= segments.size();
-    }
+    // [0, 1] to [0, segments]
+    t *= segments.size();
 
-    auto index = std::min(static_cast<size_t>(t), Segments - 1);
+    auto index = std::clamp(static_cast<size_t>(t),
+                            static_cast<size_t>(0), Segments - 1);
     Type offset = t - static_cast<Type>(index);
 
     return segments[index].fetchDerivative(offset);
 }
 
+
+template<size_t Segments, size_t Size, size_t Dimensions,
+        typename Type, typename Allocator, typename SegmentAllocator,
+        typename PointAllocator>
+template<size_t Samples, typename RAllocator>
+rush::RectifiedCurve<Samples, Type, rush::BezierCurve<Segments, Size, Dimensions,
+        Type, Allocator, SegmentAllocator, PointAllocator>, RAllocator>
+rush::BezierCurve<Segments, Size, Dimensions, Type, Allocator,
+        SegmentAllocator, PointAllocator>::rectified() {
+    return RectifiedCurve<Samples, Type, BezierCurve, RAllocator>(*this);
+}
 
 #endif //NEON_BEZIER_IMPL_H

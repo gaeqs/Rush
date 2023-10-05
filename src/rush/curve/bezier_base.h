@@ -6,6 +6,7 @@
 #define NEON_BEZIER_BASE_H
 
 #include <rush/vector/vec_base.h>
+#include <rush/curve/rectified_base.h>
 
 #include <cstddef>
 
@@ -34,7 +35,6 @@ namespace rush {
             typename PointAllocator = StaticAllocator> requires (Size > 0)
     struct BezierSegment {
 
-        using Storage = Allocator;
         using VectorType = rush::Vec<Dimensions, Type, PointAllocator>;
 
         Allocator::template AllocatedData<Size, VectorType> nodes;
@@ -87,6 +87,10 @@ namespace rush {
         rush::Vec<Dimensions, Type, PointAllocator>
         fetchDerivative(const Type& t) const;
 
+        template<size_t Samples = 100, typename RAllocator = StaticAllocator>
+        RectifiedCurve<Samples, Type, BezierSegment, RAllocator>
+        rectified();
+
         // REGION STATIC CONSTRUCTOR
 
         /**
@@ -137,7 +141,6 @@ namespace rush {
             typename PointAllocator = StaticAllocator>
     struct BezierCurve {
 
-        using Storage = Allocator;
         using Segment = BezierSegment<Size, Dimensions, Type,
                 SegmentAllocator, PointAllocator>;
 
@@ -156,38 +159,36 @@ namespace rush {
          * Fetches a point inside the curve at the given
          * timestamp.
          * <p>
-         * If normalized, the timestamp should be inside the range [0, 1].
+         * The timestamp should be inside the range [0, 1].
          * The timestamp 0 gives you the start of the curve,
          * while timestamp 1 gives you the end.
          * Using a timestamp outside this range gives a undefined
          * behaviour.
-         * <p>
-         * The non-normalized range is [0, n], being <i>n</i> the
-         * amount of segments of this curve.
          *
          * @param t the timestamp.
          * @return the point inside the curve.
          */
-        rush::Vec<Dimensions, Type> fetch(Type t, bool normalized) const;
+        rush::Vec<Dimensions, Type> fetch(Type t) const;
 
         /**
          * Fetches a point inside the curve at the given
          * timestamp.
          * <p>
-         * If normalized, the timestamp should be inside the range [0, 1].
+         * The timestamp should be inside the range [0, 1].
          * The timestamp 0 gives you the start of the curve,
          * while timestamp 1 gives you the end.
          * Using a timestamp outside this range gives a undefined
          * behaviour.
-         * <p>
-         * The non-normalized range is [0, n], being <i>n</i> the
-         * amount of segments of this curve.
          *
          * @param t the timestamp.
          * @return the point inside the curve.
          */
         rush::Vec<Dimensions, Type>
-        fetchDerivative(Type t, bool normalized) const;
+        fetchDerivative(Type t) const;
+
+        template<size_t Samples = 100, typename RAllocator = StaticAllocator>
+        RectifiedCurve<Samples, Type, BezierCurve, RAllocator>
+        rectified();
 
     };
 }
