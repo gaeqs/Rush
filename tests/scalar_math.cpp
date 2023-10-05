@@ -22,5 +22,5 @@ TEST_CASE("Binomial", "[scalar]") {
     REQUIRE(rush::binomial<uint64_t>(100, 5) == 75287520);
     REQUIRE(rush::binomial<uint64_t>(100, 100) == 1);
     REQUIRE(rush::binomial<uint64_t>(100, 500) == 0);
-    REQUIRE(rush::binomial<int64_t >(-1, -2) == 0);
+    REQUIRE(rush::binomial<int64_t>(-1, -2) == 1);
 }

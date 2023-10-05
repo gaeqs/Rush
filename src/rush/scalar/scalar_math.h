@@ -36,14 +36,16 @@ namespace rush {
     template<typename T>
     requires std::is_integral_v<T>
     constexpr T binomial(T n, T k) {
-        if(k > n) return T(0);
-        T top = T(1);
-        T bottom = T(1);
-        for (T i = T(1); i <= k; ++i) {
-            top *= (n - k + i);
-            bottom *= i;
+        if (k > n - k) {
+            k = n - k;
         }
-        return top / bottom;
+
+        T c = T(1);
+        for (T i = T(1); i <= k; ++i, --n) {
+            c = c / i * n + c % i * n / i;
+        }
+
+        return c;
     }
 
 }
