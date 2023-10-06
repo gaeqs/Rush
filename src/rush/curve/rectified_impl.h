@@ -49,30 +49,47 @@ populate() {
 template<size_t Samples, typename Type, typename Curve, typename Allocator>
 auto rush::RectifiedCurve<Samples, Type, Curve, Allocator>::
 fetch(Type t) const {
-    t *= Samples;
 
-    auto index = std::clamp(static_cast<size_t>(t),
-                            static_cast<size_t>(0), Samples - 1);
+    if (t < Type(0) || t > Type(1)) {
+        return curve.fetch(t);
+    }
 
-    Type n = index == 0 ? Type(0) : samples[index - 1];
-    Type n1 = samples[index];
+    auto it = std::lower_bound(samples.cbegin(), samples.cend(), t);
 
-    Type offset = t - static_cast<Type>(index);
+    size_t next = std::distance(samples.cbegin(), it) + 1;
+    size_t previous = next - 1;
 
-    return curve.fetch(n1 * offset + n * (Type(1) - offset));
+    Type prevV = previous == 0 ? Type(0) : samples[previous - 1];
+    Type nextV = samples[next - 1];
+
+    Type percentage = (t - prevV) / (nextV - prevV);
+
+    Type v = static_cast<Type>(previous) * (Type(1) - percentage) +
+             static_cast<Type>(next) * percentage;
+
+    return curve.fetch(v / Samples);
 }
 
 template<size_t Samples, typename Type, typename Curve, typename Allocator>
 auto rush::RectifiedCurve<Samples, Type, Curve, Allocator>::
 fetchDerivative(Type t) const {
-    t *= Samples;
 
-    auto index = std::clamp(static_cast<size_t>(t),
-                            static_cast<size_t>(0), Samples - 1);
+    if (t < Type(0) || t > Type(1)) {
+        return curve.fetch(t);
+    }
 
-    Type n = index == 0 ? Type(0) : samples[index - 1];
-    Type n1 = samples[index];
+    auto it = std::lower_bound(samples.cbegin(), samples.cend(), t);
 
-    Type offset = t - static_cast<Type>(index);
-    return curve.fetchDerivative(n1 * offset + n * (Type(1) - offset));
+    size_t next = std::distance(samples.cbegin(), it) + 1;
+    size_t previous = next - 1;
+
+    Type prevV = previous == 0 ? Type(0) : samples[previous - 1];
+    Type nextV = samples[next - 1];
+
+    Type percentage = (t - prevV) / (nextV - prevV);
+
+    Type v = static_cast<Type>(previous) * (Type(1) - percentage) +
+             static_cast<Type>(next) * percentage;
+
+    return curve.fetchDerivative(v / Samples);
 }
