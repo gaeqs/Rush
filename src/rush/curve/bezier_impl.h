@@ -44,13 +44,13 @@ fetch(const Type& t) const {
                + t * t * t * nodes[3];
     }
 
-    auto bin = [](size_t i, size_t n, Type t) {
+    auto bin = [](size_t i, size_t n, Type time) {
         Type b = rush::binomial(n, i);
         for (size_t p = 0; p < i; ++p) {
-            b *= t;
+            b *= time;
         }
         for (size_t p = 0; p < n - i; ++p) {
-            b *= (Type(1) - t);
+            b *= (Type(1) - time);
         }
         return b;
     };
@@ -87,13 +87,13 @@ fetchDerivative(const Type& t) const {
                + Type(3) * t * t * (nodes[3] - nodes[2]);
     }
 
-    auto bin = [](size_t i, size_t n, Type t) {
+    auto bin = [](size_t i, size_t n, Type time) {
         Type b = rush::binomial(n, i);
         for (size_t p = 0; p < i; ++p) {
-            b *= t;
+            b *= time;
         }
         for (size_t p = 0; p < n - i; ++p) {
-            b *= (Type(1) - t);
+            b *= (Type(1) - time);
         }
         return b;
     };

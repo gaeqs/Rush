@@ -20,6 +20,8 @@ namespace rush {
         VecRef() {
         }
 
+        VecRef(const VecRef& other) = default;
+
         template<typename... T>
         requires(sizeof...(T) > 0)
         explicit VecRef(T... list) : references{list...} {

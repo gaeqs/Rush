@@ -369,20 +369,20 @@ namespace rush {
 #ifdef RUSH_GLM
 
         Vec(const glm::vec<Size, Type>& o) {
-            for (int i = 0; i < Size; ++i) {
+            for (size_t i = 0; i < Size; ++i) {
                 data[i] = o[i];
             }
         }
 
         Vec(const glm::vec<Size, Type>&& o) {
-            for (int i = 0; i < Size; ++i) {
+            for (size_t i = 0; i < Size; ++i) {
                 data[i] = std::move(o[i]);
             }
         }
 
         operator glm::vec<Size, Type>() const {
             glm::vec<Size, Type> result;
-            for (int i = 0; i < Size; ++i) {
+            for (size_t i = 0; i < Size; ++i) {
                 result[i] = data[i];
             }
             return result;

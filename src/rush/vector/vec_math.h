@@ -67,6 +67,35 @@ namespace rush {
                 [v](size_t i) { return v[i] * RELATION; }};
     }
 
+
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> min(const Vec<Size, Type, Allocator>& v,
+                                   Type min) {
+        return Vec<Size, Type, Allocator>{
+                [v, &min](size_t i) { return std::min(v[i], min); }};
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> min(const Vec<Size, Type, Allocator>& v,
+                                   const Vec<Size, Type, Allocator>& w) {
+        return Vec<Size, Type, Allocator>{
+                [v, w](size_t i) { return std::min(v[i], w[i]); }};
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> max(const Vec<Size, Type, Allocator>& v,
+                                   const Type& max) {
+        return Vec<Size, Type, Allocator>{
+                [v, max](size_t i) { return std::max(v[i], max); }};
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> max(const Vec<Size, Type, Allocator>& v,
+                                   const Vec<Size, Type, Allocator>& w) {
+        return Vec<Size, Type, Allocator>{
+                [v, w](size_t i) { return std::max(v[i], w[i]); }};
+    }
+
 }
 
 #endif //RUSH_VEC_MATH_H
