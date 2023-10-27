@@ -96,6 +96,13 @@ namespace rush {
                 [v, w](size_t i) { return std::max(v[i], w[i]); }};
     }
 
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> mix(const Vec<Size, Type, Allocator>& a,
+                                   const Vec<Size, Type, Allocator>& b,
+                                   const Type& x) {
+        return b * x + a * (Type(1) - x);
+    }
+
 }
 
 #endif //RUSH_VEC_MATH_H

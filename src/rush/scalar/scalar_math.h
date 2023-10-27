@@ -19,6 +19,11 @@ namespace rush {
         return other * std::numbers::pi_v<T> / T(180);
     }
 
+    template<typename Type>
+    Type mix(const Type& a, const Type& b, const Type& x) {
+      return b * x + a * (Type(1) - x);
+    }
+
     template<typename T>
     requires std::is_integral_v<T>
     constexpr T factorial(T v) {
