@@ -17,7 +17,14 @@ TEST_CASE("Vector creation", "[vector]") {
     REQUIRE_NOTHROW(V5());
     REQUIRE_NOTHROW(V5(1, 2, 3, 4, 5));
     REQUIRE_NOTHROW(V2(V5(1, 2, 3, 4, 5)));
+
+    REQUIRE(V5() == V5(0, 0, 0, 0, 0));
+    REQUIRE(V5() == V5(0));
+    REQUIRE(V5(1) == V5(1, 1, 1, 1, 1));
+    REQUIRE(V5(32) == V5(32, 32, 32, 32, 32));
+
     REQUIRE(V2(V5(1, 2, 3, 4, 5)) == V2(1, 2));
+    REQUIRE(V5(V2(1, 2), 3, 4, 5) == V5(1, 2, 3, 4, 5));
 
     V2 v;
     REQUIRE(v[0] == 0);

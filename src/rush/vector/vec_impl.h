@@ -11,17 +11,24 @@ namespace rush {
 
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    template<typename... T>
-    requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
-             (sizeof...(T) <= Size)
-    Vec<Size, Type, Allocator>::Vec(T... list) {
-        Type* ptr = toPointer();
-        ((*ptr++ = list), ...);
+    Vec<Size, Type, Allocator>::Vec() : data() {
+    }
+
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    Vec<Size, Type, Allocator>::Vec(Type fill) {
+        std::fill_n(begin(), Size, fill);
     }
 
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
-    Vec<Size, Type, Allocator>::Vec() : data() {
+    template<typename... T>
+    requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
+             (Size > 1 && sizeof...(T) == Size)
+    Vec<Size, Type, Allocator>::Vec(T... list) {
+        auto it = begin();
+        ((*it++ = list), ...);
     }
 
     template<size_t Size, typename Type, typename Allocator>
@@ -29,20 +36,22 @@ namespace rush {
     template<size_t OSize, typename OAlloc>
     requires(Size < OSize)
     Vec<Size, Type, Allocator>::Vec(const Vec<OSize, Type, OAlloc>& other) {
-        std::copy_n(other.toPointer(), Size, toPointer());
+        std::copy_n(other.cbegin(), Size, begin());
     }
 
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     template<size_t OSize, typename OAlloc, typename... T>
     requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
-             (sizeof...(T) + OSize <= Size)
+             (sizeof...(T) + OSize == Size)
     Vec<Size, Type, Allocator>::Vec(const Vec<OSize, Type, OAlloc>& other,
                                     T... list) {
-        std::copy_n(other.toPointer(), OSize, toPointer());
-
-        Type* ptr = toPointer() + OSize;
-        ((*ptr++ = list), ...);
+        auto it = begin();
+        auto oIt = other.cbegin();
+        for (size_t i = 0; i < OSize; ++i) {
+            *it++ = *oIt++;
+        }
+        ((*it++ = list), ...);
     }
 
     template<size_t Size, typename Type, typename Allocator>

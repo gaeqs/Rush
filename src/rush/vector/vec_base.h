@@ -33,12 +33,14 @@ namespace rush {
 
         Allocator::template AllocatedData<Size, Type> data;
 
+        Vec();
+
+        explicit Vec(Type fill);
+
         template<typename... T>
         requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
-                 (sizeof...(T) <= Size)
+                 (Size > 1 && sizeof...(T) == Size)
         Vec(T... list);
-
-        Vec();
 
         template<size_t OSize, typename OAlloc>
         requires(Size < OSize)
@@ -46,7 +48,7 @@ namespace rush {
 
         template<size_t OSize, typename OAlloc, typename... T>
         requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
-                 (sizeof...(T) + OSize <= Size)
+                 (sizeof...(T) + OSize == Size)
         Vec(const Vec<OSize, Type, OAlloc>& other, T... list);
 
         explicit Vec(const VecRef<Size, Type>& ref);
