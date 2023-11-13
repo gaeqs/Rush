@@ -255,6 +255,16 @@ namespace rush {
 
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
+    std::array<Type, Size> Vec<Size, Type, Allocator>::toArray() const {
+        std::array<Type, Size> array;
+        for (int i = 0; i < Size; ++i) {
+            array[i] = data[i];
+        }
+        return array;
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
     Vec<Size, Type, Allocator>&
     Vec<Size, Type, Allocator>::operator+() {
         return *this;
@@ -536,6 +546,18 @@ namespace rush {
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator%(
+            const Type& s) const requires HasMod<Type> {
+        Vec result;
+        for (size_t i = 0; i < Size; ++i) {
+            result[i] = data[i] % s;
+        }
+        return result;
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    Vec<Size, Type, Allocator>
     Vec<Size, Type, Allocator>::operator<<(
             const Type& s) const requires HasShl<Type> {
         Vec result;
@@ -694,6 +716,18 @@ namespace rush {
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     template<typename OAlloc>
+    Type Vec<Size, Type, Allocator>::operator%(const Vec<Size, Type,
+            OAlloc>& other) const requires HasMod<Type> {
+        Vec result;
+        for (size_t i = 0; i < Size; ++i) {
+            result[i] = data[i] % other[i];
+        }
+        return result;
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    template<typename OAlloc>
     Vec<Size, Type, Allocator>
     Vec<Size, Type, Allocator>::operator<<(
             const Vec<Size, Type, OAlloc>& other) const requires
@@ -710,11 +744,52 @@ namespace rush {
     template<typename OAlloc>
     Vec<Size, Type, Allocator>
     Vec<Size, Type, Allocator>::operator>>(
-            const Vec<Size, Type, OAlloc>& other) const requires
-    HasShr<Type> {
+            const Vec<Size, Type, OAlloc>& other) const requires HasShr<Type> {
         Vec result;
         for (size_t i = 0; i < Size; ++i) {
             result[i] = data[i] >> other[i];
+        }
+        return result;
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator&(
+            const Vec<Size, Type, OAlloc>& other)
+    const requires HasBitAnd<Type> {
+        Vec result;
+        for (size_t i = 0; i < Size; ++i) {
+            result[i] = data[i] & other[i];
+        }
+        return result;
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator|(
+            const Vec<Size, Type, OAlloc>& other)
+    const requires HasBitOr<Type> {
+        Vec result;
+        for (size_t i = 0; i < Size; ++i) {
+            result[i] = data[i] | other[i];
+        }
+        return result;
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    requires (Size > 0)
+    template<typename OAlloc>
+    Vec<Size, Type, Allocator>
+    Vec<Size, Type, Allocator>::operator^(
+            const Vec<Size, Type, OAlloc>& other)
+    const requires HasBitXor<Type> {
+        Vec result;
+        for (size_t i = 0; i < Size; ++i) {
+            result[i] = data[i] ^ other[i];
         }
         return result;
     }
@@ -758,36 +833,11 @@ namespace rush {
     template<size_t Size, typename Type, typename Allocator>
     requires (Size > 0)
     template<typename OAlloc>
-    Type Vec<Size, Type, Allocator>::operator%(
-            const Vec<Size, Type, OAlloc>& other) const requires (
-    HasAdd<Type> && HasMul<Type>) {
-        Type v = data[0] * other[0];
-        for (size_t i = 1; i < Size; ++i) {
-            v += data[i] * other[i];
-        }
-        return v;
-    }
-
-    template<size_t Size, typename Type, typename Allocator>
-    requires (Size > 0)
-    template<typename OAlloc>
     Vec<Size, Type, Allocator>
     Vec<Size, Type, Allocator>::cross(
             const Vec<Size, Type, OAlloc>& other) const requires (
     Size == 3 && HasAdd<Type> && HasMul<Type>) {
         return *this ^ other;
-    }
-
-    template<size_t Size, typename Type, typename Allocator>
-    requires (Size > 0)
-    template<typename OAlloc>
-    Vec<Size, Type, Allocator>
-    Vec<Size, Type, Allocator>::operator^(
-            const Vec<Size, Type, OAlloc>& o) const requires (
-    Size == 3 && HasAdd<Type> && HasMul<Type>) {
-        return {y() * o.z() - o.y() * z(),
-                z() * o.x() - o.z() * x(),
-                x() * o.y() - o.x() * y()};
     }
 
     template<size_t Size, typename Type, typename Allocator>

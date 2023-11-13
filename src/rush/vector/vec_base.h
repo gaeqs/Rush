@@ -33,28 +33,84 @@ namespace rush {
 
         Allocator::template AllocatedData<Size, Type> data;
 
+        /**
+         * Creates a new empty vector.
+         * <p>
+         * All members of the new vector will be
+         * initialized to their default values.
+         */
         Vec();
 
+        /**
+         * Creates a new vector will all its members
+         * initialized to the given value.
+         * @param fill the value of all members.
+         */
         explicit Vec(Type fill);
 
+        /**
+         * Creates a new vector will all its members
+         * initialized to the given values.
+         * @tparam T the type of the values.
+         * @param list the values.
+         */
         template<typename... T>
         requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
                  (Size > 1 && sizeof...(T) == Size)
         Vec(T... list);
 
+        /**
+         * Creates a new vector with the data
+         * of the given vector.
+         * The new vector must be smaller than the
+         * given vector.
+         * @tparam OSize the size of the given vector.
+         * @tparam OAlloc the allocator of the given vector.
+         * @param other the given vector.
+         */
         template<size_t OSize, typename OAlloc>
         requires(Size < OSize)
         Vec(const Vec<OSize, Type, OAlloc>& other);
 
+        /**
+         * Creates a new vector with the data
+         * of the given vector and the values
+         * of the given list.
+         * @tparam OSize the size of the given vector.
+         * @tparam OAlloc the allocator of the given vector.
+         * @tparam T the type of the values.
+         * @param other the given vector.
+         * @param list the given list.
+         */
         template<size_t OSize, typename OAlloc, typename... T>
         requires std::is_convertible_v<std::common_type_t<T...>, Type> &&
                  (sizeof...(T) + OSize == Size)
         Vec(const Vec<OSize, Type, OAlloc>& other, T... list);
 
+        /**
+         * Creates a new vector from the given vector
+         * reference.
+         * @param ref the given vector reference.
+         */
         explicit Vec(const VecRef<Size, Type>& ref);
 
+        /**
+         * Creates a new vector using the given population
+         * function to fill the vector.
+         * The function will be called for each element,
+         * giving each time the index of the element.
+         * @param populator the population function.
+         */
         explicit Vec(std::function<Type(size_t)> populator);
 
+        /**
+         * Creates a new vector using the given population
+         * function to fill the vector.
+         * The function will be called for each element,
+         * giving each time the index of the element.
+         * The second parameter is always the size of the vector.
+         * @param populator the population function.
+         */
         explicit Vec(std::function<Type(size_t, size_t)> populator);
 
         /**
@@ -84,15 +140,23 @@ namespace rush {
         // REGION ACCESSORS
 
         inline Type& x();
+
         inline Type& y() requires (Size >= 2);
+
         inline Type& z() requires (Size >= 3);
+
         inline Type& w() requires (Size >= 4);
+
         inline const Type& x() const;
+
         inline const Type& y() const requires (Size >= 2);
+
         inline const Type& z() const requires (Size >= 3);
+
         inline const Type& w() const requires (Size >= 4);
 
         inline Type& operator[](size_t index);
+
         inline const Type& operator[](size_t index) const;
 
         /**
@@ -218,20 +282,32 @@ namespace rush {
         template<typename To, typename OAlloc = Allocator>
         Vec<Size, To, OAlloc> cast() const;
 
+        std::array<Type, Size> toArray() const;
+
         inline Vec& operator+();
+
         inline const Vec& operator+() const;
+
         inline Vec operator-() const requires HasSub<Type>;
 
         // ASSIGN VECTOR - SCALE
 
         inline Vec& operator+=(const Type& s) requires HasAdd<Type>;
+
         inline Vec& operator-=(const Type& s) requires HasSub<Type>;
+
         inline Vec& operator*=(const Type& s) requires HasMul<Type>;
+
         inline Vec& operator/=(const Type& s) requires HasDiv<Type>;
+
         inline Vec& operator<<=(const Type& s) requires HasShl<Type>;
+
         inline Vec& operator>>=(const Type& s) requires HasShr<Type>;
+
         inline Vec& operator&=(const Type& s) requires HasBitAnd<Type>;
+
         inline Vec& operator|=(const Type& s) requires HasBitOr<Type>;
+
         inline Vec& operator^=(const Type& s) requires HasBitXor<Type>;
 
         // ASSIGN VECTOR - VECTOR
@@ -275,15 +351,27 @@ namespace rush {
         // VECTOR - SCALE
 
         inline Vec operator+(const Type& s) const requires HasAdd<Type>;
+
         inline Vec operator-(const Type& s) const requires HasSub<Type>;
+
         inline Vec operator*(const Type& s) const requires HasMul<Type>;
+
         inline Vec operator/(const Type& s) const requires HasDiv<Type>;
+
+        inline Vec operator%(const Type& s) const requires HasMod<Type>;
+
         inline Vec operator<<(const Type& s) const requires HasShl<Type>;
+
         inline Vec operator>>(const Type& s) const requires HasShr<Type>;
+
         inline Vec operator&(const Type& s) const requires HasBitAnd<Type>;
+
         inline Vec operator|(const Type& s) const requires HasBitOr<Type>;
+
         inline Vec operator^(const Type& s) const requires HasBitXor<Type>;
+
         inline Vec operator&&(const Type& s) const requires HasAnd<Type>;
+
         inline Vec operator||(const Type& s) const requires HasOr<Type>;
 
         // VECTOR - VECTOR
@@ -309,12 +397,28 @@ namespace rush {
         const requires HasDiv<Type>;
 
         template<typename OAlloc>
+        inline Type operator%(const Vec<Size, Type, OAlloc>& other)
+        const requires HasMod<Type>;
+
+        template<typename OAlloc>
         inline Vec operator<<(const Vec<Size, Type, OAlloc>& other)
         const requires HasShl<Type>;
 
         template<typename OAlloc>
         inline Vec operator>>(const Vec<Size, Type, OAlloc>& other)
         const requires HasShr<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator&(const Vec<Size, Type, OAlloc>& other)
+        const requires HasBitAnd<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator|(const Vec<Size, Type, OAlloc>& other)
+        const requires HasBitOr<Type>;
+
+        template<typename OAlloc>
+        inline Vec operator^(const Vec<Size, Type, OAlloc>& other)
+        const requires HasBitXor<Type>;
 
         template<typename OAlloc>
         inline Vec operator&&(const Vec<Size, Type, OAlloc>& other)
@@ -328,18 +432,9 @@ namespace rush {
         template<typename OAlloc>
         inline Type dot(const Vec<Size, Type, OAlloc>& other) const;
 
-        template<typename OAlloc>
-        inline Type
-        operator%(const Vec<Size, Type, OAlloc>& other) const requires (
-        HasAdd<Type> && HasMul<Type>);
-
         // CROSS
         template<typename OAlloc>
         inline Vec cross(const Vec<Size, Type, OAlloc>& other) const requires (
-        Size == 3 && HasAdd<Type> && HasMul<Type>);
-
-        template<typename OAlloc>
-        inline Vec operator^(const Vec<Size, Type, OAlloc>& o) const requires (
         Size == 3 && HasAdd<Type> && HasMul<Type>);
 
         template<typename OAlloc>
@@ -349,6 +444,7 @@ namespace rush {
         inline bool operator!=(const Vec<Size, Type, OAlloc>& other) const;
 
         inline bool operator==(const VecRef<Size, Type>& other) const;
+
         inline bool operator!=(const VecRef<Size, Type>& other) const;
 
         // ENDREGION
@@ -356,12 +452,19 @@ namespace rush {
         // REGION ITERATOR
 
         inline auto begin();
+
         inline auto end();
+
         inline auto cbegin() const;
+
         inline auto cend() const;
+
         inline auto rbegin();
+
         inline auto rend();
+
         inline auto crbegin() const;
+
         inline auto crend() const;
 
         // ENDREGION
