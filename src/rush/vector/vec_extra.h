@@ -52,10 +52,10 @@ struct std::hash<rush::Vec<Size, Type, Allocator>> {
 // REGION EXTRA OPERATIONS
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasAdd<Type>
-inline rush::Vec<Size, Type, Allocator> operator+(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasAdd<Type>
+rush::Vec<Size, Type, Allocator> operator+(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s + v[i];
@@ -64,10 +64,10 @@ inline rush::Vec<Size, Type, Allocator> operator+(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasSub<Type>
-inline rush::Vec<Size, Type, Allocator> operator-(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasSub<Type>
+rush::Vec<Size, Type, Allocator> operator-(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s - v[i];
@@ -76,10 +76,10 @@ inline rush::Vec<Size, Type, Allocator> operator-(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasMul<Type>
-inline rush::Vec<Size, Type, Allocator> operator*(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasMul<Type>
+rush::Vec<Size, Type, Allocator> operator*(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s * v[i];
@@ -88,10 +88,10 @@ inline rush::Vec<Size, Type, Allocator> operator*(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasDiv<Type>
-inline rush::Vec<Size, Type, Allocator> operator/(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasDiv<Type>
+rush::Vec<Size, Type, Allocator> operator/(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s / v[i];
@@ -100,10 +100,10 @@ inline rush::Vec<Size, Type, Allocator> operator/(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasShl<Type>
-inline rush::Vec<Size, Type, Allocator> operator<<(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasShl<Type>
+rush::Vec<Size, Type, Allocator> operator<<(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s << v[i];
@@ -112,10 +112,10 @@ inline rush::Vec<Size, Type, Allocator> operator<<(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasShr<Type>
-inline rush::Vec<Size, Type, Allocator> operator>>(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasShr<Type>
+rush::Vec<Size, Type, Allocator> operator>>(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s >> v[i];
@@ -124,10 +124,10 @@ inline rush::Vec<Size, Type, Allocator> operator>>(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasBitAnd<Type>
-inline rush::Vec<Size, Type, Allocator> operator&(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasBitAnd<Type>
+rush::Vec<Size, Type, Allocator> operator&(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s & v[i];
@@ -136,10 +136,10 @@ inline rush::Vec<Size, Type, Allocator> operator&(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasBitOr<Type>
-inline rush::Vec<Size, Type, Allocator> operator|(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasBitOr<Type>
+rush::Vec<Size, Type, Allocator> operator|(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s | v[i];
@@ -148,10 +148,10 @@ inline rush::Vec<Size, Type, Allocator> operator|(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasBitXor<Type>
-inline rush::Vec<Size, Type, Allocator> operator^(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasBitXor<Type>
+rush::Vec<Size, Type, Allocator> operator^(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s ^ v[i];
@@ -160,10 +160,10 @@ inline rush::Vec<Size, Type, Allocator> operator^(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasAnd<Type>
-inline rush::Vec<Size, Type, Allocator> operator&&(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasAnd<Type>
+rush::Vec<Size, Type, Allocator> operator&&(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s && v[i];
@@ -172,10 +172,10 @@ inline rush::Vec<Size, Type, Allocator> operator&&(
 }
 
 template<size_t Size, typename Type, typename Allocator>
-requires rush::HasOr<Type>
-inline rush::Vec<Size, Type, Allocator> operator||(
-        const Type& s,
-        const rush::Vec<Size, Type, Allocator>& v) {
+    requires rush::HasOr<Type>
+rush::Vec<Size, Type, Allocator> operator||(
+    const Type& s,
+    const rush::Vec<Size, Type, Allocator>& v) {
     rush::Vec<Size, Type, Allocator> result;
     for (size_t i = 0; i < Size; ++i) {
         result[i] = s || v[i];

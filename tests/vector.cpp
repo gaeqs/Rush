@@ -256,6 +256,11 @@ TEST_CASE("Vector angle (4D)", "[vector]") {
     requireSimilar(angleLowGeneral, ANGLE);
 }
 
+TEST_CASE("Average", "[vector]") {
+    rush::Vec4f vector = {2.0f, 30.0f, 4.0f, -2.0f};
+    requireSimilar(rush::avg(vector), 8.5f);
+}
+
 
 #ifdef RUSH_GLM
 
