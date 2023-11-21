@@ -122,6 +122,22 @@ namespace rush {
         }
         return result / static_cast<Type>(Size);
     }
+
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator>
+    pow(const Vec<Size, Type, Allocator>& v, const Type& p) {
+        return Vec<Size, Type, Allocator>{
+            [v, p](size_t i) { return std::pow(v[i], p); }
+        };
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> pow(const Vec<Size, Type, Allocator>& v,
+                                   const Vec<Size, Type, Allocator>& p) {
+        return Vec<Size, Type, Allocator>{
+            [v, p](size_t i) { return std::pow(v[i], p[i]); }
+        };
+    }
 }
 
 #endif //RUSH_VEC_MATH_H

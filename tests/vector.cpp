@@ -261,6 +261,14 @@ TEST_CASE("Average", "[vector]") {
     requireSimilar(rush::avg(vector), 8.5f);
 }
 
+TEST_CASE("Pow", "[vector]") {
+    rush::Vec4f vector = {2.0f, 30.0f, 4.0f, -2.0f};
+    requireSimilar(rush::pow(vector, 2.0f), vector * vector);
+
+    rush::Vec4f pow = {1.0f, 2.0f, 3.0f, 4.0f};
+    requireSimilar(rush::pow(vector, pow), {2.0f, 30.0f * 30.0f, 4.0f * 4.0f * 4.0f, 16.0f});
+}
+
 
 #ifdef RUSH_GLM
 
