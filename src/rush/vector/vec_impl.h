@@ -253,6 +253,14 @@ namespace rush {
         });
     }
 
+    template<size_t Size, typename Type, typename Allocator> requires (Size > 0)
+    template<typename OAlloc>
+    Vec<Size, Type, OAlloc> Vec<Size, Type, Allocator>::reverse() const {
+        return Vec<Size, Type, OAlloc>([this](size_t i) {
+            return data[Size - i];
+        });
+    }
+
     template<size_t Size, typename Type, typename Allocator>
         requires (Size > 0)
     std::array<Type, Size> Vec<Size, Type, Allocator>::toArray() const {

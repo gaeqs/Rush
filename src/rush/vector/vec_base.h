@@ -335,6 +335,15 @@ namespace rush {
         Vec<Size, To, OAlloc> cast() const;
 
         /**
+         * Returns a copy of this vector with all its elements'
+         * order reversed.
+         * @tparam OAlloc the allocator used on the new vector.
+         * @return the new vector.
+         */
+        template<typename OAlloc = Allocator>
+        Vec<Size, Type, OAlloc> reverse() const;
+
+        /**
          * Returns an std::array containing the elements
          * of this vector.
          *
