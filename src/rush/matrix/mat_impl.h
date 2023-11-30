@@ -549,7 +549,7 @@ namespace rush {
     (HasAdd<Type> && HasMul<Type>) {
         auto transposed = transpose();
         return Vec<Columns, Type, Allocator>([&](size_t r) {
-            return transposed.column(r) % other;
+            return transposed.column(r).dot(other);
         });
 
     }
@@ -588,7 +588,7 @@ namespace rush {
     (Columns == OR && HasAdd<Type> && HasMul<Type>) {
         auto transposed = transpose();
         return Mat<OC, Rows, Type, Allocator>([&](size_t c, size_t r) {
-            return transposed.column(r) % other.column(c);
+            return transposed.column(r).dot(other.column(c));
         });
     }
 

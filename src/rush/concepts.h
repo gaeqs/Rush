@@ -30,6 +30,11 @@ namespace rush {
     };
 
     template<typename Type>
+    concept HasMod = requires(Type a, Type b) {
+        a % b;
+    };
+
+    template<typename Type>
     concept HasShl = requires(Type a, Type b) {
         a << b;
     };

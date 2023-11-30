@@ -101,15 +101,13 @@ TEST_CASE("Vector operations", "[vector]") {
     }
 
     SECTION("Dot") {
-        REQUIRE(o % p == o.dot(p));
-        REQUIRE(o % p == 40 + 36 + 28);
+        REQUIRE(o.dot(p) == 40 + 36 + 28);
     }
 
     SECTION("Cross") {
         V3 a = {10, 20, 30};
         V3 b = {0, 0, 1};
-        REQUIRE((a ^ b) == a.cross(b));
-        REQUIRE((a ^ b) == V3(20, -10, 0));
+        REQUIRE(a.cross(b) == V3(20, -10, 0));
     }
 
     SECTION("Scalar") {
@@ -256,6 +254,19 @@ TEST_CASE("Vector angle (4D)", "[vector]") {
     requireSimilar(angleHighGeneral, ANGLE);
     requireSimilar(angleLowIntrinsics, ANGLE);
     requireSimilar(angleLowGeneral, ANGLE);
+}
+
+TEST_CASE("Average", "[vector]") {
+    rush::Vec4f vector = {2.0f, 30.0f, 4.0f, -2.0f};
+    requireSimilar(rush::avg(vector), 8.5f);
+}
+
+TEST_CASE("Pow", "[vector]") {
+    rush::Vec4f vector = {2.0f, 30.0f, 4.0f, -2.0f};
+    requireSimilar(rush::pow(vector, 2.0f), vector * vector);
+
+    rush::Vec4f pow = {1.0f, 2.0f, 3.0f, 4.0f};
+    requireSimilar(rush::pow(vector, pow), {2.0f, 30.0f * 30.0f, 4.0f * 4.0f * 4.0f, 16.0f});
 }
 
 
