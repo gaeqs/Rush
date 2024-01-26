@@ -11,6 +11,13 @@
 
 namespace rush {
     template<size_t Size, typename Type, typename Allocator>
+    Vec<Size, Type, Allocator> abs(const Vec<Size, Type, Allocator>& v) {
+        return Vec<Size, Type, Allocator>{
+            [v](size_t i) { return std::abs(v[i]); }
+        };
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
     Vec<Size, Type, Allocator> sqrt(const Vec<Size, Type, Allocator>& v) {
         return Vec<Size, Type, Allocator>{
             [v](size_t i) { return std::sqrt(v[i]); }

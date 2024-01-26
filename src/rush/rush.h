@@ -17,4 +17,6 @@
 
 #include <rush/curve/curves.h>
 
+#include <rush/bound/bound.h>
+
 #endif //RUSH_RUSH_H
