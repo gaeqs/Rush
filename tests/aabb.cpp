@@ -16,9 +16,10 @@ TEST_CASE("AABB inside", "[aabb]") {
         {4.0f, 5.0f, 4.0f}
     );
 
-    REQUIRE(aabb.test(rush::Vec3f(3.0f, 5.0f, 6.0f)));
-    REQUIRE(aabb.test(rush::Vec3f(0.0f, 9.0f, 3.0f)));
-    REQUIRE_FALSE(aabb.test(rush::Vec3f(0.0f, 0.0f, 0.0f)));
+    REQUIRE(rush::intersects(aabb, rush::Vec3f(3.0f, 5.0f, 6.0f)));
+    REQUIRE(rush::intersects(aabb, rush::Vec3f(0.0f, 9.0f, 3.0f)));
+    REQUIRE_FALSE(rush::intersects(aabb, rush::Vec3f(0.0f, 0.0f, 0.0f)));
+    REQUIRE_FALSE(rush::intersects(rush::Vec3f(0.0f, 0.0f, 0.0f), aabb));
 }
 
 
@@ -38,8 +39,26 @@ TEST_CASE("AABB collision", "[aabb]") {
         {2.0f, 2.0f, 2.0f}
     );
 
-    REQUIRE(aabb1.test(aabb2));
-    REQUIRE_FALSE(aabb1.test(aabb3));
+    REQUIRE(rush::intersects(aabb1, aabb2));
+    REQUIRE_FALSE(rush::intersects(aabb1, aabb3));
+}
+
+TEST_CASE("AABB closest point", "[aabb]") {
+    rush::Vec<3, float> min = {1.0f, 1.0f, 1.0f};
+    rush::Vec<3, float> max = {5.0f, 5.0f, 5.0f};
+    auto aabb = rush::AABB<3, float>::fromEdges(min, max);
+
+    requireSimilar(aabb.closestPoint({0.0f, 0.0f, 0.0f}), min);
+    requireSimilar(aabb.closestPoint({9.0f, 9.0f, 9.0f}), max);
+
+    requireSimilar(aabb.closestPoint({2.0f, 9.0f, 2.0f}),
+                   {2.0f, 5.0f, 2.0f});
+
+    requireSimilar(aabb.closestPoint({2.0f, 0.0f, 2.0f}),
+                   {2.0f, 1.0f, 2.0f});
+
+    requireSimilar(aabb.closestPoint({-20.0f, 4.0f, 10.0f}),
+                   {1.0f, 4.0f, 5.0f});
 }
 
 

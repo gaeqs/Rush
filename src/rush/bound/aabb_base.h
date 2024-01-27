@@ -21,11 +21,9 @@ namespace rush {
 
         AABB(VectorType center_, VectorType radius_);
 
-        [[nodiscard]] bool test(const VectorType& vector) const;
-
-        template<typename OAllocator>
-        [[nodiscard]] bool
-        test(const AABB<Dimensions, Type, OAllocator>& other) const;
+        template<typename PAllocator = rush::StaticAllocator>
+        Vec<Dimensions, Type, PAllocator>
+        closestPoint(const Vec<Dimensions, Type, PAllocator>& point) const;
 
         template<typename OAllocator>
         bool operator==(const AABB<Dimensions, Type, OAllocator>& other) const;

@@ -90,10 +90,11 @@ namespace rush {
         };
     }
 
-    template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> min(const Vec<Size, Type, Allocator>& v,
-                                   const Vec<Size, Type, Allocator>& w) {
-        return Vec<Size, Type, Allocator>{
+    template<size_t Size, typename Type,
+        typename AAllocator, typename BAllocator>
+    Vec<Size, Type, AAllocator> min(const Vec<Size, Type, AAllocator>& v,
+                                    const Vec<Size, Type, BAllocator>& w) {
+        return Vec<Size, Type, AAllocator>{
             [v, w](size_t i) { return std::min(v[i], w[i]); }
         };
     }
@@ -106,18 +107,39 @@ namespace rush {
         };
     }
 
-    template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> max(const Vec<Size, Type, Allocator>& v,
-                                   const Vec<Size, Type, Allocator>& w) {
-        return Vec<Size, Type, Allocator>{
+    template<size_t Size, typename Type,
+        typename AAllocator, typename BAllocator>
+    Vec<Size, Type, AAllocator> max(const Vec<Size, Type, AAllocator>& v,
+                                    const Vec<Size, Type, BAllocator>& w) {
+        return Vec<Size, Type, AAllocator>{
             [v, w](size_t i) { return std::max(v[i], w[i]); }
         };
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> mix(const Vec<Size, Type, Allocator>& a,
-                                   const Vec<Size, Type, Allocator>& b,
-                                   const Type& x) {
+    Vec<Size, Type, Allocator> clamp(const Vec<Size, Type, Allocator>& v,
+                                     const Type& min,
+                                     const Type& max) {
+        return Vec<Size, Type, Allocator>{
+            [v, min, max](size_t i) { return std::clamp(v[i], min, max); }
+        };
+    }
+
+    template<size_t Size, typename Type,
+        typename AAllocator, typename BAllocator, typename CAllocator>
+    Vec<Size, Type, AAllocator> clamp(const Vec<Size, Type, AAllocator>& v,
+                                      const Vec<Size, Type, BAllocator>& min,
+                                      const Vec<Size, Type, CAllocator>& max) {
+        return Vec<Size, Type, AAllocator>{
+            [v, min, max](size_t i) { return std::clamp(v[i], min[i], max[i]); }
+        };
+    }
+
+    template<size_t Size, typename Type,
+        typename AAllocator, typename BAllocator>
+    Vec<Size, Type, AAllocator> mix(const Vec<Size, Type, AAllocator>& a,
+                                    const Vec<Size, Type, BAllocator>& b,
+                                    const Type& x) {
         return b * x + a * (Type(1) - x);
     }
 
@@ -138,10 +160,11 @@ namespace rush {
         };
     }
 
-    template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> pow(const Vec<Size, Type, Allocator>& v,
-                                   const Vec<Size, Type, Allocator>& p) {
-        return Vec<Size, Type, Allocator>{
+    template<size_t Size, typename Type,
+        typename AAllocator, typename BAllocator>
+    Vec<Size, Type, AAllocator> pow(const Vec<Size, Type, AAllocator>& v,
+                                    const Vec<Size, Type, BAllocator>& p) {
+        return Vec<Size, Type, AAllocator>{
             [v, p](size_t i) { return std::pow(v[i], p[i]); }
         };
     }
