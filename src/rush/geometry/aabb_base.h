@@ -32,6 +32,6 @@ namespace rush {
     };
 }
 
-#include <rush/bound/aabb_impl.h>
+#include <rush/geometry/aabb_impl.h>
 
 #endif //AABB_H

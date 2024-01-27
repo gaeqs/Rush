@@ -7,11 +7,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(glm) # OPTIONAL.
 
-add_library(rush INTERFACE
-        src/rush/bound/aabb_impl.h
-        src/rush/bound/intersections.h
-        src/rush/bound/sphere_base.h
-        src/rush/bound/sphere_impl.h)
+add_library(rush INTERFACE)
 target_include_directories(rush INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:src>)

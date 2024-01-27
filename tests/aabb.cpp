@@ -44,8 +44,8 @@ TEST_CASE("AABB collision", "[aabb]") {
 }
 
 TEST_CASE("AABB closest point", "[aabb]") {
-    rush::Vec<3, float> min = {1.0f, 1.0f, 1.0f};
-    rush::Vec<3, float> max = {5.0f, 5.0f, 5.0f};
+    rush::Vec3f min = {1.0f, 1.0f, 1.0f};
+    rush::Vec3f max = {5.0f, 5.0f, 5.0f};
     auto aabb = rush::AABB<3, float>::fromEdges(min, max);
 
     requireSimilar(aabb.closestPoint({0.0f, 0.0f, 0.0f}), min);
@@ -74,4 +74,23 @@ TEST_CASE("AABB from edges", "[aabb]") {
 
     requireSimilar(aabb1.center, aabb2.center);
     requireSimilar(aabb1.radius, aabb2.radius);
+}
+
+
+TEST_CASE("AABB - Sphere", "[aabb]") {
+    rush::Vec3f min = {1.0f, 1.0f, 1.0f};
+    rush::Vec3f max = {5.0f, 5.0f, 5.0f};
+    auto aabb = rush::AABB<3, float>::fromEdges(min, max);
+
+    rush::Vec3f center = {2.0f, 8.0f, 2.0f};
+    float radius1 = 5.0f;
+    float radius2 = 1.0f;
+    rush::Sphere sphere1(center, radius1);
+    rush::Sphere sphere2(center, radius2);
+
+    REQUIRE(rush::intersects(aabb, sphere1));
+    REQUIRE(rush::intersects(sphere1, aabb));
+
+    REQUIRE_FALSE(rush::intersects(aabb, sphere2));
+    REQUIRE_FALSE(rush::intersects(sphere2, aabb));
 }

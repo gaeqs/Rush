@@ -32,6 +32,6 @@ namespace rush {
     };
 }
 
-#include <rush/bound/sphere_impl.h>
+#include <rush/geometry/sphere_impl.h>
 
 #endif //SPHERE_BASE_H

@@ -6,8 +6,8 @@
 #define COLLIDES_H
 
 #include <rush/vector/vec.h>
-#include <rush/bound/aabb_base.h>
-#include <rush/bound/sphere_base.h>
+#include <rush/geometry/aabb_base.h>
+#include <rush/geometry/sphere_base.h>
 
 namespace rush {
     // AABB - Point
@@ -49,7 +49,8 @@ namespace rush {
     [[nodiscard]] bool
     intersects(const Sphere<Dimensions, Type, AAllocator>& sphere,
                const Vec<Dimensions, Type, BAllocator>& point) {
-        return sphere.radius * sphere.radius >= point.squaredLength();
+        return sphere.radius * sphere.radius >=
+               (point - sphere.center).squaredLength();
     }
 
     // Sphere - Sphere
@@ -73,7 +74,45 @@ namespace rush {
     [[nodiscard]] bool
     intersects(const AABB<Dimensions, Type, AAllocator>& a,
                const Sphere<Dimensions, Type, BAllocator>& b) {
-        return rush::intersects(a, a.closestPoint(b.center));
+        return rush::intersects(b, a.closestPoint(b.center));
+    }
+
+    // Plane - Point
+    template<typename Type, typename BAllocator>
+    [[nodiscard]] bool
+    intersects(const Plane<Type>& plane,
+               const Vec<3, Type, BAllocator>& point,
+               Type epsilon = Type(0.0001)) {
+        return std::abs(plane.normal.dot(point) - plane.distance) <= epsilon;
+    }
+
+    // Plane - Sphere
+    template<typename Type, typename BAllocator>
+    [[nodiscard]] bool
+    intersects(const Plane<Type>& plane,
+               const Sphere<3, Type, BAllocator>& sphere) {
+        auto point = plane.closestPoint(sphere.center);
+        auto distanceSq = (point - sphere.center).squaredLength();
+        return distanceSq <= sphere.radius * sphere.radius;
+    }
+
+    // Plane - AABB
+    template<typename Type, typename BAllocator>
+    [[nodiscard]] bool
+    intersects(const Plane<Type>& plane,
+               const AABB<3, Type, BAllocator>& aabb) {
+        auto n = rush::abs(plane.normal);
+        auto r = aabb.radius.dot(n);
+        auto s = plane.normal.dot(aabb.center) - plane.distance;
+        return s <= r && s >= -r;
+    }
+
+    // Plane - Plane
+    template<typename Type>
+    [[nodiscard]] bool intersects(const Plane<Type>& a,
+                                  const Plane<Type>& b,
+                                  Type epsilon = Type(0.0001)) {
+        return a.normal.cross(b.normal).squaredLength() >= epsilon;
     }
 
     /**
@@ -81,8 +120,7 @@ namespace rush {
      * swaping both parameters.
      */
     template<typename A, typename B>
-    [[nodiscard]] bool
-    intersects(const A& a, const B& b) {
+    [[nodiscard]] bool intersects(const A& a, const B& b) {
         return rush::intersects(b, a);
     }
 }
