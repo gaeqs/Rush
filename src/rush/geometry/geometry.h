@@ -10,5 +10,7 @@
 #include <rush/geometry/plane_base.h>
 #include <rush/geometry/intersections.h>
 
+#include <rush/geometry/tree_base.h>
+
 
 #endif //GEOMETRY_H

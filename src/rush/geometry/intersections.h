@@ -5,9 +5,12 @@
 #ifndef COLLIDES_H
 #define COLLIDES_H
 
+#include <any>
+
 #include <rush/vector/vec.h>
 #include <rush/geometry/aabb_base.h>
 #include <rush/geometry/sphere_base.h>
+#include <rush/geometry/plane_base.h>
 
 namespace rush {
     // AABB - Point
@@ -122,6 +125,49 @@ namespace rush {
     template<typename A, typename B>
     [[nodiscard]] bool intersects(const A& a, const B& b) {
         return rush::intersects(b, a);
+    }
+
+    template<typename Other, size_t Dimensions, typename Type>
+    [[nodiscard]] bool intersectsAny(const Other& other, const std::any& a) {
+        if (a.type() == typeid(AABB<Dimensions, Type>)) {
+            auto* known = std::any_cast<AABB<Dimensions, Type>>(&a);
+            return intersects(*known, other);
+        }
+        if (a.type() == typeid(Sphere<Dimensions, Type>)) {
+            auto* known = std::any_cast<Sphere<Dimensions, Type>>(&a);
+            return intersects(*known, other);
+        }
+        if (a.type() == typeid(Plane<Type>)) {
+            auto* known = std::any_cast<Plane<Type>>(&a);
+            return intersects(*known, other);
+        }
+        if (a.type() == typeid(Vec<Dimensions, Type>)) {
+            auto* known = std::any_cast<Vec<Dimensions, Type>>(&a);
+            return intersects(*known, other);
+        }
+        return false;
+    }
+
+    template<size_t Dimensions, typename Type>
+    [[nodiscard]] bool intersectsAny(const std::any& a, const std::any& b) {
+        if (a.type() == typeid(AABB<Dimensions, Type>)) {
+            auto* known = std::any_cast<AABB<Dimensions, Type>>(&a);
+            return intersectsAny<decltype(*known), Dimensions, Type>(*known, b);
+        }
+        if (a.type() == typeid(Sphere<Dimensions, Type>)) {
+            auto* known = std::any_cast<Sphere<Dimensions, Type>>(&a);
+            return intersectsAny<decltype(*known), Dimensions, Type>(*known, b);
+        }
+        if (a.type() == typeid(Plane<Type>)) {
+            auto* known = std::any_cast<Plane<Type>>(&a);
+            return intersectsAny<decltype(*known), Dimensions, Type>(*known, b);
+        }
+        if (a.type() == typeid(Vec<Dimensions, Type>)) {
+            auto* known = std::any_cast<Vec<Dimensions, Type>>(&a);
+            return intersectsAny<decltype(*known), Dimensions, Type>(*known, b);
+        }
+
+        return false;
     }
 }
 
