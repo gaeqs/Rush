@@ -16,7 +16,8 @@ add_executable(rush-tests
         scalar_math.cpp
         test_common.h
         aabb.cpp
-        tree.cpp)
+        tree.cpp
+        tree_benchmark.cpp)
 target_link_libraries(rush-tests PUBLIC rush Catch2::Catch2WithMain)
 
 catch_discover_tests(rush-tests)
