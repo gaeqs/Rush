@@ -63,24 +63,24 @@ TEST_CASE("Quaternion slerp", "[quaternion]") {
 
 TEST_CASE("Quaternion iterator", "[quaternion]") {
     auto q1 = rush::Quat<double>::angleAxis(std::numbers::pi / 2.0,
-                                            {0.0, 1.0, 0.0});
-    {   // BEGIN - END
+                                            {0.0, 1.0, 0.0}); {
+        // BEGIN - END
         size_t i = 0;
         auto it = q1.begin();
         while (it != q1.end()) {
             REQUIRE(*it++ == q1[i++]);
         }
         REQUIRE(i == 4);
-    }
-    {   // CBEGIN - CEND
+    } {
+        // CBEGIN - CEND
         size_t i = 0;
         auto it = q1.cbegin();
         while (it != q1.cend()) {
             REQUIRE(*it++ == q1[i++]);
         }
         REQUIRE(i == 4);
-    }
-    {   // RBEGIN - REND
+    } {
+        // RBEGIN - REND
         size_t c = 0;
         size_t i = 3;
         auto it = q1.rbegin();
@@ -89,8 +89,8 @@ TEST_CASE("Quaternion iterator", "[quaternion]") {
             c++;
         }
         REQUIRE(c == 4);
-    }
-    {   // CRBEGIN - CREND
+    } {
+        // CRBEGIN - CREND
         size_t c = 0;
         size_t i = 3;
         auto it = q1.crbegin();
@@ -99,8 +99,8 @@ TEST_CASE("Quaternion iterator", "[quaternion]") {
             c++;
         }
         REQUIRE(c == 4);
-    }
-    {   // FOR LOOP
+    } {
+        // FOR LOOP
         size_t i = 0;
         for (double d: q1) {
             REQUIRE(d == q1[i++]);
@@ -118,6 +118,11 @@ TEST_CASE("Quaternion matrix", "[quaternion]") {
     auto mat2 = q1.rotationMatrix4();
 
     requireSimilar(mat1, mat2);
+}
+
+TEST_CASE("Quarernion from-to", "[quaternion]") {
+    auto q1 = rush::Quatf::fromTo({1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    requireSimilar(q1.euler().y(), -std::numbers::pi_v<float> / 2.0f);
 }
 
 #ifdef RUSH_GLM
