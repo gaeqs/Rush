@@ -5,6 +5,8 @@
 #include "test_common.h"
 
 TEST_CASE("Tree benchmark", "[!benchmark][tree]") {
+    constexpr size_t SIZE = 100;
+
     std::random_device os_seed;
     uint32_t seed = os_seed();
     std::mt19937 generator(seed);
@@ -17,7 +19,7 @@ TEST_CASE("Tree benchmark", "[!benchmark][tree]") {
 
         std::vector<rush::AABB<3, float>> vector;
 
-        for (size_t i = 0; i < 100; ++i) {
+        for (size_t i = 0; i < SIZE; ++i) {
             vector.push_back(rush::AABB<3, float>::fromEdges(
                 {d(generator), d(generator), d(generator)},
                 {d(generator), d(generator), d(generator)}
@@ -39,19 +41,19 @@ TEST_CASE("Tree benchmark", "[!benchmark][tree]") {
 
         std::vector<rush::AABB<3, float>> vector;
 
-        for (size_t i = 0; i < 100; ++i) {
+        for (size_t i = 0; i < SIZE; ++i) {
             vector.push_back(rush::AABB<3, float>::fromEdges(
                 {d(generator), d(generator), d(generator)},
                 {d(generator), d(generator), d(generator)}
             ));
         }
 
-        for (size_t i = 0; i < 100; ++i) {
+        for (size_t i = 0; i < SIZE; ++i) {
             tree.insert(i, vector[i]);
         }
 
         meter.measure([&vector, &tree] {
-            for (size_t i = 0; i < 100; ++i) {
+            for (size_t i = 0; i < SIZE; ++i) {
                 tree.remove(i);
             }
         });

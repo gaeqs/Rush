@@ -17,6 +17,8 @@ namespace rush {
     struct TreeContent {
         std::any bounds;
         Storage storage;
+
+        bool operator==(const TreeContent& o) const;
     };
 
     template<typename Storage>
@@ -31,6 +33,8 @@ namespace rush {
         getStorage() = 0;
 
         virtual std::vector<AbstractTree*> getChildren() const = 0;
+
+        virtual std::any getBounds() const = 0;
 
         [[nodiscard]] virtual size_t size() const = 0;
     };
@@ -52,10 +56,11 @@ namespace rush {
         void split();
 
     public:
-
         Tree();
 
         explicit Tree(rush::AABB<Dimensions, Type> aabb);
+
+        ~Tree() override = default;
 
         [[nodiscard]] const std::vector<TreeContent<Storage>>&
         getStorage() const override;
@@ -65,11 +70,15 @@ namespace rush {
 
         std::vector<AbstractTree<Storage>*> getChildren() const override;
 
+        std::any getBounds() const override;
+
         [[nodiscard]] size_t size() const override;
 
         void insert(const Storage& storage, const std::any& bounds);
 
         void remove(const Storage& storage);
+
+        bool contains(const Storage& storage);
 
         [[nodiscard]]
         bool isLeaf() const;
@@ -83,15 +92,13 @@ namespace rush {
     class TreeIterator {
         using iterator_category = std::forward_iterator_tag;
         using difference_type = std::ptrdiff_t;
-        using value_type = Storage;
-        using pointer = Storage*;
-        using reference = Storage&;
+        using value_type = std::vector<TreeContent<Storage>>;
+        using pointer = const value_type*;
+        using reference = const value_type&;
 
         AbstractTree<Storage>* _root;
         AbstractTree<Storage>* _current;
-        typename std::vector<TreeContent<Storage>>::iterator _currentIterator;
         std::vector<AbstractTree<Storage>*> _queue;
-        size_t _index;
         bool _end;
 
     public:
@@ -99,7 +106,7 @@ namespace rush {
 
         explicit TreeIterator();
 
-        std::any currentBounds() const;
+        AbstractTree<Storage>* getTree() const;
 
         reference operator*() const;
 
