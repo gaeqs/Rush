@@ -53,13 +53,14 @@ namespace rush {
     template<typename Storage, size_t Dimensions, typename Type,
         size_t MaxObjects, size_t Depth>
     Tree<Storage, Dimensions, Type, MaxObjects, Depth>::Tree()
-        : _aabb(), _leaf(true) {
+        : _aabb(), _size(0), _leaf(true) {
     }
 
     template<typename Storage, size_t Dimensions, typename Type,
         size_t MaxObjects, size_t Depth>
     Tree<Storage, Dimensions, Type, MaxObjects, Depth>::
-    Tree(rush::AABB<Dimensions, Type> aabb) : _aabb(aabb), _leaf(true) {
+    Tree(AABB<Dimensions, Type> aabb)
+        : _aabb(aabb), _size(0), _leaf(true) {
     }
 
     template<typename Storage, size_t Dimensions, typename Type, size_t
@@ -121,73 +122,113 @@ namespace rush {
 
     template<typename Storage, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    void Tree<Storage, Dimensions, Type, MaxObjects, Depth>::
+    TreeInsertResult Tree<Storage, Dimensions, Type, MaxObjects, Depth>::
     insert(const Storage& storage, const std::any& bounds) {
-        remove(storage);
         if (!rush::intersectsAny<decltype(_aabb), Dimensions, Type>(
-            _aabb, bounds))
-            return;
+            _aabb, bounds)) {
+            return remove(storage)
+                       ? TreeInsertResult::REMOVED
+                       : TreeInsertResult::NOTHING;
+        }
 
         if (_leaf) {
-            if (contains(storage)) return;
+            bool removed = remove(storage);
             _contents.push_back({bounds, storage});
             if constexpr (Depth > 0) {
                 if (_contents.size() > MaxObjects) {
                     split();
                 }
             }
+            _size = _contents.size();
+            return removed
+                       ? TreeInsertResult::UPDATED
+                       : TreeInsertResult::ADDED;
         }
-        else {
-            if constexpr (Depth > 0) {
-                for (auto& child: *_children.get()) {
-                    child.insert(storage, bounds);
+
+        bool anyAdded = false;
+        bool anyRemoved = false;
+        bool anyUpdated = false;
+
+        if constexpr (Depth > 0) {
+            for (auto& child: *_children) {
+                switch (child.insert(storage, bounds)) {
+                    case TreeInsertResult::ADDED:
+                        anyAdded = true;
+                        break;
+                    case TreeInsertResult::REMOVED:
+                        anyRemoved = true;
+                        break;
+                    case TreeInsertResult::UPDATED:
+                        anyUpdated = true;
+                        break;
+                    default:
+                        break;
                 }
             }
         }
+
+        if (anyUpdated || anyAdded && anyRemoved)
+            return TreeInsertResult::UPDATED;
+        if (anyAdded) {
+            ++_size;
+            return TreeInsertResult::ADDED;
+        }
+        if (anyRemoved) {
+            --_size;
+            return TreeInsertResult::REMOVED;
+        }
+        return TreeInsertResult::NOTHING;
     }
 
     template<typename Storage, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    void Tree<Storage, Dimensions, Type, MaxObjects, Depth>::remove(
+    bool Tree<Storage, Dimensions, Type, MaxObjects, Depth>::remove(
         const Storage& storage) {
         if (_leaf) {
-            std::erase_if(
-                _contents,
-                [storage](const TreeContent<Storage>& it) {
-                    return it.storage == storage;
-                }
-            );
+            bool removed = std::erase_if(
+                               _contents,
+                               [storage](const TreeContent<Storage>& it) {
+                                   return it.storage == storage;
+                               }
+                           ) > 0;
+            _size = _contents.size();
+            return removed;
         }
-        else {
-            if constexpr (Depth > 0) {
-                for (auto& child: *_children) {
-                    child.remove(storage);
-                }
 
-                if (size() <= MaxObjects) {
-                    auto localContains = [this](auto& s) {
-                        return std::any_of(
-                            _contents.begin(),
-                            _contents.end(),
-                            [&s](TreeContent<Storage>& item) {
-                                return item.storage == s;
-                            }
-                        );
-                    };
-
-
-                    for (auto& children: *this) {
-                        for (auto& item: children) {
-                            if (localContains(item.storage)) continue;
-                            _contents.push_back(item);
-                        }
-                    }
-
-                    _leaf = true;
-                    _children = nullptr;
-                }
+        if constexpr (Depth > 0) {
+            bool removed = false;
+            for (auto& child: *_children) {
+                removed |= child.remove(storage);
             }
+
+            if (removed) --_size;
+
+            if (size() <= MaxObjects) {
+                auto localContains = [this](auto& s) {
+                    return std::any_of(
+                        _contents.begin(),
+                        _contents.end(),
+                        [&s](TreeContent<Storage>& item) {
+                            return item.storage == s;
+                        }
+                    );
+                };
+
+
+                for (auto& children: *this) {
+                    for (auto& item: children) {
+                        if (localContains(item.storage)) continue;
+                        _contents.push_back(item);
+                    }
+                }
+
+                _leaf = true;
+                _children = nullptr;
+            }
+
+            return removed;
         }
+        return false;
     }
 
     template<typename Storage, size_t Dimensions, typename Type, size_t

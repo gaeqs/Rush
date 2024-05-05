@@ -52,7 +52,7 @@ TEST_CASE("Tree benchmark", "[!benchmark][tree]") {
             tree.insert(i, vector[i]);
         }
 
-        meter.measure([&vector, &tree] {
+        meter.measure([&vector, &tree, SIZE] {
             for (size_t i = 0; i < SIZE; ++i) {
                 tree.remove(i);
             }

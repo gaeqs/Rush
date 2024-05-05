@@ -10,6 +10,11 @@
 #include <memory>
 
 namespace rush {
+
+    enum class TreeInsertResult {
+        ADDED, REMOVED, UPDATED, NOTHING
+    };
+
     template<typename Storage>
     class TreeIterator;
 
@@ -48,17 +53,19 @@ namespace rush {
 
         friend class Tree<Storage, Dimensions, Type, MaxObjects, Depth + 1>;
 
-        rush::AABB<Dimensions, Type> _aabb;
+        AABB<Dimensions, Type> _aabb;
         std::unique_ptr<std::array<ChildType, 1 << Dimensions>> _children;
         std::vector<TreeContent<Storage>> _contents;
+        size_t _size;
         bool _leaf;
 
         void split();
 
     public:
+
         Tree();
 
-        explicit Tree(rush::AABB<Dimensions, Type> aabb);
+        explicit Tree(AABB<Dimensions, Type> aabb);
 
         ~Tree() override = default;
 
@@ -74,9 +81,9 @@ namespace rush {
 
         [[nodiscard]] size_t size() const override;
 
-        void insert(const Storage& storage, const std::any& bounds);
+        TreeInsertResult insert(const Storage& storage, const std::any& bounds);
 
-        void remove(const Storage& storage);
+        bool remove(const Storage& storage);
 
         bool contains(const Storage& storage);
 

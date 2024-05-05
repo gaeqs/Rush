@@ -9,7 +9,7 @@
 
 
 void a(std::any any) {
-    std::cout << any.type().raw_name() << std::endl;
+    std::cout << any.type().name() << std::endl;
 }
 
 TEST_CASE("Test", "[tree]") {
