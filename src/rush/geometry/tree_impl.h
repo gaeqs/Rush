@@ -9,14 +9,14 @@
 
 
 namespace rush {
-    template<typename Storage>
-    bool TreeContent<Storage>::operator==(const TreeContent& o) const {
+    template<typename Storage, typename Bounds>
+    bool TreeContent<Storage, Bounds>::operator==(const TreeContent& o) const {
         return storage == o.storage;
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    void Tree<Storage, Dimensions, Type, MaxObjects, Depth>::split() {
+    void Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::split() {
         if constexpr (Depth > 0) {
             auto childrenRadius = _aabb.radius / 2;
 
@@ -50,41 +50,41 @@ namespace rush {
         }
     }
 
-    template<typename Storage, size_t Dimensions, typename Type,
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type,
         size_t MaxObjects, size_t Depth>
-    Tree<Storage, Dimensions, Type, MaxObjects, Depth>::Tree()
+    Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::Tree()
         : _aabb(), _size(0), _leaf(true) {
     }
 
-    template<typename Storage, size_t Dimensions, typename Type,
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type,
         size_t MaxObjects, size_t Depth>
-    Tree<Storage, Dimensions, Type, MaxObjects, Depth>::
+    Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::
     Tree(AABB<Dimensions, Type> aabb)
         : _aabb(aabb), _size(0), _leaf(true) {
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    std::vector<TreeContent<Storage>>&
-    Tree<Storage, Dimensions, Type, MaxObjects, Depth>::getStorage() {
+    std::vector<TreeContent<Storage, Bounds>>&
+    Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::getStorage() {
         return _contents;
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    const std::vector<TreeContent<Storage>>&
-    Tree<Storage, Dimensions, Type, MaxObjects, Depth>::getStorage() const {
+    const std::vector<TreeContent<Storage, Bounds>>&
+    Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::getStorage() const {
         return _contents;
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    std::vector<AbstractTree<Storage>*>
-    Tree<Storage, Dimensions, Type, MaxObjects, Depth>::getChildren() const {
+    std::vector<AbstractTree<Storage, Bounds>*>
+    Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::getChildren() const {
         if constexpr (Depth > 0) {
             if (_leaf) return {};
 
-            std::vector<AbstractTree<Storage>*> v;
+            std::vector<AbstractTree<Storage, Bounds>*> v;
             for (auto& child: *_children) {
                 v.push_back(&child);
             }
@@ -93,39 +93,26 @@ namespace rush {
         return {};
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    std::any Tree<Storage, Dimensions, Type, MaxObjects, Depth>::
+    std::any Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::
     getBounds() const {
         return _aabb;
     }
 
 
-    template<typename Storage, size_t Dimensions, typename Type,
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type,
         size_t MaxObjects, size_t Depth>
-    size_t Tree<Storage, Dimensions, Type, MaxObjects, Depth>::size() const {
-        if (_leaf) {
-            return _contents.size();
-        }
-
-        size_t amount = 0;
-
-        if constexpr (Depth > 0) {
-            for (auto& child: *_children) {
-                amount += child.size();
-            }
-        }
-
-        return amount;
+    size_t Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::size() const {
+        return _size;
     }
 
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    TreeInsertResult Tree<Storage, Dimensions, Type, MaxObjects, Depth>::
-    insert(const Storage& storage, const std::any& bounds) {
-        if (!rush::intersectsAny<decltype(_aabb), Dimensions, Type>(
-            _aabb, bounds)) {
+    TreeInsertResult Tree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
+    insert(const Storage& storage, const Bounds& bounds) {
+        if (!rush::intersects(_aabb, bounds)) {
             return remove(storage)
                        ? TreeInsertResult::REMOVED
                        : TreeInsertResult::NOTHING;
@@ -180,14 +167,14 @@ namespace rush {
         return TreeInsertResult::NOTHING;
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    bool Tree<Storage, Dimensions, Type, MaxObjects, Depth>::remove(
+    bool Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::remove(
         const Storage& storage) {
         if (_leaf) {
             bool removed = std::erase_if(
                                _contents,
-                               [storage](const TreeContent<Storage>& it) {
+                               [storage](const TreeContent<Storage, Bounds>& it) {
                                    return it.storage == storage;
                                }
                            ) > 0;
@@ -208,7 +195,7 @@ namespace rush {
                     return std::any_of(
                         _contents.begin(),
                         _contents.end(),
-                        [&s](TreeContent<Storage>& item) {
+                        [&s](TreeContent<Storage, Bounds>& item) {
                             return item.storage == s;
                         }
                     );
@@ -231,15 +218,15 @@ namespace rush {
         return false;
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    bool Tree<Storage, Dimensions, Type, MaxObjects, Depth>::contains(
+    bool Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::contains(
         const Storage& storage) {
         if (_leaf) {
             return std::any_of(
                 _contents.begin(),
                 _contents.end(),
-                [&storage](TreeContent<Storage>& item) {
+                [&storage](TreeContent<Storage, Bounds>& item) {
                     return item.storage == storage;
                 }
             );
@@ -257,29 +244,29 @@ namespace rush {
         return false;
     }
 
-    template<typename Storage, size_t Dimensions, typename Type,
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type,
         size_t MaxObjects, size_t Depth>
-    bool Tree<Storage, Dimensions, Type, MaxObjects, Depth>::isLeaf() const {
+    bool Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::isLeaf() const {
         return _leaf;
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    TreeIterator<Storage> Tree<Storage, Dimensions, Type, MaxObjects, Depth>::
+    TreeIterator<Storage, Bounds> Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::
     begin() {
-        return TreeIterator<Storage>(this);
+        return TreeIterator<Storage, Bounds>(this);
     }
 
-    template<typename Storage, size_t Dimensions, typename Type, size_t
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t
         MaxObjects, size_t Depth>
-    TreeIterator<Storage>
-    Tree<Storage, Dimensions, Type, MaxObjects, Depth>::
+    TreeIterator<Storage, Bounds>
+    Tree<Storage, Bounds,Dimensions, Type, MaxObjects, Depth>::
     end() {
-        return TreeIterator<Storage>();
+        return TreeIterator<Storage, Bounds>();
     }
 
-    template<typename Storage>
-    TreeIterator<Storage>::TreeIterator(AbstractTree<Storage>* root)
+    template<typename Storage, typename Bounds>
+    TreeIterator<Storage, Bounds>::TreeIterator(AbstractTree<Storage, Bounds>* root)
         : _root(root),
           _current(root),
           _end(false) {
@@ -288,35 +275,35 @@ namespace rush {
         }
     }
 
-    template<typename Storage>
-    TreeIterator<Storage>::TreeIterator()
+    template<typename Storage, typename Bounds>
+    TreeIterator<Storage, Bounds>::TreeIterator()
         : _root(nullptr),
           _current(nullptr),
           _end(true) {
     }
 
-    template<typename Storage>
-    AbstractTree<Storage>*
-    TreeIterator<Storage>::getTree() const {
+    template<typename Storage, typename Bounds>
+    AbstractTree<Storage, Bounds>*
+    TreeIterator<Storage, Bounds>::getTree() const {
         return _current;
     }
 
 
-    template<typename Storage>
-    const typename TreeIterator<Storage>::reference
-    TreeIterator<Storage>::operator*() const {
+    template<typename Storage, typename Bounds>
+    const typename TreeIterator<Storage, Bounds>::reference
+    TreeIterator<Storage, Bounds>::operator*() const {
         return _current->getStorage();
     }
 
-    template<typename Storage>
-    typename TreeIterator<Storage>::pointer
-    TreeIterator<Storage>::operator->() const {
+    template<typename Storage, typename Bounds>
+    typename TreeIterator<Storage, Bounds>::pointer
+    TreeIterator<Storage, Bounds>::operator->() const {
         return &_current->getStorage();
     }
 
-    template<typename Storage>
-    TreeIterator<Storage>&
-    TreeIterator<Storage>::operator++() {
+    template<typename Storage, typename Bounds>
+    TreeIterator<Storage, Bounds>&
+    TreeIterator<Storage, Bounds>::operator++() {
         if (_end) return *this;
         do {
             // Add children to queue.
@@ -338,21 +325,21 @@ namespace rush {
         return *this;
     }
 
-    template<typename Storage>
-    TreeIterator<Storage>
-    TreeIterator<Storage>::operator++(Storage) {
+    template<typename Storage, typename Bounds>
+    TreeIterator<Storage, Bounds>
+    TreeIterator<Storage, Bounds>::operator++(Storage) {
         auto tmp = *this;
         ++(*this);
         return tmp;
     }
 
-    template<typename Storage>
-    bool TreeIterator<Storage>::operator==(const TreeIterator& p) {
+    template<typename Storage, typename Bounds>
+    bool TreeIterator<Storage, Bounds>::operator==(const TreeIterator& p) {
         return (_end && p._end) || _current == p._current;
     }
 
-    template<typename Storage>
-    bool TreeIterator<Storage>::operator!=(const TreeIterator& p) {
+    template<typename Storage, typename Bounds>
+    bool TreeIterator<Storage, Bounds>::operator!=(const TreeIterator& p) {
         return !((_end && p._end) || _current == p._current);
     }
 }
