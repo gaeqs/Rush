@@ -7,7 +7,8 @@ set(CMAKE_CXX_STANDARD 20)
 
 find_package(glm) # OPTIONAL.
 
-add_library(rush INTERFACE)
+add_library(rush INTERFACE
+        src/rush/allocator/pool.h)
 target_include_directories(rush INTERFACE
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
         $<INSTALL_INTERFACE:src>)
