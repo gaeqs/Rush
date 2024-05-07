@@ -13,7 +13,7 @@ TEST_CASE("Tree benchmark add", "[!benchmark][tree]") {
     std::uniform_real_distribution d(-10.0f, 10.0f);
 
     BENCHMARK_ADVANCED("Add 100")(Catch::Benchmark::Chronometer meter) {
-        rush::Tree<int, rush::AABB<3, float>, 3, float, 4, 4> tree({
+        rush::Tree<int, rush::AABB<3, float>, 3, float, 4, 4, 100> tree({
             {-10.0f, -10.0f, -10.0f}, {10.0f, 10.0f, 10.0f}
         });
 
@@ -43,7 +43,7 @@ TEST_CASE("Tree benchmark remove", "[!benchmark][tree]") {
     std::uniform_real_distribution d(-10.0f, 10.0f);
 
     BENCHMARK_ADVANCED("Add remove 100")(Catch::Benchmark::Chronometer meter) {
-        rush::Tree<int, rush::AABB<3, float>, 3, float, 4, 4> tree({
+        rush::Tree<int, rush::AABB<3, float>, 3, float, 4, 4, 100> tree({
             {-10.0f, -10.0f, -10.0f}, {10.0f, 10.0f, 10.0f}
         });
 
@@ -70,7 +70,7 @@ TEST_CASE("Tree benchmark remove", "[!benchmark][tree]") {
 
 TEST_CASE("Collision detection benchmark", "[!benchmark][tree]") {
     constexpr size_t SIZE = 1000;
-    using Tree = rush::Tree<int, rush::AABB<3, float>, 3, float, 20, 4>;
+    using Tree = rush::Tree<int, rush::AABB<3, float>, 3, float, 20, 4, 20>;
 
     std::random_device os_seed;
     uint32_t seed = os_seed();

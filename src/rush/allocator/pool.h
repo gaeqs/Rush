@@ -21,6 +21,8 @@ namespace rush {
         Pool() : _data(), _occupied(), _occupiedAmount(0) {
         }
 
+        Pool(const Pool& other) = delete;
+
         [[nodiscard]] size_t occupied() const {
             return _occupiedAmount;
         }

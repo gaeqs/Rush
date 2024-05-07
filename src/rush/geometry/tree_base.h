@@ -7,10 +7,9 @@
 
 #include <array>
 #include <vector>
-#include <memory>
+#include <rush/allocator/pool.h>
 
 namespace rush {
-
     enum class TreeInsertResult {
         ADDED, REMOVED, UPDATED, NOTHING
     };
@@ -31,10 +30,10 @@ namespace rush {
     public:
         virtual ~AbstractTree() = default;
 
-        [[nodiscard]] virtual const std::vector<TreeContent<Storage, Bounds>>&
+        [[nodiscard]] virtual const std::vector<TreeContent<Storage, Bounds> >&
         getStorage() const = 0;
 
-        [[nodiscard]] virtual std::vector<TreeContent<Storage, Bounds>>&
+        [[nodiscard]] virtual std::vector<TreeContent<Storage, Bounds> >&
         getStorage() = 0;
 
         virtual std::vector<AbstractTree*> getChildren() const = 0;
@@ -45,16 +44,22 @@ namespace rush {
     };
 
     template<typename Storage, typename Bounds, size_t Dimensions, typename Type,
-        size_t MaxObjects, size_t Depth>
+        size_t MaxObjects, size_t Depth, size_t MaxSubtrees, bool Root = true>
     class Tree : public AbstractTree<Storage, Bounds> {
         using ChildType = std::conditional_t<(Depth > 0),
-            Tree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth - 1>,
+            Tree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth - 1, MaxSubtrees, false>,
             void*>;
+        using Children = std::array<ChildType, 1 << Dimensions>;
 
-        friend class Tree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth + 1>;
+        friend class Tree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth + 1, MaxSubtrees, true>;
+        friend class Tree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth + 1, MaxSubtrees, false>;
+
+        std::conditional_t<Root,
+            Pool<MaxSubtrees, sizeof(Children)>,
+            Pool<MaxSubtrees, sizeof(Children)>*> _pool;
 
         AABB<Dimensions, Type> _aabb;
-        std::unique_ptr<std::array<ChildType, 1 << Dimensions>> _children;
+        Children* _children;
         std::vector<TreeContent<Storage, Bounds>> _contents;
         size_t _size;
         bool _leaf;
@@ -62,17 +67,16 @@ namespace rush {
         void split();
 
     public:
+        explicit Tree() requires (Root == false);
 
-        Tree();
+        explicit Tree(AABB<Dimensions, Type> aabb) requires (Root == true);
 
-        explicit Tree(AABB<Dimensions, Type> aabb);
+        ~Tree() override;
 
-        ~Tree() override = default;
-
-        [[nodiscard]] const std::vector<TreeContent<Storage, Bounds>>&
+        [[nodiscard]] const std::vector<TreeContent<Storage, Bounds> >&
         getStorage() const override;
 
-        [[nodiscard]] std::vector<TreeContent<Storage, Bounds>>&
+        [[nodiscard]] std::vector<TreeContent<Storage, Bounds> >&
         getStorage() override;
 
         std::vector<AbstractTree<Storage, Bounds>*> getChildren() const override;
@@ -99,7 +103,7 @@ namespace rush {
     class TreeIterator {
         using iterator_category = std::forward_iterator_tag;
         using difference_type = std::ptrdiff_t;
-        using value_type = std::vector<TreeContent<Storage, Bounds>>;
+        using value_type = std::vector<TreeContent<Storage, Bounds> >;
         using pointer = const value_type*;
         using reference = const value_type&;
 

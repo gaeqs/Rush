@@ -12,10 +12,6 @@ void a(std::any any) {
     std::cout << any.type().name() << std::endl;
 }
 
-TEST_CASE("Test", "[tree]") {
-    std::cout << "TEST!" << std::endl;
-}
-
 TEST_CASE("Tree basics", "[tree]") {
     constexpr size_t SIZE = 100;
 
@@ -31,7 +27,7 @@ TEST_CASE("Tree basics", "[tree]") {
     rush::AABB<3, float> aabb = rush::AABB<3, float>::fromEdges(
         rush::Vec3f(-10.0f), rush::Vec3f(10.0f));
 
-    rush::Tree<int, rush::AABB<3, float>, 3, float, 10, 4> tree(aabb);
+    rush::Tree<int, rush::AABB<3, float>, 3, float, 10, 4, 100> tree(aabb);
 
     for (size_t i = 0; i < SIZE; ++i) {
         auto center = rVec();
@@ -46,6 +42,8 @@ TEST_CASE("Tree basics", "[tree]") {
     while (it != end) {
         auto& contents = *it;
         auto bounds = it.getTree()->getBounds();
+
+        std::cout << contents.size() << std::endl;
 
         REQUIRE(std::all_of(
             contents.begin(),
