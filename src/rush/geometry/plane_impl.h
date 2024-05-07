@@ -4,6 +4,7 @@
 
 #ifndef PLANE_IMPL_H
 #define PLANE_IMPL_H
+#include <float.h>
 
 namespace rush {
     template<typename Type>
@@ -28,6 +29,11 @@ namespace rush {
     template<typename PAllocator>
     Vec<3, Type, PAllocator>
     Plane<Type>::closestPoint(const Vec<3, Type, PAllocator>& point) const {
+#if DEBUG
+        if (!isNormalized()) {
+            throw std::runtime_error("Plane is not normalized.");
+        }
+#endif
         return point - distanceToPoint(point) * normal;
     }
 
@@ -35,7 +41,25 @@ namespace rush {
     template<typename PAllocator>
     Type
     Plane<Type>::distanceToPoint(const Vec<3, Type, PAllocator>& point) const {
+#if DEBUG
+        if (!isNormalized()) {
+            throw std::runtime_error("Plane is not normalized.");
+        }
+#endif
         return normal.dot(point) - distance;
+    }
+
+    template<typename Type>
+    bool Plane<Type>::isNormalized() const {
+        return std::abs(normal.squaredLength() - 1.0f) < FLT_EPSILON;
+    }
+
+
+    template<typename Type>
+    template<Algorithm Algorithm>
+    Plane<Type> Plane<Type>::normalized() const {
+        Type length = normal.template inverseLength<Algorithm>();
+        return Plane(normal * length, distance * length);
     }
 
     template<typename Type>
