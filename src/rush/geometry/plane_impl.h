@@ -11,7 +11,8 @@ namespace rush {
     template<typename NAllocator>
     Plane<Type>::Plane(const Vec<3, Type, NAllocator>& normal_,
                        const Type& distance_)
-        : normal(normal_.normalized()), distance(distance_) {
+        : normal(normal_),
+          distance(distance_) {
     }
 
     template<typename Type>
@@ -58,7 +59,7 @@ namespace rush {
     template<typename Type>
     template<Algorithm Algorithm>
     Plane<Type> Plane<Type>::normalized() const {
-        Type length = normal.template inverseLength<Algorithm>();
+        Type length = normal.template inverseLength<Type, Algorithm>();
         return Plane(normal * length, distance * length);
     }
 
