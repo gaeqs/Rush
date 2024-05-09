@@ -7,11 +7,6 @@
 
 #include "test_common.h"
 
-
-void a(std::any any) {
-    std::cout << any.type().name() << std::endl;
-}
-
 TEST_CASE("Tree basics", "[tree]") {
     constexpr size_t SIZE = 100;
 
@@ -42,8 +37,6 @@ TEST_CASE("Tree basics", "[tree]") {
     while (it != end) {
         auto& contents = *it;
         auto bounds = it.getTree()->getBounds();
-
-        std::cout << contents.size() << std::endl;
 
         REQUIRE(std::all_of(
             contents.begin(),
