@@ -12,7 +12,7 @@
 
 namespace rush {
     /**
-     * Represents a simple memory pool where users can allocate and allocate data.
+     * Represents a simple memory pool where users can allocate and deallocate data.
      *
      * This memory pool is split in chunks.
      * Users can allocate one chunk per each allocation call.

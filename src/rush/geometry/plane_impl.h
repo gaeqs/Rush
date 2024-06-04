@@ -30,7 +30,7 @@ namespace rush {
     template<typename PAllocator>
     Vec<3, Type, PAllocator>
     Plane<Type>::closestPoint(const Vec<3, Type, PAllocator>& point) const {
-#if DEBUG
+#ifndef NDEBUG
         if (!isNormalized()) {
             throw std::runtime_error("Plane is not normalized.");
         }
@@ -42,7 +42,7 @@ namespace rush {
     template<typename PAllocator>
     Type
     Plane<Type>::distanceToPoint(const Vec<3, Type, PAllocator>& point) const {
-#if DEBUG
+#ifndef NDEBUG
         if (!isNormalized()) {
             throw std::runtime_error("Plane is not normalized.");
         }
