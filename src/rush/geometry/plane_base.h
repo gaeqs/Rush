@@ -76,7 +76,7 @@ namespace rush {
         [[nodiscard]] bool isNormalized() const;
 
         /**
-         * Returns a normalzied version of this plane.
+         * Returns a normalized version of this plane.
           <p>
          * You can select the precision of the algorithm.
          * A high precision algorithm will provide a high precision
