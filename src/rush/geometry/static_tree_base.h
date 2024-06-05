@@ -45,6 +45,13 @@ namespace rush {
                 const Collider& collider,
                 std::unordered_set<TreeContent<Storage, Bounds>>& set,
                 bool skipCollisionCheck) const;
+
+        template<typename Collider>
+        void forEachIntersection(
+                const Collider& collider,
+                std::function<void(
+                        const TreeContent<Storage, Bounds>&)> consumer,
+                bool skipCollisionCheck) const;
     };
 
     template<typename Storage, typename Bounds,
@@ -92,6 +99,13 @@ namespace rush {
                       std::unordered_set<TreeContent<Storage, Bounds>>& set,
                       bool skipCollisionCheck) const;
 
+        template<typename Collider>
+        void forEachIntersection(
+                const Collider& collider,
+                std::function<void(
+                        const TreeContent<Storage, Bounds>&)> consumer,
+                bool skipCollisionCheck) const;
+
     };
 
     template<typename Storage, typename Bounds,
@@ -114,6 +128,18 @@ namespace rush {
         const
         StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>&
         getRoot() const;
+
+
+        template<typename Collider>
+        inline void intersections(
+                const Collider& collider,
+                std::unordered_set<TreeContent<Storage, Bounds>>& set) const;
+
+        template<typename Collider>
+        void forEachIntersection(
+                const Collider& collider,
+                std::function<void(
+                        const TreeContent<Storage, Bounds>&)> consumer) const;
 
     };
 

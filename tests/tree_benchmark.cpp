@@ -232,7 +232,6 @@ TEST_CASE("Dynamic tree collision check benchmark", "[!benchmark][tree]") {
 
 }
 
-
 TEST_CASE("Static tree collision check benchmark", "[!benchmark][tree]") {
     constexpr size_t SIZE = 1000000;
 
@@ -276,7 +275,7 @@ TEST_CASE("Static tree collision check benchmark", "[!benchmark][tree]") {
 
     size_t accum = 0;
     size_t iterations = 0;
-    BENCHMARK("Static tree collision check") {
+    BENCHMARK("Static tree collision check (unordered_set)") {
         hit.clear();
         auto box = rush::AABB<3, float>::fromEdges(
                 {d(generator),
@@ -285,10 +284,34 @@ TEST_CASE("Static tree collision check benchmark", "[!benchmark][tree]") {
                  {0.1f, 0.1f, 0.1f}
                  );
 
-        tree.getRoot().intersections(box, hit, false);
+        tree.intersections(box, hit);
         accum += hit.size();
         ++iterations;
         return hit.size();
+    };
+
+    std::cout << "AVG hit size: " << accum / iterations << std::endl;
+    accum = 0;
+    iterations = 0;
+
+    BENCHMARK("Static tree collision check (consumer)") {
+        auto box = rush::AABB<3, float>::fromEdges(
+                {d(generator),
+                 d(generator),
+                 d(generator)},
+                {0.1f, 0.1f, 0.1f}
+        );
+
+        size_t count = 0;
+        tree.forEachIntersection(
+                box, [&count](const auto& content) {
+                    ++count;
+                });
+
+        accum += count;
+        ++iterations;
+
+        return count;
     };
 
     std::cout << "AVG hit size: " << accum / iterations << std::endl;
