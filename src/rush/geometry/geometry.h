@@ -9,6 +9,7 @@
 #include <rush/geometry/sphere_base.h>
 #include <rush/geometry/plane_base.h>
 #include <rush/geometry/ray_base.h>
+#include <rush/geometry/triangle_base.h>
 #include <rush/geometry/intersections.h>
 #include <rush/geometry/raycast.h>
 
