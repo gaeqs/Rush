@@ -8,8 +8,6 @@
 #include <functional>
 #include <utility>
 #include <algorithm>
-#include <string>
-#include <stdexcept>
 
 #include <rush/algorithm.h>
 #include <rush/vector/vec.h>
