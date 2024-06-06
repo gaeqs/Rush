@@ -73,7 +73,7 @@ TEST_CASE("Static tree basics", "[tree]") {
         auto center = rVec();
         auto radius = rush::Vec3f(0.1f, 0.1f, 0.1f);
         auto box = rush::AABB(center, radius);
-        elements[static_cast<int>(i)] = box;
+        elements.push_back(Tree::Content(box, static_cast<int>(i)));
     }
 
     Tree tree(aabb, elements);
@@ -86,7 +86,7 @@ TEST_CASE("Static tree basics", "[tree]") {
 
     size_t checkCount = 0;
     for (const auto& item: elements) {
-        if(rush::intersects(item.second, box)) {
+        if(rush::intersects(item.bounds, box)) {
             ++checkCount;
         }
     }

@@ -6,100 +6,58 @@
 #define RUSH_STATIC_TREE_IMPL_H
 
 namespace rush {
-
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type>
+        typename Type>
     StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
-    StaticTreeLeaf(const AABB<Dimensions, Type>& aabb) :
-            _aabb(aabb), _elements(nullptr), _size(0) {
+    StaticTreeLeaf(const AABB<Dimensions, Type>& aabb) : _aabb(aabb),
+        _elements(nullptr), _size(0) {
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type>
+        typename Type>
     size_t StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
-    computeSize(const std::unordered_map<Storage, Bounds>& elements) {
-        size_t count = 0;
+    populate(TreeContent<Storage, Bounds>* pool,
+             size_t from, size_t to) {
+        _elements = pool + from;
 
-        for (const auto& item: elements) {
-            if (intersects(_aabb, item.second)) {
-                ++count;
+        // Recognition pass
+        size_t pivot = from;
+        for (size_t i = from; i < to; ++i) {
+            if (!intersects(pool[i].bounds, _aabb)) continue;
+            if (pivot != i) {
+                std::swap(pool[i], pool[pivot]);
             }
+            ++pivot;
         }
 
-        _size = count;
-        return count;
-    }
-
-    template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type>
-    void StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
-    forwardToLeaf(size_t size, const AABB<Dimensions, Type>& aabb) {
-        _size = size;
-        _aabb = aabb;
-    }
-
-    template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type>
-    void StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
-    populate(PermanentHeapPool& pool,
-             const std::unordered_map<Storage, Bounds>& elements) {
-        TreeContent<Storage, Bounds>* pivot = (TreeContent<Storage, Bounds>*)
-                pool.allocate(_size * sizeof(TreeContent<Storage, Bounds>))
-                        .value_or(nullptr);
-        _elements = pivot;
-
-        size_t count = 0;
-
-        for (const auto& item: elements) {
-            if (intersects(_aabb, item.second)) {
-#ifndef NDEBUG
-                if (count > _size) {
-                    throw std::runtime_error("Incorrect population.");
-                }
-#endif
-                pivot->storage = item.first;
-                pivot->bounds = item.second;
-                ++pivot;
-                ++count;
-#ifdef NDEBUG
-                if (count == _size) break;
-#endif
-            }
-        }
+        _size = pivot - from;
+        return pivot;
     }
 
     template<typename Storage, typename Bounds,
-            size_t Dimensions, typename Type>
+        size_t Dimensions, typename Type>
+    const AABB<Dimensions, Type>&
+    StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
+    getBounds() const {
+        return _aabb;
+    }
+
+    template<typename Storage, typename Bounds,
+        size_t Dimensions, typename Type>
     bool StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
     isLeaf() const {
         return false;
     }
 
     template<typename Storage, typename Bounds,
-            size_t Dimensions, typename Type>
-    StaticTreeLeaf<Storage, Bounds, Dimensions, Type>&
-    StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
-    asLeaf() {
-        return *this;
-    }
-
-    template<typename Storage, typename Bounds,
-            size_t Dimensions, typename Type>
-    const StaticTreeLeaf<Storage, Bounds, Dimensions, Type>&
-    StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
-    asLeaf() const {
-        return *this;
-    }
-
-    template<typename Storage, typename Bounds,
-            size_t Dimensions, typename Type>
+        size_t Dimensions, typename Type>
     template<typename Collider>
     void
     StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
     intersections(
-            const Collider& collider,
-            std::unordered_set<TreeContent<Storage, Bounds>>& set,
-            bool skipCollisionCheck) const {
+        const Collider& collider,
+        std::unordered_set<TreeContent<Storage, Bounds>>& set,
+        bool skipCollisionCheck) const {
         if (!skipCollisionCheck && !intersects(_aabb, collider)) return;
 
         for (size_t i = 0; i < _size; ++i) {
@@ -111,13 +69,13 @@ namespace rush {
     }
 
     template<typename Storage, typename Bounds,
-            size_t Dimensions, typename Type>
+        size_t Dimensions, typename Type>
     template<typename Collider>
     void StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
     forEachIntersection(
-            const Collider& collider,
-            std::function<void(const TreeContent<Storage, Bounds>&)> consumer,
-            bool skipCollisionCheck) const {
+        const Collider& collider,
+        std::function<void(const TreeContent<Storage, Bounds>&)> consumer,
+        bool skipCollisionCheck) const {
         if (!skipCollisionCheck && !intersects(_aabb, collider)) return;
 
         for (size_t i = 0; i < _size; ++i) {
@@ -129,19 +87,19 @@ namespace rush {
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     StaticTreeNode(const AABB<Dimensions, Type>& aabb)
-            : _aabb(aabb), _leaf(true) {
-
+        : _aabb(aabb), _leaf(true) {
         auto childrenRadius = _aabb.radius / 2;
         for (size_t i = 0; i < (1 << Dimensions); ++i) {
             auto localCenter = _aabb.center;
             for (size_t d = 0; d < Dimensions; ++d) {
                 if ((i >> d & 1) == 1) {
                     localCenter[d] -= childrenRadius[d];
-                } else {
+                }
+                else {
                     localCenter[d] += childrenRadius[d];
                 }
             }
@@ -151,139 +109,160 @@ namespace rush {
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     size_t
     StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
-    computeSize(const std::unordered_map<Storage, Bounds>& elements) {
-        size_t count = 0;
+    populate(TreeContent<Storage, Bounds>* pool,
+             size_t from, size_t to) {
+        _elements = pool + from;
 
-        for (const auto& item: elements) {
-            if (intersects(_aabb, item.second)) {
-                ++count;
+        // Recognition pass
+        size_t pivot = from;
+        for (size_t i = from; i < to; ++i) {
+            if (!intersects(pool[i].bounds, _aabb)) continue;
+            if (pivot != i) {
+                std::swap(pool[i], pool[pivot]);
             }
+            ++pivot;
         }
 
-        if (count <= MaxObjects) {
-            // This node is a leaf node.
-            // We'll use only the first child
-            // of this node to store the data.
-            forwardToLeaf(count, _aabb);
-            return count;
+        _size = pivot - from;
+
+        if (_size <= MaxObjects) return pivot;
+
+        // Let's fetch only the elements that are in more than
+        // one child.
+
+        to = pivot;
+        pivot = from;
+
+        // Let's store only the elements
+        // that are inside more than one child.
+        // (Or not inside any children)
+        for (size_t i = from; i < to; ++i) {
+            size_t childCount = 0;
+            for (const auto& child: _children) {
+                if (intersects(pool[i].bounds, child.getBounds())) {
+                    ++childCount;
+                    if (childCount > 1) break;
+                }
+            }
+
+            // Special case: maybe the element is not inside any
+            // children but inside the parent?
+            if (childCount != 1) continue;
+            if (pivot != i) {
+                std::swap(pool[i], pool[pivot]);
+            }
+            ++pivot;
         }
 
-        _leaf = false;
-        count = 0;
-        for (auto& child: _children) {
-            count += child.computeSize(elements);
-        }
+        _size = pivot - from;
 
-        return count;
-    }
-
-    template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
-    void StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
-    forwardToLeaf(size_t size, const AABB<Dimensions, Type>& aabb) {
-        _children[0].forwardToLeaf(size, aabb);
-    }
-
-    template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
-    void StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
-    populate(PermanentHeapPool& pool,
-             const std::unordered_map<Storage, Bounds>& elements) {
-        if (_leaf) {
-            _children[0].populate(pool, elements);
-        } else {
+        if (pivot < to) {
+            _leaf = false;
             for (auto& child: _children) {
-                child.populate(pool, elements);
+                pivot = child.populate(pool, pivot, to);
             }
         }
+
+        return to;
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
+    const AABB<Dimensions, Type>&
+    StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
+    getBounds() const {
+        return _aabb;
+    }
+
+    template<typename Storage, typename Bounds, size_t Dimensions,
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     bool StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     isLeaf() const {
         return _leaf;
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
-    StaticTreeLeaf<Storage, Bounds, Dimensions, Type>&
-    StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
-    asLeaf() {
-        return _children[0].asLeaf();
-    }
-
-    template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
-    const StaticTreeLeaf<Storage, Bounds, Dimensions, Type>&
-    StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
-    asLeaf() const {
-        return _children[0].asLeaf();
-    }
-
-    template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     template<typename Collider>
     void
     StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     intersections(
-            const Collider& collider,
-            std::unordered_set<TreeContent<Storage, Bounds>>& set,
-            bool skipCollisionCheck) const {
+        const Collider& collider,
+        std::unordered_set<TreeContent<Storage, Bounds>>& set,
+        bool skipCollisionCheck) const {
         if (!skipCollisionCheck && !intersects(_aabb, collider)) return;
-        if (_leaf) {
-            asLeaf().intersections(collider, set, true);
-        } else {
-            for (const auto& child: _children) {
-                child.intersections(collider, set, skipCollisionCheck);
+
+        for (size_t i = 0; i < _size; ++i) {
+            TreeContent<Storage, Bounds>* current = _elements + i;
+            if (intersects(current->bounds, collider)) {
+                set.insert(*current);
             }
+        }
+
+        if (_leaf) return;
+        for (const auto& child: _children) {
+            child.intersections(collider, set, skipCollisionCheck);
         }
     }
 
-    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type
+        , size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     template<typename Collider>
     void
     StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     forEachIntersection(
-            const Collider& collider,
-            std::function<void(const TreeContent<Storage, Bounds>&)> consumer,
-            bool skipCollisionCheck) const {
+        const Collider& collider,
+        std::function<void(const TreeContent<Storage, Bounds>&)> consumer,
+        bool skipCollisionCheck) const {
         if (!skipCollisionCheck && !intersects(_aabb, collider)) return;
-        if (_leaf) {
-            asLeaf().forEachIntersection(collider, consumer, true);
-        } else {
-            for (const auto& child: _children) {
-                child.forEachIntersection(collider, consumer,
-                                          skipCollisionCheck);
+
+        for (size_t i = 0; i < _size; ++i) {
+            TreeContent<Storage, Bounds>* current = _elements + i;
+            if (intersects(current->bounds, collider)) {
+                consumer(*current);
             }
+        }
+
+        if (_leaf) return;
+        for (const auto& child: _children) {
+            child.forEachIntersection(collider, consumer, skipCollisionCheck);
         }
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     StaticTree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     StaticTree(const AABB<Dimensions, Type>& aabb,
-               const std::unordered_map<Storage, Bounds>& elements)
-            : _root(aabb),
-              _pool(_root.computeSize(elements) * sizeof(Content)) {
-        _root.populate(_pool, elements);
+               const Elements& elements)
+        : _root(aabb),
+          _pool(new TreeContent<Storage, Bounds>[elements.size()]),
+          _size(elements.size()) {
+        // Let's fill the pool.
+        std::copy(elements.cbegin(), elements.cend(), _pool);
+        _root.populate(_pool, 0, _size);
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
+    StaticTree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
+    ~StaticTree() {
+        delete[] _pool;
+    }
+
+
+    template<typename Storage, typename Bounds, size_t Dimensions,
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     const StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>&
     StaticTree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     getRoot() const {
@@ -291,8 +270,8 @@ namespace rush {
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     template<typename Collider>
     void
     StaticTree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
@@ -303,13 +282,13 @@ namespace rush {
 
 
     template<typename Storage, typename Bounds, size_t Dimensions,
-            typename Type, size_t MaxObjects, size_t Depth>
-    requires(Depth > 0)
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
     template<typename Collider>
     void
     StaticTree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     forEachIntersection(
-            const Collider& collider, std::function<void(
+        const Collider& collider, std::function<void(
             const TreeContent<Storage, Bounds>&)> consumer) const {
         _root.forEachIntersection(collider, consumer, false);
     }
