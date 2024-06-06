@@ -61,7 +61,7 @@ namespace rush {
         TreeContent<Storage, Bounds>* _elements;
         size_t _size;
 
-        ChildType _children[1 << Dimensions];
+        std::array<ChildType, 1 << Dimensions> _children;
         bool _leaf;
 
     public:
@@ -71,6 +71,8 @@ namespace rush {
 
         size_t populate(TreeContent<Storage, Bounds>* pool,
                         size_t from, size_t to);
+
+        const std::array<ChildType, 1 << Dimensions>& getChildren() const;
 
         [[nodiscard]] const AABB<Dimensions, Type>& getBounds() const;
 

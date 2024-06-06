@@ -181,6 +181,17 @@ namespace rush {
 
     template<typename Storage, typename Bounds, size_t Dimensions,
         typename Type, size_t MaxObjects, size_t Depth>
+        requires (Depth > 0)
+    const std::array<typename StaticTreeNode<Storage, Bounds,
+        Dimensions, Type, MaxObjects, Depth>::ChildType, 1 << Dimensions>&
+    StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
+    getChildren() const {
+        return _children;
+    }
+
+
+    template<typename Storage, typename Bounds, size_t Dimensions,
+        typename Type, size_t MaxObjects, size_t Depth>
         requires(Depth > 0)
     bool StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     isLeaf() const {
