@@ -10,6 +10,7 @@
 #include <rush/geometry/plane_base.h>
 #include <rush/geometry/ray_base.h>
 #include <rush/geometry/intersections.h>
+#include <rush/geometry/raycast.h>
 
 #include <rush/geometry/tree_base.h>
 #include <rush/geometry/dynamic_tree_base.h>

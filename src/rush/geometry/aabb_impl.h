@@ -15,7 +15,7 @@ namespace rush {
     template<size_t Dimensions, typename Type, typename VAllocator>
     AABB<Dimensions, Type, VAllocator>::AABB(VectorType center_,
                                              VectorType radius_)
-        : center(center_), radius(radius_) {
+        : center(center_), radius(abs(radius_)) {
     }
 
     template<size_t Dimensions, typename Type, typename VAllocator>

@@ -174,7 +174,7 @@ namespace rush {
             if (inv < 0.0f) std::swap(t0, t1);
             min = max(t0, min);
             max = min(t1, max);
-            if (max < min) return false;
+            if (max < min || max < ZERO) return false;
         }
         return true;
     }
@@ -189,6 +189,9 @@ namespace rush {
         constexpr Type ONE = static_cast<Type>(1);
 #ifndef NDEBUG
         if (!ray.isNormalized()) {
+            throw std::runtime_error("Ray is not normalized.");
+        }
+        if (!plane.isNormalized()) {
             throw std::runtime_error("Ray is not normalized.");
         }
 #endif
