@@ -127,7 +127,7 @@ namespace rush {
     [[nodiscard]] bool
     intersects(const Ray<Dimensions, Type, AAllocator>& ray,
                const Vec<Dimensions, Type, BAllocator>& point) {
-        return abs((ray.closestPoint(point) - point).squaredLength()) <=
+        return std::abs((ray.closestPoint(point) - point).squaredLength()) <=
                FLT_EPSILON;
     }
 
@@ -172,8 +172,8 @@ namespace rush {
             Type t0 = (aabb.center[d] - aabb.radius[d] - ray.origin[d]) * inv;
             Type t1 = (aabb.center[d] + aabb.radius[d] - ray.origin[d]) * inv;
             if (inv < 0.0f) std::swap(t0, t1);
-            min = max(t0, min);
-            max = min(t1, max);
+            min = std::max(t0, min);
+            max = std::min(t1, max);
             if (max < min || max < ZERO) return false;
         }
         return true;

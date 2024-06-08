@@ -25,7 +25,7 @@ namespace rush {
     Ray<Dimensions, Type, VAllocator>::
     closestPoint(const Vec<Dimensions, Type, PAllocator>& point) const {
         VectorType vec = origin - point;
-        auto d = std::max(vec.dot(vec, direction), (Type) 0);
+        auto d = std::max(vec.dot(direction), static_cast<Type>(0));
         return origin + d * direction;
     }
 
