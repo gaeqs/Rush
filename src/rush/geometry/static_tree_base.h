@@ -42,6 +42,10 @@ namespace rush {
             std::function<void(
                 const TreeContent<Storage, Bounds>&)> consumer,
             bool skipCollisionCheck) const;
+
+        [[nodiscard]] static constexpr bool mayHaveChildren() {
+            return false;
+        }
     };
 
     template<typename Storage, typename Bounds,
@@ -49,10 +53,10 @@ namespace rush {
         size_t MaxObjects, size_t Depth> requires(Depth > 0)
     class StaticTreeNode {
         using ChildType = std::conditional_t<
-            (Depth > 2),
+            (Depth > 1),
             StaticTreeNode<
                 Storage, Bounds, Dimensions,
-                Type, MaxObjects, Depth - 1
+                Type, MaxObjects, Depth == 1 ? Depth : Depth - 1
             >,
             StaticTreeLeaf<Storage, Bounds, Dimensions, Type>
         >;
@@ -90,6 +94,10 @@ namespace rush {
             std::function<void(
                 const TreeContent<Storage, Bounds>&)> consumer,
             bool skipCollisionCheck) const;
+
+        [[nodiscard]] static constexpr bool mayHaveChildren() {
+            return true;
+        }
     };
 
     template<typename Storage, typename Bounds,

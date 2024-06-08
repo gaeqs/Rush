@@ -46,7 +46,7 @@ namespace rush {
         size_t Dimensions, typename Type>
     bool StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
     isLeaf() const {
-        return false;
+        return true;
     }
 
     template<typename Storage, typename Bounds,
@@ -98,8 +98,7 @@ namespace rush {
             for (size_t d = 0; d < Dimensions; ++d) {
                 if ((i >> d & 1) == 1) {
                     localCenter[d] -= childrenRadius[d];
-                }
-                else {
+                } else {
                     localCenter[d] += childrenRadius[d];
                 }
             }
