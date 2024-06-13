@@ -6,7 +6,7 @@
 #define RAYCAST_H
 
 #include <any>
-#include <typeindex>
+#include <limits>
 
 #include <rush/vector/vec.h>
 #include <rush/geometry/aabb_base.h>
@@ -18,8 +18,8 @@ namespace rush {
     struct RayCastResult {
         Vec<Dimensions, Type> point;
         Vec<Dimensions, Type> normal;
-        Type distance;
-        bool hit;
+        Type distance = std::numeric_limits<Type>::max();
+        bool hit = false;
     };
 
 

@@ -247,6 +247,71 @@ namespace rush {
         }
     }
 
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type
+        , size_t MaxObjects, size_t Depth>
+        requires (Depth > 0)
+    template<typename RAllocator>
+    RayCastResult<Dimensions, Type>
+    StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
+    raycast(Ray<Dimensions, Type, RAllocator> ray) const {
+        RayCastResult<Dimensions, Type> boxHit;
+        raycast(ray, _aabb, boxHit);
+        if (!boxHit.hit) return boxHit;
+
+        RayCastResult<Dimensions, Type> childrenResult;
+
+        // Let's check the childrens for any hit.
+        if (!_leaf) {
+            RayCastResult<Dimensions, Type> results[1 << Dimensions];
+            size_t amount = 0;
+
+            for (size_t i = 0; i < 1 << Dimensions; ++i) {
+                auto bounds = _children[i].getBounds();
+                raycast(ray, bounds, results[amount]);
+                if (results[amount].hit) ++amount;
+            }
+
+            // Find the minimum hit
+            while (amount > 0) {
+                size_t selected = 0;
+                Type distance = std::numeric_limits<Type>::max();
+                for (size_t i = 0; i < amount; ++i) {
+                    if (distance > results[i].distance) {
+                        distance = results[i].distance;
+                        selected = i;
+                    }
+                }
+
+                childrenResult = _children[selected].raycast(ray);
+                if (childrenResult.hit) break;
+
+                --amount;
+                childrenResult[selected] = childrenResult[amount];
+            }
+        }
+
+        // Let's check the contents now
+        RayCastResult<Dimensions, Type> contentsResult;
+        for (size_t i = 0; i < _size; ++i) {
+            RayCastResult<Dimensions, Type> result;
+            raycast(ray, _elements[i].bounds);
+            if (result.hit) {
+                if (!contentsResult.hit ||
+                    contentsResult.distance > result.distance) {
+                    contentsResult = result;
+                }
+            }
+        }
+
+        // Let's finally compare
+        if (!childrenResult.hit) return contentsResult;
+        if (!contentsResult.hit) return childrenResult;
+        return childrenResult.distance > contentsResult.distance
+                   ? contentsResult
+                   : childrenResult;
+    }
+
+
     template<typename Storage, typename Bounds, size_t Dimensions,
         typename Type, size_t MaxObjects, size_t Depth>
         requires(Depth > 0)

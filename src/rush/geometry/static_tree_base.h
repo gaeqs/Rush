@@ -95,6 +95,10 @@ namespace rush {
                 const TreeContent<Storage, Bounds>&)> consumer,
             bool skipCollisionCheck) const;
 
+        template<typename RAllocator>
+        RayCastResult<Dimensions, Type>
+        raycast(Ray<Dimensions, Type, RAllocator> ray) const;
+
         [[nodiscard]] static constexpr bool mayHaveChildren() {
             return true;
         }
