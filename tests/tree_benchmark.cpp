@@ -365,48 +365,48 @@ TEST_CASE("Static tree population benchmark", "[!benchmark][tree]") {
         using Tree = rush::StaticTree<int, rush::AABB<3, float>, 3,
         float, 1000, 2>;
         Tree tree(box, elements);
-        return tree;
+        return tree.getRoot().isLeaf();
     };
     BENCHMARK("Population 1000 3") {
         using Tree = rush::StaticTree<int, rush::AABB<3, float>, 3,
         float, 1000, 3>;
         Tree tree(box, elements);
-        return tree;
+        return tree.getRoot().isLeaf();
     };
     BENCHMARK("Population 1000 4") {
         using Tree = rush::StaticTree<int, rush::AABB<3, float>, 3,
         float, 1000, 4>;
         Tree tree(box, elements);
-        return tree;
+        return tree.getRoot().isLeaf();
     };
     BENCHMARK("Population 1000 5") {
         using Tree = rush::StaticTree<int, rush::AABB<3, float>, 3,
         float, 1000, 5>;
         Tree tree(box, elements);
-        return tree;
+        return tree.getRoot().isLeaf();
     };
     BENCHMARK("Population 100 2") {
         using Tree = rush::StaticTree<int, rush::AABB<3, float>, 3,
         float, 100, 2>;
         Tree tree(box, elements);
-        return tree;
+        return tree.getRoot().isLeaf();
     };
     BENCHMARK("Population 100 3") {
         using Tree = rush::StaticTree<int, rush::AABB<3, float>, 3,
         float, 100, 3>;
         Tree tree(box, elements);
-        return tree;
+        return tree.getRoot().isLeaf();
     };
     BENCHMARK("Population 100 4") {
         using Tree = rush::StaticTree<int, rush::AABB<3, float>, 3,
         float, 100, 4>;
         Tree tree(box, elements);
-        return tree;
+        return tree.getRoot().isLeaf();
     };
     BENCHMARK("Population 100 5") {
         using Tree = rush::StaticTree<int, rush::AABB<3, float>, 3,
         float, 100, 5>;
         Tree tree(box, elements);
-        return tree;
+        return tree.getRoot().isLeaf();
     };
 }

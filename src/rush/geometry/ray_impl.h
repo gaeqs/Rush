@@ -35,8 +35,8 @@ namespace rush {
     }
 
     template<size_t Dimensions, typename Type, typename VAllocator>
-    bool Ray<Dimensions, Type, VAllocator>::isNormalized() const {
-        return std::abs(direction.squaredLength() - (Type) 1) < FLT_EPSILON;
+    bool Ray<Dimensions, Type, VAllocator>::isNormalized(Type epsilon) const {
+        return std::abs(direction.squaredLength() - (Type) 1) < epsilon;
     }
 
     template<size_t Dimensions, typename Type, typename VAllocator>

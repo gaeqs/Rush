@@ -86,6 +86,32 @@ namespace rush {
         }
     }
 
+
+    template<typename Storage, typename Bounds,
+        size_t Dimensions, typename Type>
+    template<typename RAllocator>
+    StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type>
+    StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::
+    raycast(Ray<Dimensions, Type, RAllocator> ray) const {
+        if (!intersects(ray, _aabb)) return {};
+
+        // Let's check the contents now
+        StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type>
+                contentsResult;
+        for (size_t i = 0; i < _size; ++i) {
+            RayCastResult<Dimensions, Type> result;
+            rush::raycast(ray, _elements[i].bounds, result);
+            if (result.hit) {
+                if (!contentsResult.result.hit ||
+                    contentsResult.result.distance > result.distance) {
+                    contentsResult = {result, &_elements[i]};
+                }
+            }
+        }
+
+        return contentsResult;
+    }
+
     template<typename Storage, typename Bounds, size_t Dimensions,
         typename Type, size_t MaxObjects, size_t Depth>
         requires(Depth > 0)
@@ -251,24 +277,27 @@ namespace rush {
         , size_t MaxObjects, size_t Depth>
         requires (Depth > 0)
     template<typename RAllocator>
-    RayCastResult<Dimensions, Type>
+    StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type>
     StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
     raycast(Ray<Dimensions, Type, RAllocator> ray) const {
-        RayCastResult<Dimensions, Type> boxHit;
-        raycast(ray, _aabb, boxHit);
-        if (!boxHit.hit) return boxHit;
+        if (!intersects(ray, _aabb))
+            return StaticTreeRayCastResult<Storage, Bounds, Dimensions,
+                Type>();
 
-        RayCastResult<Dimensions, Type> childrenResult;
+        StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type>
+                childrenResult;
 
         // Let's check the childrens for any hit.
         if (!_leaf) {
-            RayCastResult<Dimensions, Type> results[1 << Dimensions];
+            std::pair<const ChildType*, RayCastResult<Dimensions, Type>>
+                    results[1 << Dimensions];
             size_t amount = 0;
 
             for (size_t i = 0; i < 1 << Dimensions; ++i) {
+                results[amount].first = &_children[i];
                 auto bounds = _children[i].getBounds();
-                raycast(ray, bounds, results[amount]);
-                if (results[amount].hit) ++amount;
+                rush::raycast(ray, bounds, results[amount].second);
+                if (results[amount].second.hit) ++amount;
             }
 
             // Find the minimum hit
@@ -276,41 +305,53 @@ namespace rush {
                 size_t selected = 0;
                 Type distance = std::numeric_limits<Type>::max();
                 for (size_t i = 0; i < amount; ++i) {
-                    if (distance > results[i].distance) {
-                        distance = results[i].distance;
+                    if (distance > results[i].second.distance) {
+                        distance = results[i].second.distance;
                         selected = i;
                     }
                 }
 
-                childrenResult = _children[selected].raycast(ray);
-                if (childrenResult.hit) break;
+                childrenResult = results[selected].first->raycast(ray);
+                if (childrenResult.result.hit) break;
 
                 --amount;
-                childrenResult[selected] = childrenResult[amount];
+                results[selected] = results[amount];
             }
         }
 
         // Let's check the contents now
-        RayCastResult<Dimensions, Type> contentsResult;
+        StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type>
+                contentsResult;
         for (size_t i = 0; i < _size; ++i) {
             RayCastResult<Dimensions, Type> result;
-            raycast(ray, _elements[i].bounds);
+            rush::raycast(ray, _elements[i].bounds, result);
             if (result.hit) {
-                if (!contentsResult.hit ||
-                    contentsResult.distance > result.distance) {
-                    contentsResult = result;
+                if (!contentsResult.result.hit ||
+                    contentsResult.result.distance > result.distance) {
+                    contentsResult = {result, &_elements[i]};
                 }
             }
         }
 
         // Let's finally compare
-        if (!childrenResult.hit) return contentsResult;
-        if (!contentsResult.hit) return childrenResult;
-        return childrenResult.distance > contentsResult.distance
+        if (!childrenResult.result.hit) return contentsResult;
+        if (!contentsResult.result.hit) return childrenResult;
+        return childrenResult.result.distance > contentsResult.result.distance
                    ? contentsResult
                    : childrenResult;
     }
 
+
+    template<typename Storage, typename Bounds, size_t Dimensions,
+        typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
+    StaticTree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::
+    StaticTree(StaticTree&& other) noexcept
+        : _root(other._root),
+          _pool(std::move(other._pool)),
+          _size(other._size) {
+        other._pool = nullptr;
+    }
 
     template<typename Storage, typename Bounds, size_t Dimensions,
         typename Type, size_t MaxObjects, size_t Depth>

@@ -51,6 +51,14 @@ namespace rush {
                 return data.end();
             }
 
+            inline Storage::iterator begin() const {
+                return data.begin();
+            }
+
+            inline Storage::iterator end() const {
+                return data.end();
+            }
+
             inline Storage::const_iterator cbegin() const {
                 return data.cbegin();
             };

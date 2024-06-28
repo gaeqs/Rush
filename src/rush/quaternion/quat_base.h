@@ -113,6 +113,12 @@ namespace rush {
         std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>);
 
         /**
+        * @return whether this ray's direction is normalized.
+        */
+        [[nodiscard]] bool isNormalized(
+        Type epsilon = static_cast<Type>(0.001)) const;
+
+        /**
          * Returns a normalized version of this vector.
          * <p>
          * You can select the precision of the algorithm.

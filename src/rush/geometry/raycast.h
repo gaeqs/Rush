@@ -69,6 +69,14 @@ namespace rush {
         constexpr Type ZERO = static_cast<Type>(0);
         constexpr Type ONE = static_cast<Type>(1);
 
+#ifndef NDEBUG
+        if (!ray.isNormalized()) {
+            throw std::runtime_error(
+                "Ray is not normalized. Ray direction length: " +
+                std::to_string(ray.direction.length()));
+        }
+#endif
+
         size_t minIndex = 0;
         size_t maxIndex = 0;
         Type min = std::numeric_limits<Type>::lowest();

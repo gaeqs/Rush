@@ -82,6 +82,16 @@ namespace rush {
         };
     }
 
+    template<size_t Size, typename Type,
+        typename AAllocator>
+    Type min(const Vec<Size, Type, AAllocator>& v) {
+        Type min = v[0];
+        for (const Type& x: v) {
+            if (x < min) min = x;
+        }
+        return min;
+    }
+
     template<size_t Size, typename Type, typename Allocator>
     Vec<Size, Type, Allocator> min(const Vec<Size, Type, Allocator>& v,
                                    Type min) {
@@ -97,6 +107,16 @@ namespace rush {
         return Vec<Size, Type, AAllocator>{
             [v, w](size_t i) { return std::min(v[i], w[i]); }
         };
+    }
+
+    template<size_t Size, typename Type,
+        typename AAllocator>
+    Type max(const Vec<Size, Type, AAllocator>& v) {
+        Type max = v[0];
+        for (const Type& x: v) {
+            if (x > max) max = x;
+        }
+        return max;
     }
 
     template<size_t Size, typename Type, typename Allocator>

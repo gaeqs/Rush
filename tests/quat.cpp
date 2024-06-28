@@ -37,12 +37,31 @@ TEST_CASE("Quaternion rotation", "[quaternion]") {
     auto q2 = rush::Quat<double>::angleAxis(std::numbers::pi / 2.0,
                                             {1.0, 0.0, 0.0});
 
+    requireSimilar((q * v).squaredLength(), 1.0);
+
     requireSimilar(q2 * q * v, {0.0, 1.0, 0.0});
     requireSimilar(q * (q2 * v), q * q2 * v);
     requireSimilar(q * (q2 * v), q * q2 * v);
 
     // Quaternions doesn't have commutative property!
     requireNotSimilar(q * q2, q2 * q);
+}
+
+TEST_CASE("Quaternion normalization", "[quaternion]") {
+    for (double d = 0; d < 2.0 * std::numbers::pi; d += 0.1) {
+        auto q = rush::Quat<double>::angleAxis(d,
+                                          {0.0, 1.0, 0.0});
+        rush::Vec3d vec = {0.0, 0.0, 1.0};
+        requireSimilar(vec.squaredLength(), (q * vec).squaredLength());
+    }
+
+    rush::Vec3d axis = {0.0, 1.0, 1.0};
+    axis = axis.normalized();
+    for (double d = 0; d < 2.0 * std::numbers::pi; d += 0.1) {
+        auto q = rush::Quat<double>::angleAxis(d, axis);
+        rush::Vec3d vec = {0.0, 0.0, 2.0};
+        requireSimilar(vec.squaredLength(), (q * vec).squaredLength());
+    }
 }
 
 TEST_CASE("Quaternion slerp", "[quaternion]") {

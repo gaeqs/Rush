@@ -93,6 +93,11 @@ namespace rush {
     }
 
     template<typename Type>
+    bool Quat<Type>::isNormalized(Type epsilon) const {
+        return std::abs(squaredLength() - (Type) 1) < epsilon;
+    }
+
+    template<typename Type>
     template<typename Return, Algorithm A>
     Quat<Return> Quat<Type>::normalized() const requires HasDiv<Type> {
         Return l = inverseLength<Return, A>();
@@ -366,7 +371,7 @@ namespace rush {
         }
 
         Type angle = std::acos(dot);
-        Vec<3, Type> axis = F.cross(direction);
+        Vec<3, Type> axis = F.cross(direction).normalized();
 
         return Quat::angleAxis(angle, axis);
     }

@@ -13,6 +13,13 @@
 namespace rush {
     template<typename Storage, typename Bounds,
         size_t Dimensions, typename Type>
+    struct StaticTreeRayCastResult {
+        RayCastResult<Dimensions, Type> result;
+        TreeContent<Storage, Bounds>* element = nullptr;
+    };
+
+    template<typename Storage, typename Bounds,
+        size_t Dimensions, typename Type>
     class StaticTreeLeaf {
         AABB<Dimensions, Type> _aabb;
         TreeContent<Storage, Bounds>* _elements;
@@ -42,6 +49,10 @@ namespace rush {
             std::function<void(
                 const TreeContent<Storage, Bounds>&)> consumer,
             bool skipCollisionCheck) const;
+
+        template<typename RAllocator>
+        StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type>
+        raycast(Ray<Dimensions, Type, RAllocator> ray) const;
 
         [[nodiscard]] static constexpr bool mayHaveChildren() {
             return false;
@@ -96,7 +107,7 @@ namespace rush {
             bool skipCollisionCheck) const;
 
         template<typename RAllocator>
-        RayCastResult<Dimensions, Type>
+        StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type>
         raycast(Ray<Dimensions, Type, RAllocator> ray) const;
 
         [[nodiscard]] static constexpr bool mayHaveChildren() {
@@ -117,6 +128,9 @@ namespace rush {
         using Content = rush::TreeContent<Storage, Bounds>;
         using Elements = std::vector<Content>;
 
+        StaticTree(const StaticTree& other) = delete;
+
+        StaticTree(StaticTree&& other) noexcept;
 
         explicit StaticTree(const AABB<Dimensions, Type>& aabb,
                             const Elements& elements);

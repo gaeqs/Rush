@@ -906,8 +906,20 @@ namespace rush {
 
     template<size_t Size, typename Type, typename Allocator>
         requires (Size > 0)
+    auto Vec<Size, Type, Allocator>::begin() const {
+        return data.cbegin();
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+        requires (Size > 0)
     auto Vec<Size, Type, Allocator>::end() {
         return data.end();
+    }
+
+    template<size_t Size, typename Type, typename Allocator>
+        requires (Size > 0)
+    auto Vec<Size, Type, Allocator>::end() const {
+        return data.cend();
     }
 
     template<size_t Size, typename Type, typename Allocator>
