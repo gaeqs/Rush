@@ -12,6 +12,8 @@
 #include <rush/geometry/aabb_base.h>
 #include <rush/geometry/sphere_base.h>
 #include <rush/geometry/plane_base.h>
+#include <rush/geometry/ray_base.h>
+#include <rush/geometry/triangle_base.h>
 
 namespace rush {
     // AABB - Point
@@ -199,6 +201,25 @@ namespace rush {
         if (nd >= ZERO) return false;
         Type pn = ray.origin.dot(plane.normal);
         return (plane.distance - pn) / nd >= ZERO;
+    }
+
+    // Triangle - Point
+    template<typename Type,
+        typename BAllocator>
+    [[nodiscard]] bool
+    intersects(const Triangle<Type>& tri,
+               const Vec<3, Type, BAllocator>& point) {
+        constexpr Type ZERO = static_cast<Type>(0);
+
+        auto a = tri.a - point;
+        auto b = tri.b - point;
+        auto c = tri.c - point;
+
+        auto u = b.cross(c);
+        auto v = c.cross(a);
+        auto w = a.cross(b);
+
+        return u.dot(v) > ZERO && u.dot(w) > ZERO;
     }
 
 

@@ -6,6 +6,7 @@
 #define RAYCAST_H
 
 #include <any>
+#include <cmath>
 #include <limits>
 
 #include <rush/vector/vec.h>
@@ -111,7 +112,7 @@ namespace rush {
         result.hit = true;
     }
 
-    // Ray - PLane
+    // Ray - Plane
     template<size_t Dimensions,
         typename Type,
         typename AAllocator>
@@ -141,6 +142,60 @@ namespace rush {
         result.distance = t;
         result.normal = plane.normal;
         result.point = ray.origin + t * ray.direction;
+    }
+
+    // Ray - Triangle
+    template<size_t Dimensions,
+        typename Type,
+        typename AAllocator>
+    void raycast(const Ray<Dimensions, Type, AAllocator>& ray,
+                 const Triangle<Type>& tri,
+                 RayCastResult<Dimensions, Type>& result) {
+        constexpr Type ZERO = static_cast<Type>(0);
+        constexpr Type ONE = static_cast<Type>(1);
+        constexpr Type EPS = static_cast<Type>(EPSILON);
+
+#ifndef NDEBUG
+        if (!ray.isNormalized()) {
+            throw std::runtime_error("Ray is not normalized.");
+        }
+#endif
+
+        Vec<3, Type> e1 = tri.b = tri.a;
+        Vec<3, Type> e2 = tri.c - tri.a;
+        Vec<3, Type> normal = tri.normal();
+        Vec<3, Type> q = ray.direction.cross(e2);
+        Type a = e1.dot(q);
+
+        // Backfacing
+        if (normal.dot(ray.direction) >= ZERO || std::abs(a) <= EPS) {
+            result.hit = false;
+            return;
+        }
+
+        Vec<3, Type> s = (ray.origin - tri.a) / a;
+        Vec<3, Type> r = s.cross(e1);
+
+        // Baricentrics
+        Type b0 = s.dot(q);
+        Type b1 = r.dot(ray.direction);
+        Type b2 = ONE - b0 - b1;
+
+        if (b0 < ZERO || b1 < ZERO || b2 < ZERO) {
+            result.hit = false;
+            return;
+        }
+
+        Type t = e2.dot(r);
+        if (t < ZERO) {
+            result.hit = false;
+            return;
+        }
+
+        result.hit = true;
+        result.distance = t;
+        result.point = b0 * tri.a + b1 * tri.b + b2 * tri.c;
+        result.normal = normal;
     }
 }
 

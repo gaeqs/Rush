@@ -5,23 +5,22 @@
 #ifndef RUSH_QUALITY_H
 #define RUSH_QUALITY_H
 
+namespace rush {
 #if defined(_M_IX86) || defined(_M_X64) || defined(__SSE__)
 
 #include <immintrin.h>
 
 #define RUSH_INTRINSICS
 
-constexpr bool IntrinsicsAvailable = true;
+    constexpr bool IntrinsicsAvailable = true;
 
 #else
 
-constexpr bool IntrinsicsAvailable = false;
+    constexpr bool IntrinsicsAvailable = false;
 
 #endif
 
-constexpr float EPSILON = 0.0001f;
-
-namespace rush {
+    constexpr float EPSILON = 0.0001f;
 
     enum class Precision {
         High,
@@ -65,7 +64,6 @@ namespace rush {
         Vulkan,
         DirectX
     };
-
 }
 
 #endif //RUSH_QUALITY_H

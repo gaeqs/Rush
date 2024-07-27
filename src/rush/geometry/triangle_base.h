@@ -11,30 +11,34 @@ namespace rush {
 
     /**
     * Represents a triangle.
-    * A triangle is represented by a normal and a distance to the origin.
+    * A triangle is represented by three points.
     *
     * @tparam Type the format of the number used in this triangle.
     */
     template<typename Type>
     struct Triangle {
-        Vec<3, Type> normal;
-        Type distance;
+        Vec<3, Type> a;
+        Vec<3, Type> b;
+        Vec<3, Type> c;
 
         /**
          * Creates a triangle using three points.
          * @tparam AAllocator the allocator of the first point.
          * @tparam BAllocator the allocator of the second point.
          * @tparam CAllocator the allocator of the third point.
-         * @param a the first point.
-         * @param b the second point.
-         * @param c the third point.
+         * @param a_ the first point.
+         * @param b_ the second point.
+         * @param c_ the third point.
          */
         template<typename AAllocator = StaticAllocator,
             typename BAllocator = StaticAllocator,
             typename CAllocator = StaticAllocator>
-        Triangle(const Vec<3, Type, AAllocator>& a,
-                 const Vec<3, Type, BAllocator>& b,
-                 const Vec<3, Type, CAllocator>& c);
+        Triangle(const Vec<3, Type, AAllocator>& a_,
+                 const Vec<3, Type, BAllocator>& b_,
+                 const Vec<3, Type, CAllocator>& c_);
+
+        template<Algorithm Algorithm = Algorithm()>
+        [[nodiscard]] Vec<3, Type> normal() const;
 
         /**
          * Returns the closest point to the given point that is inside this triangle.
@@ -65,6 +69,9 @@ namespace rush {
 
         bool operator==(const Triangle& other) const;
     };
+
 }
+
+#include <rush/geometry/triangle_impl.h>
 
 #endif //TRIANGLE_BASE_H
