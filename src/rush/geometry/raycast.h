@@ -6,7 +6,6 @@
 #define RAYCAST_H
 
 #include <any>
-#include <cmath>
 #include <limits>
 
 #include <rush/vector/vec.h>
@@ -161,41 +160,48 @@ namespace rush {
         }
 #endif
 
-        Vec<3, Type> e1 = tri.b = tri.a;
-        Vec<3, Type> e2 = tri.c - tri.a;
-        Vec<3, Type> normal = tri.normal();
-        Vec<3, Type> q = ray.direction.cross(e2);
-        Type a = e1.dot(q);
+        Vec<3, Type> ab = tri.b - tri.a;
+        Vec<3, Type> ac = tri.c - tri.a;
+        Vec<3, Type> n = ab.cross(ac);
 
-        // Backfacing
-        if (normal.dot(ray.direction) >= ZERO || std::abs(a) <= EPS) {
+        Type d = -ray.direction.dot(n);
+        if (d <= ZERO) {
             result.hit = false;
             return;
         }
 
-        Vec<3, Type> s = (ray.origin - tri.a) / a;
-        Vec<3, Type> r = s.cross(e1);
-
-        // Baricentrics
-        Type b0 = s.dot(q);
-        Type b1 = r.dot(ray.direction);
-        Type b2 = ONE - b0 - b1;
-
-        if (b0 < ZERO || b1 < ZERO || b2 < ZERO) {
-            result.hit = false;
-            return;
-        }
-
-        Type t = e2.dot(r);
+        Vec<3, Type> ap = ray.origin - tri.a;
+        Type t = ap.dot(n);
         if (t < ZERO) {
             result.hit = false;
             return;
         }
 
+        Vec<3, Type> e = (-ray.direction).cross(ap);
+        Type v = ac.dot(e);
+        if (v < ZERO || v > d) {
+            result.hit = false;
+            return;
+        }
+
+        Type w = -ab.dot(e);
+        if (w < ZERO || v + w > d) {
+            result.hit = false;
+            return;
+        }
+
+        Type invD = ONE / d;
+        t *= invD;
+
+        // Barycentric coordinates.
+        //v *= invD;
+        //w *= invD;
+        //Type u = ONE - v - w;
+
         result.hit = true;
+        result.point = ray.origin + t * ray.direction;
         result.distance = t;
-        result.point = b0 * tri.a + b1 * tri.b + b2 * tri.c;
-        result.normal = normal;
+        result.normal = n.normalized();
     }
 }
 

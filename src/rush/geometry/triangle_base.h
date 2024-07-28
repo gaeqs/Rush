@@ -22,6 +22,11 @@ namespace rush {
         Vec<3, Type> c;
 
         /**
+         * Creates a triangle with all the points being (0, 0, 0).
+         */
+        Triangle() = default;
+
+        /**
          * Creates a triangle using three points.
          * @tparam AAllocator the allocator of the first point.
          * @tparam BAllocator the allocator of the second point.
@@ -37,7 +42,7 @@ namespace rush {
                  const Vec<3, Type, BAllocator>& b_,
                  const Vec<3, Type, CAllocator>& c_);
 
-        template<Algorithm Algorithm = Algorithm()>
+        template<Algorithm Alg = Algorithm()>
         [[nodiscard]] Vec<3, Type> normal() const;
 
         /**

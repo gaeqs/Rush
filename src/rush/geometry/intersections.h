@@ -222,6 +222,93 @@ namespace rush {
         return u.dot(v) > ZERO && u.dot(w) > ZERO;
     }
 
+    // Triangle - AABB
+    template<typename Type,
+        typename BAllocator>
+    [[nodiscard]] bool
+    intersects(const Triangle<Type>& tri,
+               const AABB<3, Type, BAllocator>& aabb) {
+        constexpr Type ZERO = static_cast<Type>(0);
+        constexpr Type ONE = static_cast<Type>(1);
+        constexpr Type M_ONE = static_cast<Type>(-1);
+
+        static auto projectTri = [](const Triangle<Type>& tri,
+                                    Vec<3, Type> axis) {
+            Type dotA = axis.dot(tri.a);
+            Type dotB = axis.dot(tri.b);
+            Type dotC = axis.dot(tri.c);
+
+            Type min = std::min(std::min(dotA, dotB), dotC);
+            Type max = std::max(std::max(dotA, dotB), dotC);
+            return std::make_pair(min, max);
+        };
+
+        static auto projectBox = [](const AABB<3, Type>& box,
+                                    Vec<3, Type> axis) {
+            Type min = axis.dot(box.center - box.radius);
+            Type max = min;
+
+            for (size_t i = 1; i < 8; ++i) {
+                Vec<3, Type> mul(
+                    (i & 1) == 0 ? M_ONE : ONE,
+                    (i & 2) == 0 ? M_ONE : ONE,
+                    (i & 4) == 0 ? M_ONE : ONE
+                );
+
+                Type dot = axis.dot(box.center + box.radius * mul);
+                min = std::min(min, dot);
+                max = std::max(max, dot);
+            }
+
+            return std::make_pair(min, max);
+        };
+
+
+        // Test box normals
+
+        static Vec<3, Type> NORMALS[3] = {
+            Vec<3, Type>(ONE, ZERO, ZERO),
+            Vec<3, Type>(ZERO, ONE, ZERO),
+            Vec<3, Type>(ZERO, ZERO, ONE)
+        };
+
+        for (size_t i = 0; i < 3; ++i) {
+            auto [min, max] = projectTri(tri, NORMALS[i]);
+            min -= aabb.center[i];
+            max -= aabb.center[i];
+            if (max < -aabb.radius[i] || min > aabb.radius[i]) {
+                return false;
+            }
+        }
+
+
+        // Test triangle normal
+        {
+            Vec<3, Type> normal = tri.normal();
+            Type triOffset = normal.dot(tri.a);
+            auto [boxMin, boxMax] = projectBox(aabb, normal);
+            if (boxMax < triOffset || boxMin > triOffset) return false;
+        }
+
+        Vec<3, Type> edges[3] = {
+            tri.a - tri.b,
+            tri.b - tri.c,
+            tri.c - tri.a
+        };
+
+        // Test the edges
+        for (size_t i = 0; i < 3; ++i) {
+            for (size_t j = 0; j < 3; ++j) {
+                auto axis = edges[i].cross(NORMALS[j]);
+                auto [boxMin, boxMax] = projectBox(aabb, axis);
+                auto [triMin, triMax] = projectTri(tri, axis);
+                if (boxMax < triMin || boxMin > triMax)return false;
+            }
+        }
+
+        return true;
+    }
+
 
     /**
      * This helper function checks if rush::intersects(b, a) exists,

@@ -5,20 +5,25 @@
 #ifndef RUSH_QUALITY_H
 #define RUSH_QUALITY_H
 
-namespace rush {
 #if defined(_M_IX86) || defined(_M_X64) || defined(__SSE__)
 
 #include <immintrin.h>
 
 #define RUSH_INTRINSICS
-
+namespace rush {
     constexpr bool IntrinsicsAvailable = true;
+}
 
 #else
 
+namespace rush {
     constexpr bool IntrinsicsAvailable = false;
+}
+
 
 #endif
+
+namespace rush {
 
     constexpr float EPSILON = 0.0001f;
 

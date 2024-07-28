@@ -10,11 +10,12 @@
 
 namespace rush {
     template<typename Type>
-    template<Algorithm Algorithm>
+    template<Algorithm Alg>
     Vec<3, Type> Triangle<Type>::normal() const {
         auto ab = b - a;
         auto ac = c - a;
-        return ab.cross(ac).template normalized<Algorithm>();
+        auto cross = ab.cross(ac);
+        return cross.template normalized<Type, Alg>();
     }
 
     template<typename Type>
