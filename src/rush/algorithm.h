@@ -10,18 +10,22 @@
 #include <immintrin.h>
 
 #define RUSH_INTRINSICS
-
-constexpr bool IntrinsicsAvailable = true;
+namespace rush {
+    constexpr bool IntrinsicsAvailable = true;
+}
 
 #else
 
-constexpr bool IntrinsicsAvailable = false;
+namespace rush {
+    constexpr bool IntrinsicsAvailable = false;
+}
+
 
 #endif
 
-constexpr float EPSILON = 0.0001f;
-
 namespace rush {
+
+    constexpr float EPSILON = 0.0001f;
 
     enum class Precision {
         High,
@@ -65,7 +69,6 @@ namespace rush {
         Vulkan,
         DirectX
     };
-
 }
 
 #endif //RUSH_QUALITY_H

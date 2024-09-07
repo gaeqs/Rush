@@ -547,7 +547,11 @@ namespace rush {
 
         auto begin();
 
+        auto begin() const;
+
         auto end();
+
+        auto end() const;
 
         auto cbegin() const;
 

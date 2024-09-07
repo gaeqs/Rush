@@ -37,12 +37,31 @@ TEST_CASE("Quaternion rotation", "[quaternion]") {
     auto q2 = rush::Quat<double>::angleAxis(std::numbers::pi / 2.0,
                                             {1.0, 0.0, 0.0});
 
+    requireSimilar((q * v).squaredLength(), 1.0);
+
     requireSimilar(q2 * q * v, {0.0, 1.0, 0.0});
     requireSimilar(q * (q2 * v), q * q2 * v);
     requireSimilar(q * (q2 * v), q * q2 * v);
 
     // Quaternions doesn't have commutative property!
     requireNotSimilar(q * q2, q2 * q);
+}
+
+TEST_CASE("Quaternion normalization", "[quaternion]") {
+    for (double d = 0; d < 2.0 * std::numbers::pi; d += 0.1) {
+        auto q = rush::Quat<double>::angleAxis(d,
+                                          {0.0, 1.0, 0.0});
+        rush::Vec3d vec = {0.0, 0.0, 1.0};
+        requireSimilar(vec.squaredLength(), (q * vec).squaredLength());
+    }
+
+    rush::Vec3d axis = {0.0, 1.0, 1.0};
+    axis = axis.normalized();
+    for (double d = 0; d < 2.0 * std::numbers::pi; d += 0.1) {
+        auto q = rush::Quat<double>::angleAxis(d, axis);
+        rush::Vec3d vec = {0.0, 0.0, 2.0};
+        requireSimilar(vec.squaredLength(), (q * vec).squaredLength());
+    }
 }
 
 TEST_CASE("Quaternion slerp", "[quaternion]") {
@@ -63,24 +82,24 @@ TEST_CASE("Quaternion slerp", "[quaternion]") {
 
 TEST_CASE("Quaternion iterator", "[quaternion]") {
     auto q1 = rush::Quat<double>::angleAxis(std::numbers::pi / 2.0,
-                                            {0.0, 1.0, 0.0});
-    {   // BEGIN - END
+                                            {0.0, 1.0, 0.0}); {
+        // BEGIN - END
         size_t i = 0;
         auto it = q1.begin();
         while (it != q1.end()) {
             REQUIRE(*it++ == q1[i++]);
         }
         REQUIRE(i == 4);
-    }
-    {   // CBEGIN - CEND
+    } {
+        // CBEGIN - CEND
         size_t i = 0;
         auto it = q1.cbegin();
         while (it != q1.cend()) {
             REQUIRE(*it++ == q1[i++]);
         }
         REQUIRE(i == 4);
-    }
-    {   // RBEGIN - REND
+    } {
+        // RBEGIN - REND
         size_t c = 0;
         size_t i = 3;
         auto it = q1.rbegin();
@@ -89,8 +108,8 @@ TEST_CASE("Quaternion iterator", "[quaternion]") {
             c++;
         }
         REQUIRE(c == 4);
-    }
-    {   // CRBEGIN - CREND
+    } {
+        // CRBEGIN - CREND
         size_t c = 0;
         size_t i = 3;
         auto it = q1.crbegin();
@@ -99,8 +118,8 @@ TEST_CASE("Quaternion iterator", "[quaternion]") {
             c++;
         }
         REQUIRE(c == 4);
-    }
-    {   // FOR LOOP
+    } {
+        // FOR LOOP
         size_t i = 0;
         for (double d: q1) {
             REQUIRE(d == q1[i++]);
@@ -118,6 +137,11 @@ TEST_CASE("Quaternion matrix", "[quaternion]") {
     auto mat2 = q1.rotationMatrix4();
 
     requireSimilar(mat1, mat2);
+}
+
+TEST_CASE("Quarernion from-to", "[quaternion]") {
+    auto q1 = rush::Quatf::fromTo({1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
+    requireSimilar(q1.euler().y(), -std::numbers::pi_v<float> / 2.0f);
 }
 
 #ifdef RUSH_GLM

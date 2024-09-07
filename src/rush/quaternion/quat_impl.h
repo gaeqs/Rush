@@ -10,14 +10,13 @@
 #include <rush/quaternion/quat_base.h>
 
 namespace rush {
-
     template<typename Type>
     Quat<Type>::Quat() : s(Type(1)), x(Type(0)), y(Type(0)), z(Type(0)) {
     }
 
     template<typename Type>
-    Quat<Type>::Quat(Type d_, Type a_, Type b_, Type c_) :
-            s(d_), x(a_), y(b_), z(c_) {
+    Quat<Type>::Quat(Type d_, Type a_, Type b_, Type c_) : s(d_), x(a_), y(b_),
+        z(c_) {
     }
 
     template<typename Type>
@@ -54,14 +53,14 @@ namespace rush {
     template<typename Type>
     template<typename Return>
     Return Quat<Type>::length() const requires
-    std::is_convertible_v<Type, Return> && HasSquaredRoot<Type> {
+        std::is_convertible_v<Type, Return> && HasSquaredRoot<Type> {
         return static_cast<Return>(std::sqrt(squaredLength()));
     }
 
     template<typename Type>
     template<typename Return, Algorithm A>
     Return Quat<Type>::inverseLength() const requires (
-    std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>) {
+        std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>) {
         if constexpr (A.precision == Precision::High) {
             return 1.0f / std::sqrt(squaredLength());
         }
@@ -80,8 +79,9 @@ namespace rush {
             uint32_t i = 0x5f3759df - (std::bit_cast<uint32_t>(v) >> 1);
             v = std::bit_cast<float>(i);
             return v * (1.5f - x2 * v * v);
-        } else if constexpr (std::is_same_v<Return, double>) {
-            auto v = static_cast<double >(squaredLength());
+        }
+        else if constexpr (std::is_same_v<Return, double>) {
+            auto v = static_cast<double>(squaredLength());
             double x2 = v * 0.5f;
             // what the fuck?
             uint64_t i = 0x5fe6eb50c7b537a9 - (std::bit_cast<uint64_t>(v) >> 1);
@@ -90,6 +90,11 @@ namespace rush {
         }
 
         return 1.0f / std::sqrt(squaredLength());
+    }
+
+    template<typename Type>
+    bool Quat<Type>::isNormalized(Type epsilon) const {
+        return std::abs(squaredLength() - (Type) 1) < epsilon;
     }
 
     template<typename Type>
@@ -199,10 +204,10 @@ namespace rush {
     template<typename To>
     Quat<To> Quat<Type>::cast() const {
         return Quat<To>(
-                static_cast<To>(s),
-                static_cast<To>(x),
-                static_cast<To>(y),
-                static_cast<To>(z)
+            static_cast<To>(s),
+            static_cast<To>(x),
+            static_cast<To>(y),
+            static_cast<To>(z)
         );
     }
 
@@ -249,7 +254,7 @@ namespace rush {
 
     template<typename Type>
     Quat<Type> Quat<Type>::operator*(const Quat& o) const requires
-    HasAdd<Type> && HasSub<Type> && HasMul<Type> {
+        HasAdd<Type> && HasSub<Type> && HasMul<Type> {
         Quat<Type> result;
         result.s = s * o.s - x * o.x - y * o.y - z * o.z;
         result.x = s * o.x + x * o.s + y * o.z - z * o.y;
@@ -323,10 +328,10 @@ namespace rush {
         Vec<3, Type> s = rush::sin(angles / Type(2));
 
         return Quat{
-                c.x() * c.y() * c.z() + s.x() * s.y() * s.z(),
-                s.x() * c.y() * c.z() - c.x() * s.y() * s.z(),
-                c.x() * s.y() * c.z() + s.x() * c.y() * s.z(),
-                c.x() * c.y() * s.z() - s.x() * s.y() * c.z()
+            c.x() * c.y() * c.z() + s.x() * s.y() * s.z(),
+            s.x() * c.y() * c.z() - c.x() * s.y() * s.z(),
+            c.x() * s.y() * c.z() + s.x() * c.y() * s.z(),
+            c.x() * c.y() * s.z() - s.x() * s.y() * c.z()
         };
     }
 
@@ -334,20 +339,22 @@ namespace rush {
     Quat<Type>
     Quat<Type>::fromTo(const Vec<3, Type>& from, const Vec<3, Type>& to) {
         Type uv = std::sqrt(from.squaredLength() * to.squaredLength());
-        Type real = uv + from % to;
+        Type real = uv + from.dot(to);
 
         Vec<3, Type> u;
         if (real < Type(1.e-6f) * uv) {
             real = Type(0);
             if (std::abs(from.x()) > std::abs(from.z())) {
                 u = {-from.y(), from.x(), Type(0)};
-            } else {
+            }
+            else {
                 u = {Type(0), -from.z(), from.y()};
             }
-        } else {
-            u = from ^ to;
         }
-        return Quat<Type>(real, u.x(), u.y(), u.z()).normalize();
+        else {
+            u = from.cross(to);
+        }
+        return Quat(real, u.x(), u.y(), u.z()).normalized();
     }
 
     template<typename Type>
@@ -364,7 +371,7 @@ namespace rush {
         }
 
         Type angle = std::acos(dot);
-        Vec<3, Type> axis = F.cross(direction);
+        Vec<3, Type> axis = F.cross(direction).normalized();
 
         return Quat::angleAxis(angle, axis);
     }
