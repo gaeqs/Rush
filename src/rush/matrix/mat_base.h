@@ -11,6 +11,7 @@
 
 #include <rush/algorithm.h>
 #include <rush/vector/vec.h>
+#include <rush/matrix/mat_dense_rep.h>
 
 #ifdef RUSH_GLM
 
@@ -19,25 +20,26 @@
 #endif
 
 namespace rush {
-
     template<typename Type>
     struct Quat;
 
     template<size_t Columns, size_t Rows, typename Type,
-            typename Allocator = StaticAllocator>
+        typename Representation = MatDenseRep,
+        typename Allocator = StaticAllocator>
     struct Mat {
-
         static_assert(Columns > 0, "Column amount cannot be zero.");
         static_assert(Rows > 0, "Row amount cannot be zero.");
 
         using Self = Mat<Columns, Rows, Type>;
         using ColumnType = rush::Vec<Rows, Type>;
+        using Rep = typename Representation::
+        template Representation<Columns, Rows, Type, Allocator>;
 
-        Allocator::template AllocatedData<Columns, rush::Vec<Rows, Type>> data;
+        Rep rep;
 
         template<typename... T>
-        requires (std::is_convertible_v<std::common_type_t<T...>, Type>
-                  && sizeof...(T) <= Columns * Rows && sizeof...(T) > 1)
+            requires (std::is_convertible_v<std::common_type_t<T...>, Type>
+                      && sizeof...(T) <= Columns * Rows && sizeof...(T) > 1)
         Mat(T... list);
 
         Mat();
@@ -47,37 +49,36 @@ namespace rush {
         explicit Mat(std::function<Type(size_t, size_t)> populator);
 
         explicit Mat(std::function<Type(size_t, size_t, size_t, size_t)>
-                     populator);
+            populator);
 
-        template<size_t OColumns, size_t ORows, typename OAlloc>
-        requires(Columns > OColumns || Rows > ORows)
-        explicit Mat(const Mat<OColumns, ORows, Type, OAlloc>& other,
-                     Type diagonal);
+        template<size_t OColumns, size_t ORows, typename ORep, typename OAlloc>
+            requires(Columns > OColumns || Rows > ORows)
+        explicit
+        Mat(const Mat<OColumns, ORows, Type, ORep, OAlloc>& other, Type diagonal);
 
-        constexpr size_t size() const;
+        [[nodiscard]] constexpr size_t size() const;
 
-        inline const Type* toPointer() const;
+        const Type* toPointer() const;
 
-        inline Type* toPointer();
+        Type* toPointer();
 
         // REGION ACCESSORS
 
-        inline ColumnType& column(size_t column);
+        typename Rep::ColumnRef column(size_t column);
 
-        inline const ColumnType& column(size_t column) const;
+        typename Rep::ColumnType column(size_t column) const;
 
-        VecRef<Columns, Type> row(size_t row);
+        typename Rep::RowRef row(size_t row);
 
-        Vec<Columns, Type, StaticAllocator>
-        row(size_t row) const;
+        typename Rep::RowType row(size_t row) const;
 
-        inline ColumnType& operator[](size_t column);
+        typename Rep::ColumnRef operator[](size_t column);
 
-        inline const ColumnType& operator[](size_t column) const;
+        typename Rep::ColumnType operator[](size_t column) const;
 
-        inline Type& operator()(size_t column, size_t row);
+        Type& operator()(size_t column, size_t row);
 
-        inline const Type& operator()(size_t column, size_t row) const;
+        const Type& operator()(size_t column, size_t row) const;
 
         // REGION OPERATORS
 
@@ -89,7 +90,8 @@ namespace rush {
                                           HasDiv<Type> &&
                                           (Columns == Rows);
 
-        Mat<Rows, Columns, Type, Allocator> transpose() const;
+        Mat<Rows, Columns, Type, Representation, Allocator>
+        transpose() const;
 
         Self inverse() const requires HasAdd<Type> &&
                                       HasSub<Type> &&
@@ -101,109 +103,121 @@ namespace rush {
         template<typename To, typename OAlloc = Allocator>
         Mat<Columns, Rows, To, OAlloc> cast() const;
 
-        inline Self& operator+();
+        Self& operator+();
 
-        inline Self& operator+() const;
+        Self& operator+() const;
 
-        inline Self operator-() const requires HasSub<Type>;
+        Self operator-() const requires HasSub<Type>;
 
 
         // ASSIGN MATRIX - SCALE
 
-        inline Self& operator+=(const Type& s) requires HasAdd<Type>;
+        Self& operator+=(const Type& s) requires HasAdd<Type>;
 
-        inline Self& operator-=(const Type& s) requires HasSub<Type>;
+        Self& operator-=(const Type& s) requires HasSub<Type>;
 
-        inline Self& operator*=(const Type& s) requires HasMul<Type>;
+        Self& operator*=(const Type& s) requires HasMul<Type>;
 
-        inline Self& operator/=(const Type& s) requires HasDiv<Type>;
+        Self& operator/=(const Type& s) requires HasDiv<Type>;
 
-        inline Self& operator<<=(const Type& s) requires HasShl<Type>;
+        Self& operator<<=(const Type& s) requires HasShl<Type>;
 
-        inline Self& operator>>=(const Type& s) requires HasShr<Type>;
+        Self& operator>>=(const Type& s) requires HasShr<Type>;
 
-        inline Self& operator&=(const Type& s) requires HasBitAnd<Type>;
+        Self& operator&=(const Type& s) requires HasBitAnd<Type>;
 
-        inline Self& operator|=(const Type& s) requires HasBitOr<Type>;
+        Self& operator|=(const Type& s) requires HasBitOr<Type>;
 
-        inline Self& operator^=(const Type& s) requires HasBitXor<Type>;
+        Self& operator^=(const Type& s) requires HasBitXor<Type>;
 
         // ASSIGN VECTOR - VECTOR
 
         template<typename OAlloc>
-        inline Mat& operator+=(
-                const Mat<Columns, Rows, Type, OAlloc>& o) requires HasAdd<Type>;
+        Mat& operator+=(
+            const Mat<Columns, Rows, Type, OAlloc>& o) requires HasAdd<Type>;
 
         template<typename OAlloc>
-        inline Mat& operator-=(
-                const Mat<Columns, Rows, Type, OAlloc>& o)requires HasSub<Type>;
+        Mat& operator-=(
+            const Mat<Columns, Rows, Type, OAlloc>& o) requires HasSub<Type>;
 
         // MATRIX - SCALE
 
-        inline Self operator+(const Type& s) const requires HasAdd<Type>;
+        Self operator+(const Type& s) const requires HasAdd<Type>;
 
-        inline Self operator-(const Type& s) const requires HasSub<Type>;
+        Self operator-(const Type& s) const requires HasSub<Type>;
 
-        inline Self operator*(const Type& s) const requires HasMul<Type>;
+        Self operator*(const Type& s) const requires HasMul<Type>;
 
-        inline Self operator/(const Type& s) const requires HasDiv<Type>;
+        Self operator/(const Type& s) const requires HasDiv<Type>;
 
-        inline Self operator<<(const Type& s) const requires HasShl<Type>;
+        Self operator<<(const Type& s) const requires HasShl<Type>;
 
-        inline Self operator>>(const Type& s) const requires HasShr<Type>;
+        Self operator>>(const Type& s) const requires HasShr<Type>;
 
-        inline Self operator&(const Type& s) const requires HasBitAnd<Type>;
+        Self operator&(const Type& s) const requires HasBitAnd<Type>;
 
-        inline Self operator|(const Type& s) const requires HasBitOr<Type>;
+        Self operator|(const Type& s) const requires HasBitOr<Type>;
 
-        inline Self operator^(const Type& s) const requires HasBitXor<Type>;
+        Self operator^(const Type& s) const requires HasBitXor<Type>;
 
-        inline Self operator&&(const Type& s) const requires HasAnd<Type>;
+        Self operator&&(const Type& s) const requires HasAnd<Type>;
 
-        inline Self operator||(const Type& s) const requires HasOr<Type>;
+        Self operator||(const Type& s) const requires HasOr<Type>;
 
         // MATRIX - VECTOR
 
         template<typename OAlloc = Allocator>
         Vec<Columns, Type, Allocator>
-        operator*(const rush::Vec<Columns, Type, OAlloc>& other) const requires
-        (HasAdd<Type> && HasMul<Type>);
+        operator*(const Vec<Columns, Type, OAlloc>& other) const requires
+            (HasAdd<Type> && HasMul<Type>);
 
         // MATRIX - MATRIX
 
-        template<typename OAlloc>
-        inline Mat operator+(const Mat<Columns, Rows, Type, OAlloc>& other)
+        template<typename ORep, typename OAlloc>
+        Mat operator+(
+            const Mat<Columns, Rows, Type, ORep, OAlloc>& other)
         const requires HasAdd<Type>;
 
-        template<typename OAlloc>
-        inline Mat operator-(const Mat<Columns, Rows, Type, OAlloc>& other)
+        template<typename ORep, typename OAlloc>
+        Mat operator-(
+            const Mat<Columns, Rows, Type, ORep, OAlloc>& other)
         const requires HasSub<Type>;
 
-        template<size_t OC, size_t OR, typename OAlloc = Allocator>
-        Mat<OC, Rows, Type, Allocator>
-        operator*(const rush::Mat<OC, OR, Type, OAlloc>& other) const requires
-        (Columns == OR && HasAdd<Type> && HasMul<Type>);
+        template<size_t OC, size_t OR,
+            typename ORep = MatDenseRep,
+            typename OAlloc = Allocator>
+        Mat<OC, Rows, Type, Representation, Allocator>
+        operator*(const rush::Mat<OC, OR, Type, ORep, OAlloc>& other) const
+            requires
+            (Columns == OR && HasAdd<Type> && HasMul<Type>);
 
         template<typename OAlloc>
-        inline bool
+        bool
         operator==(const Mat<Columns, Rows, Type, OAlloc>& other) const;
 
         template<typename OAlloc>
-        inline bool
+        bool
         operator!=(const Mat<Columns, Rows, Type, OAlloc>& other) const;
 
         // ENDREGION
 
         // REGION ITERATOR
 
-        inline auto begin();
-        inline auto end();
-        inline auto cbegin() const;
-        inline auto cend() const;
-        inline auto rbegin();
-        inline auto rend();
-        inline auto crbegin() const;
-        inline auto crend() const;
+        auto begin();
+
+        auto end();
+
+        auto cbegin() const;
+
+        auto cend() const;
+
+        auto rbegin();
+
+        auto rend();
+
+        auto crbegin() const;
+
+        auto crend() const;
 
         // ENDREGION
 
@@ -215,9 +229,9 @@ namespace rush {
          * @param t the amount of units.
          * @return the translation matrix.
          */
-        inline static Mat
+        static Mat
         translate(const rush::Vec<3, Type>& t) requires (
-        Columns == 4 && Rows == 4);
+            Columns == 4 && Rows == 4);
 
         /**
          * Creates a scale matrix that scales
@@ -225,7 +239,7 @@ namespace rush {
          * @param s the given mount of units.
          * @return the scale matrix.
          */
-        inline static Mat
+        static Mat
         scale(const rush::Vec<3, Type>& s) requires (Columns == 4 && Rows == 4);
 
         /**
@@ -235,7 +249,7 @@ namespace rush {
          * @param radians the angle.
          * @return the rotation matrix.
          */
-        inline static Mat
+        static Mat
         rotationX(Type radians) requires (Columns == 4 && Rows == 4);
 
         /**
@@ -245,7 +259,7 @@ namespace rush {
          * @param radians the angle.
          * @return the rotation matrix.
          */
-        inline static Mat
+        static Mat
         rotationY(Type radians) requires (Columns == 4 && Rows == 4);
 
         /**
@@ -255,7 +269,7 @@ namespace rush {
          * @param radians the angle.
          * @return the rotation matrix.
          */
-        inline static Mat
+        static Mat
         rotationZ(Type radians) requires (Columns == 4 && Rows == 4);
 
         /**
@@ -266,24 +280,23 @@ namespace rush {
          * @param t the translation.
          * @return the model matrix.
          */
-        inline static Mat
+        static Mat
         model(const rush::Vec<3, Type>& s,
               const rush::Quat<Type>& r,
               const rush::Vec<3, Type>& t) requires (
-        Columns == 4 && Rows == 4);
+            Columns == 4 && Rows == 4);
 
         /**
          * Creates a normal matrix that transforms normals
          * using the given scale, rotation and translation.
          * @param s the scale.
          * @param r the rotation.
-         * @param t the translation.
          * @return the model matrix.
          */
-        inline static Mat
+        static Mat
         normal(const rush::Vec<3, Type>& s,
                const rush::Quat<Type>& r) requires (
-        Columns == 4 && Rows == 4);
+            Columns == 4 && Rows == 4);
 
         /**
          * Creates a view matrix for a camera that at
@@ -296,36 +309,36 @@ namespace rush {
          * @return the view matrix.
          */
         template<Hand Hand = Hand::Right>
-        inline static Mat lookAt(
-                const rush::Vec<3, Type>& origin,
-                const rush::Vec<3, Type>& direction,
-                const rush::Vec<3, Type>& up) requires (
-        Columns == 4 && Rows == 4);
+        static Mat lookAt(
+            const rush::Vec<3, Type>& origin,
+            const rush::Vec<3, Type>& direction,
+            const rush::Vec<3, Type>& up) requires (
+            Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right,
-                ProjectionFormat Format = ProjectionFormat::OpenGL>
-        inline static Mat frustum(Type left, Type right,
-                                  Type bottom, Type top,
-                                  Type near, Type far) requires (
-        Columns == 4 && Rows == 4);
+            ProjectionFormat Format = ProjectionFormat::OpenGL>
+        static Mat frustum(Type left, Type right,
+                           Type bottom, Type top,
+                           Type near, Type far) requires (
+            Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right,
-                ProjectionFormat Format = ProjectionFormat::OpenGL>
-        inline static Mat orthogonal(Type left, Type right,
-                                     Type bottom, Type top,
-                                     Type near, Type far) requires (
-        Columns == 4 && Rows == 4);
+            ProjectionFormat Format = ProjectionFormat::OpenGL>
+        static Mat orthogonal(Type left, Type right,
+                              Type bottom, Type top,
+                              Type near, Type far) requires (
+            Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right,
-                ProjectionFormat Format = ProjectionFormat::OpenGL>
-        inline static Mat perspective(Type fovY, Type aspectRatio,
-                                      Type near, Type far) requires (
-        Columns == 4 && Rows == 4);
+            ProjectionFormat Format = ProjectionFormat::OpenGL>
+        static Mat perspective(Type fovY, Type aspectRatio,
+                               Type near, Type far) requires (
+            Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right>
-        inline static Mat infinitePerspective(Type fovY, Type aspectRatio,
-                                              Type near) requires (
-        Columns == 4 && Rows == 4);
+        static Mat infinitePerspective(Type fovY, Type aspectRatio,
+                                       Type near) requires (
+            Columns == 4 && Rows == 4);
 
         // ENDREGION
 
@@ -334,16 +347,16 @@ namespace rush {
 #ifdef RUSH_GLM
 
         Mat(const glm::mat<Columns, Rows, Type>& o) {
-            for (size_t c = 0; c < Columns; ++c) {
-                for (size_t r = 0; r < Columns; ++r) {
+            for(size_t c = 0; c < Columns; ++c) {
+                for(size_t r = 0; r < Columns; ++r) {
                     operator()(c, r) = o[c][r];
                 }
             }
         }
 
         Mat(const glm::mat<Columns, Rows, Type>&& o) {
-            for (size_t c = 0; c < Columns; ++c) {
-                for (size_t r = 0; r < Columns; ++r) {
+            for(size_t c = 0; c < Columns; ++c) {
+                for(size_t r = 0; r < Columns; ++r) {
                     operator()(c, r) = std::move(o[c][r]);
                 }
             }
@@ -351,8 +364,8 @@ namespace rush {
 
         operator glm::mat<Columns, Rows, Type>() const {
             glm::mat<Columns, Rows, Type> result;
-            for (size_t c = 0; c < Columns; ++c) {
-                for (size_t r = 0; r < Columns; ++r) {
+            for(size_t c = 0; c < Columns; ++c) {
+                for(size_t r = 0; r < Columns; ++r) {
                     result[c][r] = operator()(c, r);
                 }
             }
@@ -362,8 +375,6 @@ namespace rush {
 #endif
 
         // ENDREGION
-
-
     };
 }
 

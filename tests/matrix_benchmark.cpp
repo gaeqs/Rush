@@ -22,7 +22,7 @@ using Mat3f = rush::Mat<3, 3, float>;
 using Mat4f = rush::Mat<4, 4, float>;
 
 TEST_CASE("Big matrix multiplication (double)", "[!benchmark][matrix]") {
-    using BigMat = rush::Mat<ROW_DIM, ROW_DIM, double, rush::HeapAllocator>;
+    using BigMat = rush::Mat<ROW_DIM, ROW_DIM, double, rush::MatDenseRep, rush::HeapAllocator>;
     BENCHMARK_ADVANCED("1000")(Catch::Benchmark::Chronometer meter) {
             std::random_device rd;
             std::mt19937 gen(rd());

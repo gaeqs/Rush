@@ -201,8 +201,8 @@ namespace rush {
          * @tparam Alloc the allocator of the matrix.
          * @return the rotation matrix.
          */
-        template<typename Alloc = StaticAllocator>
-        Mat<3, 3, Type, Alloc> rotationMatrix3() const;
+        template<typename ARep = MatDenseRep, typename Alloc = StaticAllocator>
+        Mat<3, 3, Type, ARep, Alloc> rotationMatrix3() const;
 
         /**
          * Returns the rotation matrix that applies the
@@ -210,8 +210,8 @@ namespace rush {
          * @tparam Alloc the allocator of the matrix.
          * @return the rotation matrix.
          */
-        template<typename Alloc = StaticAllocator>
-        Mat<4, 4, Type, Alloc> rotationMatrix4() const;
+        template<typename ARep = MatDenseRep, typename Alloc = StaticAllocator>
+        Mat<4, 4, Type, ARep, Alloc> rotationMatrix4() const;
 
         /**
          * Returns a vector containing all the data of this quaternion.

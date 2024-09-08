@@ -153,9 +153,9 @@ namespace rush {
     }
 
     template<typename Type>
-    template<typename Alloc>
-    Mat<3, 3, Type, Alloc> Quat<Type>::rotationMatrix3() const {
-        Mat<3, 3, Type, Alloc> r;
+    template<typename ARep, typename Alloc>
+    Mat<3, 3, Type, ARep, Alloc> Quat<Type>::rotationMatrix3() const {
+        Mat<3, 3, Type, ARep, Alloc> r;
 
         Type o = Type(1);
         Type t = Type(2);
@@ -174,9 +174,9 @@ namespace rush {
     }
 
     template<typename Type>
-    template<typename Alloc>
-    Mat<4, 4, Type, Alloc> Quat<Type>::rotationMatrix4() const {
-        Mat<4, 4, Type, Alloc> r(Type(1.0));
+    template<typename ARep, typename Alloc>
+    Mat<4, 4, Type, ARep, Alloc> Quat<Type>::rotationMatrix4() const {
+        Mat<4, 4, Type, ARep, Alloc> r(Type(1.0));
 
         Type o = Type(1);
         Type t = Type(2);

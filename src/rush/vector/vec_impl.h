@@ -5,6 +5,7 @@
 #ifndef RUSH_VEC_IMPL_H
 #define RUSH_VEC_IMPL_H
 
+#include <algorithm>
 #include <bit>
 
 namespace rush {
