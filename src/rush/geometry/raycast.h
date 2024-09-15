@@ -7,6 +7,7 @@
 
 #include <any>
 #include <limits>
+#include <string>
 
 #include <rush/vector/vec.h>
 #include <rush/geometry/aabb_base.h>
