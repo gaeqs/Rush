@@ -135,7 +135,7 @@ namespace rush {
     Vec<Size, Type, Allocator>::operator()(Ts&&... indices) const {
         Vec<sizeof...(Ts), Type, OAlloc> vec;
         size_t i = 0;
-        ((vec.references[i++] = &data[indices]), ...);
+        ((vec.data[i++] = data[indices]), ...);
         return vec;
     }
 
