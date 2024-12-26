@@ -15,10 +15,8 @@
 #endif
 
 namespace rush {
-
     template<typename Type>
     struct Quat {
-
         Type s, x, y, z;
 
         /**
@@ -66,7 +64,9 @@ namespace rush {
         // UNARY
 
         inline Quat& operator+();
+
         inline const Quat& operator+() const;
+
         inline Quat operator-() const;
 
         /**
@@ -89,7 +89,7 @@ namespace rush {
          */
         template<typename Return = Type>
         inline Return length() const requires
-        std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>;
+            std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>;
 
         /**
          * Returns the inverse of the length (or modulus) of this quaternion.
@@ -110,13 +110,13 @@ namespace rush {
          */
         template<typename Return = Type, Algorithm Algorithm = Algorithm()>
         Return inverseLength() const requires (
-        std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>);
+            std::is_convertible_v<Type, Return> && HasSquaredRoot<Type>);
 
         /**
         * @return whether this ray's direction is normalized.
         */
         [[nodiscard]] bool isNormalized(
-        Type epsilon = static_cast<Type>(0.001)) const;
+            Type epsilon = static_cast<Type>(0.001)) const;
 
         /**
          * Returns a normalized version of this vector.
@@ -227,8 +227,11 @@ namespace rush {
         // QUAT - SCALAR
 
         inline Quat operator+(const Type& o) const requires HasAdd<Type>;
+
         inline Quat operator-(const Type& o) const requires HasSub<Type>;
+
         inline Quat operator*(const Type& o) const requires HasMul<Type>;
+
         inline Quat operator/(const Type& o) const requires HasDiv<Type>;
 
         // QUAT - QUAT
@@ -236,11 +239,14 @@ namespace rush {
         inline Type dot(const Quat& o) const;
 
         inline Quat operator+(const Quat& o) const requires HasAdd<Type>;
+
         inline Quat operator-(const Quat& o) const requires HasSub<Type>;
+
         inline Quat operator*(const Quat& o) const requires
-        HasAdd<Type> && HasSub<Type> && HasMul<Type>;
+            HasAdd<Type> && HasSub<Type> && HasMul<Type>;
 
         inline bool operator==(const Quat& o) const;
+
         inline bool operator!=(const Quat& o) const;
 
         // QUAT - VEC
@@ -250,6 +256,7 @@ namespace rush {
         // LERP
 
         Quat lerp(const Quat<Type>& o, Type a) const;
+
         Quat slerp(const Quat<Type>& o, Type a) const;
 
         // ENDREGION
@@ -257,12 +264,19 @@ namespace rush {
         // REGION ITERATOR
 
         inline auto begin();
+
         inline auto end();
+
         inline auto cbegin() const;
+
         inline auto cend() const;
+
         inline auto rbegin();
+
         inline auto rend();
+
         inline auto crbegin() const;
+
         inline auto crend() const;
 
         // ENDREGION
@@ -302,6 +316,16 @@ namespace rush {
          */
         static Quat lookAt(Vec<3, Type> direction);
 
+        /**
+        * Returns a quaternion that represents the rotation
+        * applied by the given rotation matrix.
+        * <p>
+        * The matrix must be a valid rotation matrix.
+        * @param rot the rotation matrix.
+        * @return the quaternion.
+        */
+        static Quat fromRotationMatrix(const Mat<3, 3, Type>& rot);
+
         // ENDREGION
 
         // REGION GLM SUPPORT
@@ -335,7 +359,6 @@ namespace rush {
 
         // ENDREGION
     };
-
 }
 
 #include <rush/quaternion/quat_impl.h>

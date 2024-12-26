@@ -11,13 +11,11 @@
 
 namespace rush {
     template<typename Type>
-    Quat<Type>::Quat() : s(Type(1)), x(Type(0)), y(Type(0)), z(Type(0)) {
-    }
+    Quat<Type>::Quat() : s(Type(1)), x(Type(0)), y(Type(0)), z(Type(0)) {}
 
     template<typename Type>
     Quat<Type>::Quat(Type d_, Type a_, Type b_, Type c_) : s(d_), x(a_), y(b_),
-        z(c_) {
-    }
+                                                           z(c_) {}
 
     template<typename Type>
     Type& Quat<Type>::operator[](size_t index) {
@@ -79,8 +77,7 @@ namespace rush {
             uint32_t i = 0x5f3759df - (std::bit_cast<uint32_t>(v) >> 1);
             v = std::bit_cast<float>(i);
             return v * (1.5f - x2 * v * v);
-        }
-        else if constexpr (std::is_same_v<Return, double>) {
+        } else if constexpr (std::is_same_v<Return, double>) {
             auto v = static_cast<double>(squaredLength());
             double x2 = v * 0.5f;
             // what the fuck?
@@ -94,7 +91,7 @@ namespace rush {
 
     template<typename Type>
     bool Quat<Type>::isNormalized(Type epsilon) const {
-        return std::abs(squaredLength() - (Type) 1) < epsilon;
+        return std::abs(squaredLength() - (Type)1) < epsilon;
     }
 
     template<typename Type>
@@ -346,12 +343,10 @@ namespace rush {
             real = Type(0);
             if (std::abs(from.x()) > std::abs(from.z())) {
                 u = {-from.y(), from.x(), Type(0)};
-            }
-            else {
+            } else {
                 u = {Type(0), -from.z(), from.y()};
             }
-        }
-        else {
+        } else {
             u = from.cross(to);
         }
         return Quat(real, u.x(), u.y(), u.z()).normalized();
@@ -374,6 +369,39 @@ namespace rush {
         Vec<3, Type> axis = F.cross(direction).normalized();
 
         return Quat::angleAxis(angle, axis);
+    }
+
+    template<typename Type>
+    Quat<Type> Quat<Type>::fromRotationMatrix(const Mat<3, 3, Type>& rot) {
+        Quat q;
+        auto trace = rot(0, 0) + rot(1, 1) + rot(2, 2);
+        if (trace > 0.0f) {
+            auto s = 2.0f * std::sqrt(trace + 1.0f);
+            q.s = s / 4.0f;
+            q.x = (rot(1, 2) - rot(2, 1)) / s;
+            q.y = (rot(2, 0) - rot(0, 2)) / s;
+            q.z = (rot(0, 1) - rot(1, 0)) / s;
+        } else if (rot(0, 0) > rot(1, 1) && rot(0, 0) > rot(2, 2)) {
+            auto s = 2.0f + std::sqrt(1.0f + rot(0, 0) - rot(1, 1) - rot(2, 2));
+            q.s = (rot(1, 2) - rot(2, 1)) / s;
+            q.x = s / 4.0f;
+            q.y = (rot(0, 1) + rot(1, 0)) / s;
+            q.z = (rot(0, 2) + rot(2, 0)) / s;
+        } else if (rot(1, 1) > rot(2, 2)) {
+            auto s = 2.0f + std::sqrt(1.0f + rot(1, 1) - rot(0, 0) - rot(2, 2));
+            q.s = (rot(2, 0) - rot(0, 2)) / s;
+            q.x = (rot(0, 1) + rot(1, 0)) / s;
+            q.y = s / 4.0f;
+            q.z = (rot(1, 2) + rot(2, 1)) / s;
+        } else {
+            auto s = 2.0f + std::sqrt(1.0f + rot(2, 2) - rot(0, 0) - rot(1, 1));
+            q.s = (rot(0, 1) - rot(1, 0)) / s;
+            q.x = (rot(0, 2) + rot(2, 0)) / s;
+            q.y = (rot(1, 2) + rot(2, 1)) / s;
+            q.z = s / 4.0f;
+        }
+
+        return q;
     }
 
     template<typename Type>

@@ -144,6 +144,14 @@ TEST_CASE("Quarernion from-to", "[quaternion]") {
     requireSimilar(q1.euler().y(), -std::numbers::pi_v<float> / 2.0f);
 }
 
+TEST_CASE("Quarernion - matrix", "[quaternion]") {
+    auto q1 = rush::Quatf::fromTo({-1.0f, 0.0f, 0.0f}, {0.0f, 0.5f, -2.0f});
+    auto matrix = q1.rotationMatrix3();
+    auto q2 = rush::Quatf::fromRotationMatrix(matrix);
+
+    requireSimilar(q1, q2);
+}
+
 #ifdef RUSH_GLM
 
 #include <glm/glm.hpp>
