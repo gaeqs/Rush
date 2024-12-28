@@ -382,20 +382,20 @@ namespace rush {
             q.y = (rot(2, 0) - rot(0, 2)) / s;
             q.z = (rot(0, 1) - rot(1, 0)) / s;
         } else if (rot(0, 0) > rot(1, 1) && rot(0, 0) > rot(2, 2)) {
-            auto s = 2.0f + std::sqrt(1.0f + rot(0, 0) - rot(1, 1) - rot(2, 2));
+            auto s = 2.0f * std::sqrt(1.0f + rot(0, 0) - rot(1, 1) - rot(2, 2));
             q.s = (rot(1, 2) - rot(2, 1)) / s;
             q.x = s / 4.0f;
             q.y = (rot(0, 1) + rot(1, 0)) / s;
             q.z = (rot(0, 2) + rot(2, 0)) / s;
         } else if (rot(1, 1) > rot(2, 2)) {
-            auto s = 2.0f + std::sqrt(1.0f + rot(1, 1) - rot(0, 0) - rot(2, 2));
+            auto s = 2.0f * std::sqrt(1.0f + rot(1, 1) - rot(0, 0) - rot(2, 2));
             q.s = (rot(2, 0) - rot(0, 2)) / s;
             q.x = (rot(0, 1) + rot(1, 0)) / s;
             q.y = s / 4.0f;
             q.z = (rot(1, 2) + rot(2, 1)) / s;
         } else {
-            auto s = 2.0f + std::sqrt(1.0f + rot(2, 2) - rot(0, 0) - rot(1, 1));
-            q.s = (rot(0, 1) - rot(1, 0)) / s;
+            auto s = 2.0f * std::sqrt(1.0f + rot(2, 2) - rot(0, 0) - rot(1, 1));
+            q.s = (rot(1, 0) - rot(0, 1)) / s;
             q.x = (rot(0, 2) + rot(2, 0)) / s;
             q.y = (rot(1, 2) + rot(2, 1)) / s;
             q.z = s / 4.0f;
