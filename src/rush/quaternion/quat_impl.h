@@ -113,28 +113,24 @@ namespace rush {
 
     template<typename Type>
     Type Quat<Type>::pitch() const {
-        Type rY = Type(2) * (y * z + s * x);
-        Type rX = s * s - x * x - y * y + z * z;
-        if (rY < EPSILON && rY > -EPSILON &&
-            rX < EPSILON && rY > -EPSILON)
-            return Type(2) * std::atan2(x, s);
-        return std::atan2(rY, rX);
+        double sin = 2.0f * (s * y - z * x);
+        if (std::abs(sin) >= 1.0f)
+            return std::copysign(std::numbers::pi_v<float> / 2.0f, sin);
+        return std::asin(sin);
     }
 
     template<typename Type>
     Type Quat<Type>::yaw() const {
-        Type t = std::clamp(Type(-2) * (x * z - s * y), Type(-1), Type(1));
-        return std::asin(t);
+        double sin = 2.0f * (s * z + x * y);
+        double cos = 1.0f - 2.0f * (y * y + z * z);
+        return std::atan2(sin, cos);
     }
 
     template<typename Type>
     Type Quat<Type>::roll() const {
-        Type rY = Type(2) * (x * y + s * z);
-        Type rX = s * s + x * x - y * y - z * z;
-        if (rY < EPSILON && rY > -EPSILON &&
-            rX < EPSILON && rY > -EPSILON)
-            return Type(0);
-        return std::atan2(rY, rX);
+        double sin = 2.0f * (s * x + y * z);
+        double cos = 1.0f - 2.0f * (x * x + y * y);
+        return std::atan2(sin, cos);
     }
 
     template<typename Type>

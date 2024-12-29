@@ -50,7 +50,7 @@ TEST_CASE("Quaternion rotation", "[quaternion]") {
 TEST_CASE("Quaternion normalization", "[quaternion]") {
     for (double d = 0; d < 2.0 * std::numbers::pi; d += 0.1) {
         auto q = rush::Quat<double>::angleAxis(d,
-                                          {0.0, 1.0, 0.0});
+                                               {0.0, 1.0, 0.0});
         rush::Vec3d vec = {0.0, 0.0, 1.0};
         requireSimilar(vec.squaredLength(), (q * vec).squaredLength());
     }
@@ -139,6 +139,13 @@ TEST_CASE("Quaternion matrix", "[quaternion]") {
     requireSimilar(mat1, mat2);
 }
 
+TEST_CASE("Quarernion - euler edges", "[quaternion]") {
+    constexpr float PI = std::numbers::pi_v<float>;
+    auto q1 = rush::Quatf(0, 0, 0, 1);
+    auto result = q1.euler();
+    REQUIRE(result.x() == PI || result.y() == PI || result.z() == PI);
+}
+
 TEST_CASE("Quarernion from-to", "[quaternion]") {
     auto q1 = rush::Quatf::fromTo({1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
     requireSimilar(q1.euler().y(), -std::numbers::pi_v<float> / 2.0f);
@@ -157,11 +164,9 @@ TEST_CASE("Quarernion - matrix", "[quaternion]") {
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
-void consumer(rush::Quatf) {
-}
+void consumer(rush::Quatf) {}
 
-void consumerRef(const rush::Quatf&) {
-}
+void consumerRef(const rush::Quatf&) {}
 
 TEST_CASE("Rush - GLM (Quaternion)", "[quaternion]") {
     glm::quat glm(1.0f, 2.0f, 3.0f, 4.0f);
