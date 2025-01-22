@@ -11,19 +11,118 @@ namespace rush {
     struct MatSparseRep {
         static constexpr bool PinnedMemory = false;
 
+        template<class Rep, typename T, bool Reverse>
+        class Iterator {
+            Rep _collection;
+            size_t _index;
+
+        public:
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = std::ptrdiff_t;
+            using value_type = T;
+
+            Iterator(Rep collection, size_t index): _collection(collection), _index(index) {}
+
+
+            value_type operator*() const {
+                return _collection->column(_index);
+            }
+
+            // Prefix increment
+            Iterator& operator++() {
+                if constexpr (Reverse) {
+                    --_index;
+                } else {
+                    ++_index;
+                }
+                return *this;
+            }
+
+            // Postfix increment
+            Iterator operator++(int) {
+                Iterator tmp = *this;
+                ++*this;
+                return tmp;
+            }
+
+            bool operator==(const Iterator& b) const {
+                return _collection == b._collection && _index == b._index;
+            };
+
+            bool operator!=(const Iterator& b) const {
+                return _collection != b._collection || _index != b._index;
+            };
+        };
+
+        template<class Rep, typename T, bool Reverse>
+     class SparseIterator {
+            Rep _collection;
+            size_t _index;
+
+        public:
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = std::ptrdiff_t;
+            using value_type = T;
+
+            SparseIterator(Rep collection, size_t index): _collection(collection), _index(index) {}
+
+
+            value_type operator*() const {
+                return _collection->vals[_index];
+            }
+
+            [[nodiscard]] size_t row() const {
+                return _collection->rows[_index];
+            }
+
+            [[nodiscard]] size_t column() const {
+                size_t column = 1;
+                while (_collection->cols[column] <= _index) {
+                    ++column;
+                }
+                return column - 1;
+            }
+
+            // Prefix increment
+            SparseIterator& operator++() {
+                if constexpr (Reverse) {
+                    --_index;
+                } else {
+                    ++_index;
+                }
+                return *this;
+            }
+
+            // Postfix increment
+            SparseIterator operator++(int) {
+                Iterator tmp = *this;
+                ++*this;
+                return tmp;
+            }
+
+            bool operator==(const SparseIterator& b) const {
+                return _collection == b._collection && _index == b._index;
+            };
+
+            bool operator!=(const SparseIterator& b) const {
+                return _collection != b._collection || _index != b._index;
+            };
+        };
+
         template<size_t Columns, size_t Rows, typename Type, typename UnusedAllocator = StaticAllocator>
         struct Representation {
             using ColumnType = Vec<Rows, Type>;
             using RowType = Vec<Columns, Type>;
 
-            using ColumnRef = Vec<Rows, Type>&;
-            using RowRef = VecRef<Columns, Type>;
+            using ColumnRef = void;
+            using RowRef = void;
 
             std::vector<Type> vals;
             std::vector<size_t> rows;
             std::vector<size_t> cols = std::vector<size_t>(Columns + 1, 0);
 
             const Type& value(size_t column, size_t row) const {
+                static const Type ZERO = static_cast<Type>(0);
                 size_t colStart = cols[column];
                 size_t colEnd = cols[column + 1];
 
@@ -34,7 +133,7 @@ namespace rush {
                     }
                 }
 
-                return static_cast<Type>(0);
+                return ZERO;
             }
 
             void pushValue(size_t column, size_t row, const Type& value) {
@@ -51,16 +150,16 @@ namespace rush {
                     if (value != static_cast<Type>(0)) {
                         // Insert
                         vals.insert(vals.begin() + pos, value);
-                        cols.insert(cols.begin() + pos, column);
-                        for (size_t i = column; i <= Columns; ++i) {
+                        rows.insert(rows.begin() + pos, row);
+                        for (size_t i = column + 1; i <= Columns; ++i) {
                             cols[i] += 1;
                         }
                     }
                 } else if (value == static_cast<Type>(0)) {
                     // Remove
                     vals.erase(vals.begin() + pos);
-                    cols.erase(cols.begin() + pos);
-                    for (size_t i = column; i <= Columns; ++i) {
+                    rows.erase(rows.begin() + pos);
+                    for (size_t i = column + 1; i <= Columns; ++i) {
                         cols[i] -= 1;
                     }
                 } else {
@@ -89,39 +188,47 @@ namespace rush {
             }
 
             // REGION ITERATOR
-            /*
-                        auto begin() {
-                            return data.begin();
-                        }
 
-                        auto end() {
-                            return data.end();
-                        }
+            auto begin() {
+                return Iterator<const Representation*, ColumnType, false>(this, 0);
+            }
 
-                        auto cbegin() const {
-                            return data.cbegin();
-                        }
+            auto end() {
+                return Iterator<const Representation*, ColumnType, false>(this, Columns);
+            }
 
-                        auto cend() const {
-                            return data.cend();
-                        }
+            auto cbegin() const {
+                return Iterator<const Representation*, ColumnType, false>(this, 0);
+            }
 
-                        auto rbegin() {
-                            return data.rbegin();
-                        }
+            auto cend() const {
+                return Iterator<const Representation*, ColumnType, false>(this, Columns);
+            }
 
-                        auto rend() {
-                            return data.rend();
-                        }
+            auto rbegin() {
+                return Iterator<const Representation*, ColumnType, true>(this, 0);
+            }
 
-                        auto crbegin() const {
-                            return data.crbegin();
-                        }
+            auto rend() {
+                return Iterator<const Representation*, ColumnType, true>(this, Columns);
+            }
 
-                        auto crend() const {
-                            return data.cbegin();
-                        }
-            */
+            auto crbegin() const {
+                return Iterator<const Representation*, ColumnType, true>(this, 0);
+            }
+
+            auto crend() const {
+                return Iterator<const Representation*, ColumnType, true>(this, Columns);
+            }
+
+            auto sparseBegin() {
+                return SparseIterator<const Representation*, Type, false>(this, 0);
+            }
+
+            auto sparseEnd() {
+                return SparseIterator<const Representation*, Type, false>(this, vals.size());
+            }
+
             // ENDREGION
         };
     };

@@ -1,4 +1,5 @@
 #include <numbers>
+#include <random>
 #include <rush/matrix/mat.h>
 
 #include "test_common.h"
@@ -22,6 +23,42 @@ const Mat4f randomMatrix{
     6.3f, 3.0f, 0.9f, 5.4f,
     2.7f, 1.8f, 5.4f, 9.9f
 };
+
+template<typename Matrix>
+Matrix generateMatrix(size_t c, size_t r) {
+    std::random_device os_seed;
+    uint32_t seed = os_seed();
+    std::mt19937 generator(seed);
+    std::uniform_real_distribution valueDistribution(0.0f, 100.0f);
+
+    auto m = Matrix();
+    for (size_t x = 0; x < c; x++) {
+        for (size_t y = 0; y < r; y++) {
+            m.pushValue(x, y, valueDistribution(generator));
+        }
+    }
+
+    return m;
+}
+
+template<typename Matrix>
+Matrix generateSparseMatrix(size_t c, size_t r, float probability) {
+    std::random_device os_seed;
+    uint32_t seed = os_seed();
+    std::mt19937 generator(seed);
+    std::uniform_real_distribution valueDistribution(0.0f, 100.0f);
+
+    auto m = Matrix();
+    for (size_t x = 0; x < c; x++) {
+        for (size_t y = 0; y < r; y++) {
+            if (probability * 100.0f >= valueDistribution(generator)) {
+                m.pushValue(x, y, valueDistribution(generator));
+            }
+        }
+    }
+
+    return m;
+}
 
 TEST_CASE("Matrix creation", "[matrix]") {
     REQUIRE_NOTHROW(Mat3());
@@ -197,12 +234,15 @@ TEST_CASE("Matrix scale", "[matrix]") {
     Mat4f scale = Mat4f::scale({1.0f, 2.0f, 1.0f});
     V4f vec = {10.0f, 20.0f, 30.0f, 1.0f};
     requireSimilar(scale * vec, {10.0f, 40.0f, 30.0f, 1.0f});
-    requireSimilar(scale, {
-                       1.0f, 0.0f, 0.0f, 0.0f,
-                       0.0f, 2.0f, 0.0f, 0.0f,
-                       0.0f, 0.0f, 1.0f, 0.0f,
-                       0.0f, 0.0f, 0.0f, 1.0f
-                   });
+    requireSimilar(
+        scale,
+        {
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 2.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        }
+    );
     requireSimilar(scale.inverse(), Mat4f::scale({1.0f, 0.5f, 1.0f}));
 }
 
@@ -253,9 +293,70 @@ TEST_CASE("Matrix model", "[matrix]") {
     requireSimilar(m1, m2);
 }
 
-TEST_CASE("Sparse matrix", "[matrix]") {
-    auto s = rush::SparseMat4f::scale({2.0f, -1.0f, 3.0f});
-    std::cout << s << std::endl;
+TEST_CASE("Sparse matrix diagonal", "[matrix]") {
+    auto dense = rush::Mat4f(1.0f);
+    auto sparse = rush::SparseMat4f(1.0f);
+    REQUIRE(dense == sparse);
+}
+
+TEST_CASE("Sparse matrix fill", "[matrix]") {
+    auto dense = rush::Mat4f([](size_t c, size_t r) {
+        return c * 4 + r;
+    });
+    auto sparse = rush::SparseMat4f([](size_t c, size_t r) {
+        return c * 4 + r;
+    });
+    REQUIRE(dense == sparse);
+}
+
+TEST_CASE("Sparse matrix random", "[matrix]") {
+    std::random_device os_seed;
+    uint32_t seed = os_seed();
+    std::mt19937 generator(seed);
+    std::uniform_real_distribution valueDistribution(0.0f, 100.0f);
+    std::uniform_int_distribution<size_t> positionDistribution(0, 3);
+
+    auto dense = rush::Mat4f();
+    auto sparse = rush::SparseMat4f();
+
+    for (size_t i = 0; i < 1000; i++) {
+        float value = valueDistribution(generator);
+        size_t column = positionDistribution(generator);
+        size_t row = positionDistribution(generator);
+        dense.pushValue(column, row, value);
+        sparse.pushValue(column, row, value);
+    }
+
+    std::cout << dense << std::endl;
+    std::cout << sparse << std::endl;
+    REQUIRE(dense == sparse);
+}
+
+TEST_CASE("Sparse matrix operations", "[matrix]") {
+    auto d1 = generateMatrix<rush::Mat4f>(4, 4);
+    auto d2 = generateMatrix<rush::Mat4f>(4, 4);
+
+    auto s1 = rush::SparseMat4f(d1);
+    auto s2 = rush::SparseMat4f(d2);
+
+    REQUIRE(d1 + d2 == s1 + s2);
+    REQUIRE(d1 - d2 == s1 - s2);
+    REQUIRE(d1 * d2 == s1 * s2);
+    REQUIRE(d1.inverse() == s1.inverse());
+    std::cout << d1.inverse() << std::endl;
+}
+
+TEST_CASE("Sparse matrix iterator", "[matrix]") {
+    auto m = generateSparseMatrix<rush::Mat<10, 100, float, rush::MatSparseRep>>(10, 100, 0.2f);
+
+    auto it = m.rep.sparseBegin();
+    auto end = m.rep.sparseEnd();
+
+    std::cout << m << std::endl;
+    for (; it != end; ++it) {
+        std::cout << it.column() << ", " << it.row() << " -> " << *it << std::endl;
+        REQUIRE(*it == m(it.column(), it.row()));
+    }
 }
 
 

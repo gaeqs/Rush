@@ -14,15 +14,18 @@ namespace rush {
                   && sizeof...(T) <= Columns * Rows && sizeof...(T) > 1)
     Mat<Columns, Rows, Type, Representation, Allocator>::Mat(T... list) {
         size_t index = 0;
-        ((rep.pushValue(index % Columns, index / Columns, list), ++index), ...);
+        std::initializer_list<int>{
+            ([&] {
+                rep.pushValue(index / Rows, index % Rows, list);
+                ++index;
+            }(), 0)...
+        };
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>::Mat() : rep() {}
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     Mat<Columns, Rows, Type, Representation,
         Allocator>::Mat(Type diagonal) : rep() {
         for (size_t i = 0; i < std::min(Columns, Rows); ++i) {
@@ -30,8 +33,7 @@ namespace rush {
         }
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>::Mat(
         std::function<Type(size_t, size_t)> populator) {
         for (size_t c = 0; c < Columns; ++c) {
@@ -41,8 +43,7 @@ namespace rush {
         }
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>::Mat(
         std::function<Type(size_t, size_t, size_t, size_t)> populator) {
         for (size_t c = 0; c < Columns; ++c) {
@@ -52,15 +53,22 @@ namespace rush {
         }
     }
 
-    template<size_t Columns, size_t Rows, typename Type,
-        typename Representation, typename Allocator>
-    template<size_t OColumns, size_t ORows, typename ORep, typename OAlloc>
-        requires(Columns > OColumns || Rows > ORows)
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    template<size_t OColumns, size_t ORows, typename ORep, typename OAlloc> requires(Columns > OColumns || Rows > ORows)
     Mat<Columns, Rows, Type, Representation, Allocator>::Mat(
-        const Mat<OColumns, ORows, Type, ORep, OAlloc>& other, Type diagonal) :
-        Mat<Columns, Rows, Type, Representation, Allocator>(diagonal) {
+        const Mat<OColumns, ORows, Type, ORep, OAlloc>& other, Type diagonal) : Mat(diagonal) {
         for (size_t c = 0; c < std::min(Columns, OColumns); ++c) {
             for (size_t r = 0; r < std::min(Rows, ORows); ++r) {
+                rep.pushValue(c, r, other[c][r]);
+            }
+        }
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    template<typename ORep, typename OAlloc>
+    Mat<Columns, Rows, Type, Representation, Allocator>::Mat(const Mat<Columns, Rows, Type, ORep, OAlloc>& other) {
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
                 rep.pushValue(c, r, other[c][r]);
             }
         }
@@ -71,93 +79,75 @@ namespace rush {
         return Columns * Rows;
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     const Type* Mat<Columns, Rows, Type, Representation,
         Allocator>::toPointer() const requires Representation::PinnedMemory {
         return rep.toPointer();
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     Type* Mat<Columns, Rows, Type, Representation, Allocator>::toPointer() requires Representation::PinnedMemory {
         return rep.toPointer();
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     typename Mat<Columns, Rows, Type, Representation, Allocator>::Rep::ColumnRef
-    Mat<Columns, Rows, Type, Representation, Allocator>::column(size_t column) {
+    Mat<Columns, Rows, Type, Representation, Allocator>::column(size_t column) requires Representation::PinnedMemory {
         return rep.columnRef(column);
     }
 
-    template<size_t Columns, size_t Rows, typename Type,
-        typename Representation, typename Allocator>
-    typename Mat<Columns, Rows, Type, Representation,
-        Allocator>::Rep::ColumnType
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    typename Mat<Columns, Rows, Type, Representation, Allocator>::Rep::ColumnType
     Mat<Columns, Rows, Type, Representation, Allocator>::
     column(size_t column) const {
         return rep.column(column);
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     typename Mat<Columns, Rows, Type, Representation, Allocator>::Rep::RowRef
-    Mat<Columns, Rows, Type, Representation, Allocator>::row(size_t row) {
+    Mat<Columns, Rows, Type, Representation, Allocator>::row(size_t row) requires Representation::PinnedMemory {
         return rep.rowRef(row);
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     typename Mat<Columns, Rows, Type, Representation, Allocator>::Rep::RowType
     Mat<Columns, Rows, Type, Representation, Allocator>::row(size_t row) const {
         return rep.row(row);
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     typename Mat<Columns, Rows, Type, Representation, Allocator>::Rep::ColumnRef
-    Mat<Columns, Rows, Type, Representation, Allocator>::operator[](
-        size_t column) {
+    Mat<Columns, Rows, Type, Representation, Allocator>::operator[](size_t column) requires
+        Representation::PinnedMemory {
         return rep.columnRef(column);
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
-    typename Mat<Columns, Rows, Type, Representation,
-        Allocator>::Rep::ColumnType
-    Mat<Columns, Rows, Type, Representation, Allocator>::operator[](
-        size_t column) const {
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    typename Mat<Columns, Rows, Type, Representation, Allocator>::Rep::ColumnType
+    Mat<Columns, Rows, Type, Representation, Allocator>::operator[](size_t column) const {
         return rep.column(column);
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
-    Type&
-    Mat<Columns, Rows, Type, Representation, Allocator>::operator()(
-        size_t column, size_t row) {
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    Type& Mat<Columns, Rows, Type, Representation, Allocator>::operator()(size_t column, size_t row)
+        requires Representation::PinnedMemory {
         return rep.value(column, row);
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation
         , typename Allocator>
-    const Type&
-    Mat<Columns, Rows, Type, Representation, Allocator>::operator()(
-        size_t column,
-        size_t row) const {
+    const Type& Mat<Columns, Rows, Type, Representation, Allocator>::operator()(size_t column, size_t row) const {
         return rep.value(column, row);
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
-    Type Mat<Columns, Rows, Type, Representation,
-        Allocator>::determinant() const requires
-        HasAdd<Type> &&
-        HasSub<Type> &&
-        HasMul<Type> &&
-        HasDiv<Type> &&
-        (Columns ==
-         Rows) {
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    void Mat<Columns, Rows, Type, Representation, Allocator>::pushValue(size_t column, size_t row, const Type& value) {
+        rep.pushValue(column, row, value);
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    Type Mat<Columns, Rows, Type, Representation, Allocator>::determinant() const requires
+        HasAdd<Type> && HasSub<Type> && HasMul<Type> && HasDiv<Type> && (Columns == Rows) {
         if constexpr (Columns == 1) {
             return rep.value(0, 0);
         } else if constexpr (Columns == 2) {
@@ -676,22 +666,20 @@ namespace rush {
             });
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
-    template<typename OAlloc>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    template<typename ORep, typename OAlloc>
     bool Mat<Columns, Rows, Type, Representation, Allocator>::operator==(
-        const Mat<Columns, Rows, Type, OAlloc>& other) const {
+        const Mat<Columns, Rows, Type, ORep, OAlloc>& other) const {
         if constexpr (std::is_same_v<Mat, Mat<Columns, Rows, Type, OAlloc>>) {
             if (this == &other) return true;
         }
         return std::equal(cbegin(), cend(), other.cbegin());
     }
 
-    template<size_t Columns, size_t Rows, typename Type, typename Representation
-        , typename Allocator>
-    template<typename OAlloc>
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    template<typename ORep, typename OAlloc>
     bool Mat<Columns, Rows, Type, Representation, Allocator>::operator!=(
-        const Mat<Columns, Rows, Type, OAlloc>& other) const {
+        const Mat<Columns, Rows, Type, ORep, OAlloc>& other) const {
         if constexpr (std::is_same_v<Mat, Mat<Columns, Rows, Type, OAlloc>>) {
             if (this == &other) return false;
         }
