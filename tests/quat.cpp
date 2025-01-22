@@ -147,8 +147,10 @@ TEST_CASE("Quarernion - euler edges", "[quaternion]") {
 }
 
 TEST_CASE("Quarernion from-to", "[quaternion]") {
-    auto q1 = rush::Quatf::fromTo({1.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f});
-    requireSimilar(q1.euler().y(), -std::numbers::pi_v<float> / 2.0f);
+    auto a = rush::Vec3f(1.0f, 0.0f, 0.0f);
+    auto b = rush::Vec3f(0.0f, 0.0f, 1.0f);
+    auto q1 = rush::Quatf::fromTo(a, b);
+    requireSimilar(q1 * a, b);
 }
 
 TEST_CASE("Quarernion - matrix", "[quaternion]") {
