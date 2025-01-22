@@ -20,14 +20,16 @@ namespace rush {
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation
         , typename Allocator>
-    Mat<Columns, Rows, Type, Representation, Allocator>::Mat() : rep() {}
+    Mat<Columns, Rows, Type, Representation, Allocator>::Mat() : rep() {
+        rep.recreate();
+    }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation
         , typename Allocator>
     Mat<Columns, Rows, Type, Representation,
         Allocator>::Mat(Type diagonal) : rep() {
         for(size_t i = 0; i < std::min(Columns, Rows); ++i) {
-            rep.value(i, i) = diagonal;
+            rep.pushValue(i, i, diagonal);
         }
     }
 
@@ -37,7 +39,7 @@ namespace rush {
         std::function<Type(size_t, size_t)> populator) {
         for(size_t c = 0; c < Columns; ++c) {
             for(size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) = populator(c, r);
+                rep.pushValue(c, r, populator(c, r));
             }
         }
     }
@@ -48,7 +50,7 @@ namespace rush {
         std::function<Type(size_t, size_t, size_t, size_t)> populator) {
         for(size_t c = 0; c < Columns; ++c) {
             for(size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) = populator(c, r, Columns, Rows);
+                rep.pushValue(c, r, populator(c, r, Columns, Rows));
             }
         }
     }
@@ -62,7 +64,7 @@ namespace rush {
         Mat<Columns, Rows, Type, Representation, Allocator>(diagonal) {
         for(size_t c = 0; c < std::min(Columns, OColumns); ++c) {
             for(size_t r = 0; r < std::min(Rows, ORows); ++r) {
-                rep.value(c, r) = other[c][r];
+                rep.pushValue(c, r, other[c][r]);
             }
         }
     }

@@ -6,6 +6,7 @@
 #define RUSH_MAT_H
 
 #include <rush/matrix/mat_dense_rep.h>
+#include <rush/matrix/mat_sparse_rep.h>
 
 #include <rush/matrix/mat_base.h>
 #include <rush/matrix/mat_extra.h>

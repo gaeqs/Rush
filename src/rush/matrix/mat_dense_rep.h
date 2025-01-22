@@ -31,9 +31,13 @@ namespace rush {
                 return data[column][row];
             }
 
+            void pushValue(size_t column, size_t row, const Type& value) {
+                data[column][row] = value;
+            }
+
             RowRef rowRef(size_t row) {
                 VecRef<Columns, Type> vec;
-                for(size_t i = 0; i < Columns; ++i) {
+                for (size_t i = 0; i < Columns; ++i) {
                     vec.references[i] = &data[i][row];
                 }
                 return vec;
@@ -41,8 +45,8 @@ namespace rush {
 
             RowType row(size_t row) const {
                 Vec<Columns, Type> vec;
-                for(size_t i = 0; i < Columns; ++i) {
-                    vec.references[i] = data[i][row];
+                for (size_t i = 0; i < Columns; ++i) {
+                    vec[i] = data[i][row];
                 }
                 return vec;
             }
