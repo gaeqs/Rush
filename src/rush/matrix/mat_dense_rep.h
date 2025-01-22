@@ -9,6 +9,8 @@
 
 namespace rush {
     struct MatDenseRep {
+        static constexpr bool PinnedMemory = true;
+
         template<size_t Columns, size_t Rows, typename Type,
             typename Allocator = StaticAllocator>
         struct Representation {
@@ -18,8 +20,7 @@ namespace rush {
             using ColumnRef = Vec<Rows, Type>&;
             using RowRef = VecRef<Columns, Type>;
 
-            using Data = typename Allocator::template AllocatedData<Columns,
-                ColumnType>;
+            using Data = typename Allocator::template AllocatedData<Columns, ColumnType>;
 
             Data data;
 

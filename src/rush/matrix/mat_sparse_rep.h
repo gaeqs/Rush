@@ -9,7 +9,9 @@
 
 namespace rush {
     struct MatSparseRep {
-        template<size_t Columns, size_t Rows, typename Type>
+        static constexpr bool PinnedMemory = false;
+
+        template<size_t Columns, size_t Rows, typename Type, typename UnusedAllocator = StaticAllocator>
         struct Representation {
             using ColumnType = Vec<Rows, Type>;
             using RowType = Vec<Columns, Type>;
@@ -87,39 +89,39 @@ namespace rush {
             }
 
             // REGION ITERATOR
+            /*
+                        auto begin() {
+                            return data.begin();
+                        }
 
-            auto begin() {
-                return data.begin();
-            }
+                        auto end() {
+                            return data.end();
+                        }
 
-            auto end() {
-                return data.end();
-            }
+                        auto cbegin() const {
+                            return data.cbegin();
+                        }
 
-            auto cbegin() const {
-                return data.cbegin();
-            }
+                        auto cend() const {
+                            return data.cend();
+                        }
 
-            auto cend() const {
-                return data.cend();
-            }
+                        auto rbegin() {
+                            return data.rbegin();
+                        }
 
-            auto rbegin() {
-                return data.rbegin();
-            }
+                        auto rend() {
+                            return data.rend();
+                        }
 
-            auto rend() {
-                return data.rend();
-            }
+                        auto crbegin() const {
+                            return data.crbegin();
+                        }
 
-            auto crbegin() const {
-                return data.crbegin();
-            }
-
-            auto crend() const {
-                return data.cbegin();
-            }
-
+                        auto crend() const {
+                            return data.cbegin();
+                        }
+            */
             // ENDREGION
         };
     };

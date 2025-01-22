@@ -143,7 +143,7 @@ TEST_CASE("Quarernion - euler edges", "[quaternion]") {
     constexpr float PI = std::numbers::pi_v<float>;
     auto q1 = rush::Quatf(0, 0, 0, 1);
     auto result = q1.euler();
-    REQUIRE(result.x() == PI || result.y() == PI || result.z() == PI);
+    REQUIRE((result.x() == PI || result.y() == PI || result.z() == PI));
 }
 
 TEST_CASE("Quarernion from-to", "[quaternion]") {

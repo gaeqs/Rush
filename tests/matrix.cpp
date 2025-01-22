@@ -16,10 +16,12 @@ using Mat2f = rush::Mat<2, 2, float>;
 using Mat3f = rush::Mat<3, 3, float>;
 using Mat4f = rush::Mat<4, 4, float>;
 
-const Mat4f randomMatrix{8.1f, 1.3f, 9.0f, 8.3f,
-                         1.2f, 9.6f, 9.1f, 2.2f,
-                         6.3f, 3.0f, 0.9f, 5.4f,
-                         2.7f, 1.8f, 5.4f, 9.9f};
+const Mat4f randomMatrix{
+    8.1f, 1.3f, 9.0f, 8.3f,
+    1.2f, 9.6f, 9.1f, 2.2f,
+    6.3f, 3.0f, 0.9f, 5.4f,
+    2.7f, 1.8f, 5.4f, 9.9f
+};
 
 TEST_CASE("Matrix creation", "[matrix]") {
     REQUIRE_NOTHROW(Mat3());
@@ -32,7 +34,7 @@ TEST_CASE("Matrix creation", "[matrix]") {
     REQUIRE(Mat3(100) == Mat3(100, 0, 0, 0, 100, 0, 0, 0, 100));
 
     REQUIRE(Mat3([](size_t c, size_t r) { return static_cast<int>(r + c * 3); })
-            == Mat3(0, 1, 2, 3, 4, 5, 6, 7, 8));
+        == Mat3(0, 1, 2, 3, 4, 5, 6, 7, 8));
 
     Mat2 mat(0, 1, 2, 3);
     REQUIRE(Mat3(mat, 1) == Mat3(0, 1, 0, 2, 3, 0, 0, 0, 1));
@@ -195,10 +197,12 @@ TEST_CASE("Matrix scale", "[matrix]") {
     Mat4f scale = Mat4f::scale({1.0f, 2.0f, 1.0f});
     V4f vec = {10.0f, 20.0f, 30.0f, 1.0f};
     requireSimilar(scale * vec, {10.0f, 40.0f, 30.0f, 1.0f});
-    requireSimilar(scale, {1.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 2.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 1.0f, 0.0f,
-                           0.0f, 0.0f, 0.0f, 1.0f});
+    requireSimilar(scale, {
+                       1.0f, 0.0f, 0.0f, 0.0f,
+                       0.0f, 2.0f, 0.0f, 0.0f,
+                       0.0f, 0.0f, 1.0f, 0.0f,
+                       0.0f, 0.0f, 0.0f, 1.0f
+                   });
     requireSimilar(scale.inverse(), Mat4f::scale({1.0f, 0.5f, 1.0f}));
 }
 
@@ -249,16 +253,19 @@ TEST_CASE("Matrix model", "[matrix]") {
     requireSimilar(m1, m2);
 }
 
+TEST_CASE("Sparse matrix", "[matrix]") {
+    auto s = rush::SparseMat4f::scale({2.0f, -1.0f, 3.0f});
+    std::cout << s << std::endl;
+}
+
 
 #ifdef RUSH_GLM
 
 #include <glm/glm.hpp>
 
-void consumer(rush::Mat4f) {
-}
+void consumer(rush::Mat4f) {}
 
-void consumerRef(const rush::Mat4f&) {
-}
+void consumerRef(const rush::Mat4f&) {}
 
 TEST_CASE("Rush - GLM (Matrix)", "[matrix]") {
     glm::mat4 glm(1.0f, 2.0f, 3.0f, 4.0f,

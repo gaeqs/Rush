@@ -58,9 +58,9 @@ namespace rush {
 
         [[nodiscard]] constexpr size_t size() const;
 
-        const Type* toPointer() const;
+        const Type* toPointer() const requires Representation::PinnedMemory;
 
-        Type* toPointer();
+        Type* toPointer() requires Representation::PinnedMemory;
 
         // REGION ACCESSORS
 
@@ -347,16 +347,16 @@ namespace rush {
 #ifdef RUSH_GLM
 
         Mat(const glm::mat<Columns, Rows, Type>& o) {
-            for(size_t c = 0; c < Columns; ++c) {
-                for(size_t r = 0; r < Columns; ++r) {
+            for (size_t c = 0; c < Columns; ++c) {
+                for (size_t r = 0; r < Columns; ++r) {
                     operator()(c, r) = o[c][r];
                 }
             }
         }
 
         Mat(const glm::mat<Columns, Rows, Type>&& o) {
-            for(size_t c = 0; c < Columns; ++c) {
-                for(size_t r = 0; r < Columns; ++r) {
+            for (size_t c = 0; c < Columns; ++c) {
+                for (size_t r = 0; r < Columns; ++r) {
                     operator()(c, r) = std::move(o[c][r]);
                 }
             }
@@ -364,8 +364,8 @@ namespace rush {
 
         operator glm::mat<Columns, Rows, Type>() const {
             glm::mat<Columns, Rows, Type> result;
-            for(size_t c = 0; c < Columns; ++c) {
-                for(size_t r = 0; r < Columns; ++r) {
+            for (size_t c = 0; c < Columns; ++c) {
+                for (size_t r = 0; r < Columns; ++r) {
                     result[c][r] = operator()(c, r);
                 }
             }
