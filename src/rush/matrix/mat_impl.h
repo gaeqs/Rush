@@ -734,6 +734,26 @@ namespace rush {
         return rep.crend();
     }
 
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    auto Mat<Columns, Rows, Type, Representation, Allocator>::sparseBegin() {
+        return rep.sparseBegin();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    auto Mat<Columns, Rows, Type, Representation, Allocator>::sparseEnd() {
+        return rep.sparseEnd();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    auto Mat<Columns, Rows, Type, Representation, Allocator>::reverseSparseBegin() {
+        return rep.reverseSparseBegin();
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    auto Mat<Columns, Rows, Type, Representation, Allocator>::reverseSparseEnd() {
+        return rep.reverseSparseEnd();
+    }
+
     template<size_t Columns, size_t Rows, typename Type, typename Representation
         , typename Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>

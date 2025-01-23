@@ -1,5 +1,6 @@
 #include <numbers>
 #include <random>
+#include <ranges>
 #include <rush/matrix/mat.h>
 
 #include "test_common.h"
@@ -346,17 +347,106 @@ TEST_CASE("Sparse matrix operations", "[matrix]") {
     std::cout << d1.inverse() << std::endl;
 }
 
-TEST_CASE("Sparse matrix iterator", "[matrix]") {
+TEST_CASE("Sparse matrix sparse iterator", "[matrix]") {
     auto m = generateSparseMatrix<rush::Mat<10, 100, float, rush::MatSparseRep>>(10, 100, 0.2f);
 
-    auto it = m.rep.sparseBegin();
-    auto end = m.rep.sparseEnd();
+    auto it = m.sparseBegin();
+    auto end = m.sparseEnd();
 
     std::cout << m << std::endl;
     for (; it != end; ++it) {
         std::cout << it.column() << ", " << it.row() << " -> " << *it << std::endl;
         REQUIRE(*it == m(it.column(), it.row()));
     }
+}
+
+
+TEST_CASE("Sparse matrix sparse iterator 2", "[matrix]") {
+    auto m = rush::Mat<10, 10, float, rush::MatSparseRep>();
+    m.pushValue(2, 2, 10.0f);
+    m.pushValue(2, 5, 20.0f);
+    m.pushValue(4, 9, 30.0f);
+    m.pushValue(9, 5, 50.0f);
+    m.pushValue(8, 9, 40.0f);
+
+    std::vector<std::pair<rush::Vec2i, float>> data = {
+        {{2, 2}, 10.0f},
+        {{2, 5}, 20.0f},
+        {{4, 9}, 30.0f},
+        {{8, 9}, 40.0f},
+        {{9, 5}, 50.0f}
+    };
+
+    auto it = m.sparseBegin();
+    for (auto [index, value]: data) {
+        REQUIRE(*it == value);
+        REQUIRE(it.column() == index.x());
+        REQUIRE(it.row() == index.y());
+        ++it;
+    }
+    REQUIRE(it == m.sparseEnd());
+
+    auto reversed = m.reverseSparseBegin();
+    for (auto [index, value]: std::ranges::reverse_view(data)) {
+        REQUIRE(*reversed == value);
+        REQUIRE(reversed.column() == index.x());
+        REQUIRE(reversed.row() == index.y());
+        ++reversed;
+    }
+
+    auto end = m.reverseSparseEnd();
+    REQUIRE(reversed == end);
+}
+
+
+TEST_CASE("Dense matrix sparse iterator", "[matrix]") {
+    auto m = generateSparseMatrix<rush::Mat<10, 100, float>>(10, 100, 0.2f);
+
+    auto it = m.sparseBegin();
+    auto end = m.sparseEnd();
+
+    std::cout << m << std::endl;
+    for (; it != end; ++it) {
+        REQUIRE(*it == m(it.column(), it.row()));
+    }
+}
+
+
+TEST_CASE("Dense matrix sparse iterator 2", "[matrix]") {
+    auto m = rush::Mat<10, 10, float>();
+    m.pushValue(2, 2, 10.0f);
+    m.pushValue(2, 5, 20.0f);
+    m.pushValue(4, 9, 30.0f);
+    m.pushValue(9, 5, 50.0f);
+    m.pushValue(8, 9, 40.0f);
+
+    std::vector<std::pair<rush::Vec2i, float>> data = {
+        {{2, 2}, 10.0f},
+        {{2, 5}, 20.0f},
+        {{4, 9}, 30.0f},
+        {{8, 9}, 40.0f},
+        {{9, 5}, 50.0f}
+    };
+
+    auto it = m.sparseBegin();
+    for (auto [index, value]: data) {
+        REQUIRE(*it == value);
+        REQUIRE(it.column() == index.x());
+        REQUIRE(it.row() == index.y());
+        ++it;
+    }
+    REQUIRE(it == m.sparseEnd());
+
+    auto reversed = m.reverseSparseBegin();
+    for (auto [index, value]: std::ranges::reverse_view(data)) {
+        REQUIRE(*reversed == value);
+        REQUIRE(reversed.column() == index.x());
+        REQUIRE(reversed.row() == index.y());
+        ++reversed;
+    }
+
+    auto end = m.reverseSparseEnd();
+    REQUIRE(reversed == end);
 }
 
 

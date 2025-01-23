@@ -219,6 +219,14 @@ namespace rush {
 
         auto crend() const;
 
+        auto sparseBegin();
+
+        auto sparseEnd();
+
+        auto reverseSparseBegin();
+
+        auto reverseSparseEnd();
+
         // ENDREGION
 
         // REGION STATIC CREATION

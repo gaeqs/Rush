@@ -55,7 +55,7 @@ namespace rush {
         };
 
         template<class Rep, typename T, bool Reverse>
-     class SparseIterator {
+        class SparseIterator {
             Rep _collection;
             size_t _index;
 
@@ -95,7 +95,7 @@ namespace rush {
 
             // Postfix increment
             SparseIterator operator++(int) {
-                Iterator tmp = *this;
+                SparseIterator tmp = *this;
                 ++*this;
                 return tmp;
             }
@@ -206,19 +206,19 @@ namespace rush {
             }
 
             auto rbegin() {
-                return Iterator<const Representation*, ColumnType, true>(this, 0);
+                return Iterator<const Representation*, ColumnType, true>(this, Columns);
             }
 
             auto rend() {
-                return Iterator<const Representation*, ColumnType, true>(this, Columns);
-            }
-
-            auto crbegin() const {
                 return Iterator<const Representation*, ColumnType, true>(this, 0);
             }
 
-            auto crend() const {
+            auto crbegin() const {
                 return Iterator<const Representation*, ColumnType, true>(this, Columns);
+            }
+
+            auto crend() const {
+                return Iterator<const Representation*, ColumnType, true>(this, 0);
             }
 
             auto sparseBegin() {
@@ -227,6 +227,17 @@ namespace rush {
 
             auto sparseEnd() {
                 return SparseIterator<const Representation*, Type, false>(this, vals.size());
+            }
+
+            auto reverseSparseBegin() {
+                return SparseIterator<const Representation*, Type, true>(this, vals.size() - 1);
+            }
+
+            auto reverseSparseEnd() {
+                return SparseIterator<const Representation*, Type, true>(
+                    this,
+                    std::numeric_limits<size_t>::max()
+                );
             }
 
             // ENDREGION

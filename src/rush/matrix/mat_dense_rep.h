@@ -11,6 +11,67 @@ namespace rush {
     struct MatDenseRep {
         static constexpr bool PinnedMemory = true;
 
+        template<class Rep, typename T, size_t Rows, size_t MaxValue, bool Reverse>
+        class SparseIterator {
+            Rep _collection;
+            size_t _index;
+
+        public:
+            using iterator_category = std::forward_iterator_tag;
+            using difference_type = std::ptrdiff_t;
+            using value_type = T;
+
+            SparseIterator(Rep collection, size_t index): _collection(collection), _index(index) {
+                if (index < MaxValue && _collection->value(_index) == 0) {
+                    this->operator++();
+                }
+            }
+
+
+            value_type operator*() const {
+                return _collection->value(_index);
+            }
+
+            [[nodiscard]] size_t row() const {
+                return _index % Rows;
+            }
+
+            [[nodiscard]] size_t column() const {
+                return _index / Rows;
+            }
+
+            // Prefix increment
+            SparseIterator& operator++() {
+                do {
+                    if constexpr (Reverse) {
+                        --_index;
+                    } else {
+                        ++_index;
+                    }
+                } while (_index < MaxValue && _collection->value(_index) == 0);
+                if (_index >= MaxValue) {
+                    _index = std::numeric_limits<size_t>::max();
+                }
+                return *this;
+            }
+
+            // Postfix increment
+            SparseIterator operator++(int) {
+                SparseIterator tmp = *this;
+                ++*this;
+                return tmp;
+            }
+
+            bool operator==(const SparseIterator& b) const {
+                return _collection == b._collection && _index == b._index;
+            };
+
+            bool operator!=(const SparseIterator& b) const {
+                return _collection != b._collection || _index != b._index;
+            };
+        };
+
+
         template<size_t Columns, size_t Rows, typename Type,
             typename Allocator = StaticAllocator>
         struct Representation {
@@ -30,6 +91,10 @@ namespace rush {
 
             const Type& value(size_t column, size_t row) const {
                 return data[column][row];
+            }
+
+            const Type& value(size_t index) const {
+                return data[index / Rows][index % Rows];
             }
 
             void pushValue(size_t column, size_t row, const Type& value) {
@@ -100,6 +165,30 @@ namespace rush {
 
             auto crend() const {
                 return data.cbegin();
+            }
+
+            auto sparseBegin() {
+                return SparseIterator<const Representation*, Type, Rows, Columns * Rows, false>(
+                    this, 0
+                );
+            }
+
+            auto sparseEnd() {
+                return SparseIterator<const Representation*, Type, Rows, Columns * Rows, false>(
+                    this, std::numeric_limits<size_t>::max()
+                );
+            }
+
+            auto reverseSparseBegin() {
+                return SparseIterator<const Representation*, Type, Rows, Columns * Rows, true>(
+                    this, Columns * Rows - 1
+                );
+            }
+
+            auto reverseSparseEnd() {
+                return SparseIterator<const Representation*, Type, Rows, Columns * Rows, true>(
+                    this, std::numeric_limits<size_t>::max()
+                );
             }
 
             // ENDREGION
