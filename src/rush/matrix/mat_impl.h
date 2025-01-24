@@ -287,12 +287,55 @@ namespace rush {
         }
     }
 
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    typename Mat<Columns, Rows, Type, Representation, Allocator>::Self
+    Mat<Columns, Rows, Type, Representation, Allocator>::LUDecomposed() requires
+        HasAdd<Type> && HasSub<Type> && HasMul<Type> && HasDiv<Type> && (Columns == Rows) {
+        Self decomposed = *this;
+        std::array<Type, Columns> indices;
+        LUDecomposed(decomposed, indices);
+        return decomposed;
+    }
+
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    template<typename ORep, typename OAlloc>
+    bool Mat<Columns, Rows, Type, Representation, Allocator>::LUDecomposed(
+        Mat<Columns, Rows, Type, ORep, OAlloc>& out,
+        std::array<size_t, Columns>& indices) requires HasAdd<Type> && HasSub<Type> && HasMul<Type> && HasDiv<Type> && (Columns == Rows) {
+
+            std::array<Type, Columns> rowNormalizer;
+            Type exchangeParity = static_cast<Type>(1);
+            bool result = false;
+
+
+            // Calculate the normalizer for each row.
+            for (size_t row = 0; row < Columns; ++row) {
+                Type maxValue = static_cast<Type>(0);
+                for (size_t column = 0; column < Columns; ++column) {
+                    maxValue = std::max(maxValue, std::abs(this->operator()(column, row)));
+                }
+                // Check if the matrix is singular.
+                if (maxValue == static_cast<Type>(0)) return false;
+                rowNormalizer[row] = static_cast<Type>(1.0f) / maxValue;
+                indices[row] = row;
+            }
+
+            // Perform decomposition
+            for (size_t column = 0; column < Columns; ++column) {
+                for (size_t row = 0; row < Columns; ++row) {
+                    Type sum = this->operator()(column, row);
+                }
+            }
+
+            return true;
+    }
+
     template<size_t Columns, size_t Rows, typename Type, typename Representation
         , typename Allocator>
-    template<typename To, typename OAlloc>
-    Mat<Columns, Rows, To, OAlloc>
+    template<typename To, typename ORep, typename OAlloc>
+    Mat<Columns, Rows, To, ORep, OAlloc>
     Mat<Columns, Rows, Type, Representation, Allocator>::cast() const {
-        return Mat<Columns, Rows, To, OAlloc>([this](size_t c, size_t r) {
+        return Mat<Columns, Rows, To, ORep, OAlloc>([this](size_t c, size_t r) {
             return static_cast<To>(this->operator()(c, r));
         });
     }

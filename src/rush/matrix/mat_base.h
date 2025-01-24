@@ -103,8 +103,22 @@ namespace rush {
                                       (Columns == Rows) &&
                                       (Columns < 5);
 
-        template<typename To, typename OAlloc = Allocator>
-        Mat<Columns, Rows, To, OAlloc> cast() const;
+        Self LUDecomposed() requires HasAdd<Type> &&
+                                     HasSub<Type> &&
+                                     HasMul<Type> &&
+                                     HasDiv<Type> &&
+                                     (Columns == Rows);
+
+        template<typename ORep, typename OAlloc = Allocator>
+        bool LUDecomposed(Mat<Columns, Rows, Type, ORep, OAlloc>& out,
+                          std::array<size_t, Columns>& indices) requires HasAdd<Type> &&
+                                                                         HasSub<Type> &&
+                                                                         HasMul<Type> &&
+                                                                         HasDiv<Type> &&
+                                                                         (Columns == Rows);
+
+        template<typename To, typename ORep, typename OAlloc = Allocator>
+        Mat<Columns, Rows, To, ORep, OAlloc> cast() const;
 
         Self& operator+();
 
