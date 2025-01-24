@@ -5,6 +5,22 @@ include( CPack )
 project(rush VERSION 0.1 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-mavx2" COMPILER_SUPPORTS_AVX2)
+
+if(COMPILER_SUPPORTS_AVX2)
+    message(STATUS "AVX2 supported. Enabling -mavx2 flag.")
+    add_compile_options(-mavx2)
+    add_definitions(-DHAS_AVX2)
+elseif(MSVC)
+    message(STATUS "Checking for MSVC-specific AVX2 support.")
+    add_compile_options(/arch:AVX2)
+    add_definitions(-DHAS_AVX2)
+else()
+    message(WARNING "AVX2 not supported by the compiler. SIMD optimizations will not be enabled.")
+endif()
+
+
 find_package(glm) # OPTIONAL.
 
 add_library(rush INTERFACE

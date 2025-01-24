@@ -6,6 +6,7 @@
 #define RUSH_MAT_IMPL_H
 
 #include <rush/quaternion/quat.h>
+#include <rush/matrix/matrix_lu_decompose.h>
 
 namespace rush {
     template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
@@ -288,46 +289,48 @@ namespace rush {
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
-    typename Mat<Columns, Rows, Type, Representation, Allocator>::Self
-    Mat<Columns, Rows, Type, Representation, Allocator>::LUDecomposed() requires
+    std::pair<bool, typename Mat<Columns, Rows, Type, Representation, Allocator>::Self>
+    Mat<Columns, Rows, Type, Representation, Allocator>::luDecomposed() const requires
         HasAdd<Type> && HasSub<Type> && HasMul<Type> && HasDiv<Type> && (Columns == Rows) {
-        Self decomposed = *this;
-        std::array<Type, Columns> indices;
-        LUDecomposed(decomposed, indices);
-        return decomposed;
+        Self decomposed;
+        bool result = luDecomposed(decomposed);
+        return std::make_pair(result, decomposed);
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
     template<typename ORep, typename OAlloc>
-    bool Mat<Columns, Rows, Type, Representation, Allocator>::LUDecomposed(
-        Mat<Columns, Rows, Type, ORep, OAlloc>& out,
-        std::array<size_t, Columns>& indices) requires HasAdd<Type> && HasSub<Type> && HasMul<Type> && HasDiv<Type> && (Columns == Rows) {
+    bool Mat<Columns, Rows, Type, Representation, Allocator>::luDecomposed(
+        Mat<Columns, Rows, Type, ORep, OAlloc>& out) const requires
+        HasAdd<Type> && HasSub<Type> && HasMul<Type> && HasDiv<Type> && (Columns == Rows) {
+        if constexpr (std::is_same_v<ORep, MatSparseRep> && std::is_same_v<Representation, MatSparseRep>) {
+            return sparseLUDecompose(*this, out);
+        }
 
-            std::array<Type, Columns> rowNormalizer;
-            Type exchangeParity = static_cast<Type>(1);
-            bool result = false;
+        return genericLUDecompose(*this, out);
+    }
 
+    template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
+    Vec<Rows, Type> Mat<Columns, Rows, Type, Representation, Allocator>::solveLu(const Vec<Rows, Type>& r) {
+        Vec<Rows, Type> x, y;
 
-            // Calculate the normalizer for each row.
-            for (size_t row = 0; row < Columns; ++row) {
-                Type maxValue = static_cast<Type>(0);
-                for (size_t column = 0; column < Columns; ++column) {
-                    maxValue = std::max(maxValue, std::abs(this->operator()(column, row)));
-                }
-                // Check if the matrix is singular.
-                if (maxValue == static_cast<Type>(0)) return false;
-                rowNormalizer[row] = static_cast<Type>(1.0f) / maxValue;
-                indices[row] = row;
+        for (size_t i = 0; i < Columns; i++) {
+            Type sum = static_cast<Type>(0);
+            for (size_t k = 0; k < i; ++k) {
+                sum += operator()(k, i) * y[k];
             }
+            y[i] = r[i] - sum;
+        }
 
-            // Perform decomposition
-            for (size_t column = 0; column < Columns; ++column) {
-                for (size_t row = 0; row < Columns; ++row) {
-                    Type sum = this->operator()(column, row);
-                }
+        for (size_t j = Columns; j > 0; --j) {
+            size_t i = j - 1;
+            Type sum = static_cast<Type>(0);
+            for (size_t k = i + 1; k < Columns; ++k) {
+                sum += operator()(k, i) * x[k];
             }
+            x[i] = static_cast<Type>(1) / operator()(i, i) * (y[i] - sum);
+        }
 
-            return true;
+        return x;
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation

@@ -48,8 +48,8 @@ inline void requireNotSimilar(rush::Vec<Size, F> a, rush::Vec<Size, F> b,
     FAIL(a << " == " << b);
 }
 
-template<size_t C, size_t R, std::floating_point F>
-inline void requireSimilar(rush::Mat<C, R, F> a, rush::Mat<C, R, F> b,
+template<size_t C, size_t R, std::floating_point F, typename ARep, typename AAlloc, typename BRep, typename BAlloc>
+inline void requireSimilar(rush::Mat<C, R, F, ARep, AAlloc> a, rush::Mat<C, R, F, BRep, BAlloc> b,
                            F epsilon = F(0.01)) {
     for (int c = 0; c < C; ++c) {
         for (int r = 0; r < R; ++r) {
@@ -71,16 +71,19 @@ inline void requireNotSimilar(rush::Mat<C, R, F> a, rush::Mat<C, R, F> b,
         }
     }
     FAIL(a << " == " << b);
-
 }
 
 template<std::floating_point F>
 inline void requireSimilar(rush::Quat<F> a, rush::Quat<F> b,
                            F epsilon = F(0.01)) {
-    if (std::abs(a.s - b.s) >= epsilon) FAIL(a << " != " << b);
-    if (std::abs(a.x - b.x) >= epsilon) FAIL(a << " != " << b);
-    if (std::abs(a.y - b.y) >= epsilon) FAIL(a << " != " << b);
-    if (std::abs(a.z - b.z) >= epsilon) FAIL(a << " != " << b);
+    if (std::abs(a.s - b.s) >= epsilon)
+        FAIL(a << " != " << b);
+    if (std::abs(a.x - b.x) >= epsilon)
+        FAIL(a << " != " << b);
+    if (std::abs(a.y - b.y) >= epsilon)
+        FAIL(a << " != " << b);
+    if (std::abs(a.z - b.z) >= epsilon)
+        FAIL(a << " != " << b);
 }
 
 template<std::floating_point F>

@@ -10,6 +10,7 @@
 namespace rush {
     struct MatDenseRep {
         static constexpr bool PinnedMemory = true;
+        static constexpr bool CustomLUDecompose = false;
 
         template<class Rep, typename T, size_t Rows, size_t MaxValue, bool Reverse>
         class SparseIterator {

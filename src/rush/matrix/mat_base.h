@@ -7,7 +7,6 @@
 
 #include <functional>
 #include <utility>
-#include <algorithm>
 
 #include <rush/algorithm.h>
 #include <rush/vector/vec.h>
@@ -30,7 +29,7 @@ namespace rush {
         static_assert(Columns > 0, "Column amount cannot be zero.");
         static_assert(Rows > 0, "Row amount cannot be zero.");
 
-        using Self = Mat<Columns, Rows, Type>;
+        using Self = Mat<Columns, Rows, Type, Representation, Allocator>;
         using ColumnType = rush::Vec<Rows, Type>;
         using Rep = typename Representation::
         template Representation<Columns, Rows, Type, Allocator>;
@@ -103,19 +102,20 @@ namespace rush {
                                       (Columns == Rows) &&
                                       (Columns < 5);
 
-        Self LUDecomposed() requires HasAdd<Type> &&
-                                     HasSub<Type> &&
-                                     HasMul<Type> &&
-                                     HasDiv<Type> &&
-                                     (Columns == Rows);
+        std::pair<bool, Self> luDecomposed() const requires HasAdd<Type> &&
+                                                            HasSub<Type> &&
+                                                            HasMul<Type> &&
+                                                            HasDiv<Type> &&
+                                                            (Columns == Rows);
 
         template<typename ORep, typename OAlloc = Allocator>
-        bool LUDecomposed(Mat<Columns, Rows, Type, ORep, OAlloc>& out,
-                          std::array<size_t, Columns>& indices) requires HasAdd<Type> &&
-                                                                         HasSub<Type> &&
-                                                                         HasMul<Type> &&
-                                                                         HasDiv<Type> &&
-                                                                         (Columns == Rows);
+        bool luDecomposed(Mat<Columns, Rows, Type, ORep, OAlloc>& out) const requires HasAdd<Type> &&
+            HasSub<Type> &&
+            HasMul<Type> &&
+            HasDiv<Type> &&
+            (Columns == Rows);
+
+        Vec<Rows, Type> solveLu(const Vec<Rows, Type>& r);
 
         template<typename To, typename ORep, typename OAlloc = Allocator>
         Mat<Columns, Rows, To, ORep, OAlloc> cast() const;

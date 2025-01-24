@@ -5,9 +5,11 @@
 #ifndef MAT_SPARSE_REP_H
 #define MAT_SPARSE_REP_H
 
+#include <vector>
 #include <rush/vector/vec.h>
 
 namespace rush {
+
     struct MatSparseRep {
         static constexpr bool PinnedMemory = false;
 
@@ -119,7 +121,7 @@ namespace rush {
 
             std::vector<Type> vals;
             std::vector<size_t> rows;
-            std::vector<size_t> cols = std::vector<size_t>(Columns + 1, 0);
+            Vec<Columns + 1, size_t> cols;
 
             const Type& value(size_t column, size_t row) const {
                 static const Type ZERO = static_cast<Type>(0);

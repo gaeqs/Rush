@@ -237,7 +237,7 @@ TEST_CASE("Matrix scale", "[matrix]") {
     requireSimilar(scale * vec, {10.0f, 40.0f, 30.0f, 1.0f});
     requireSimilar(
         scale,
-        {
+        Mat4f{
             1.0f, 0.0f, 0.0f, 0.0f,
             0.0f, 2.0f, 0.0f, 0.0f,
             0.0f, 0.0f, 1.0f, 0.0f,
@@ -447,6 +447,76 @@ TEST_CASE("Dense matrix sparse iterator 2", "[matrix]") {
 
     auto end = m.reverseSparseEnd();
     REQUIRE(reversed == end);
+}
+
+
+TEST_CASE("LU decompose", "[matrix]") {
+    static Mat4f expected = {
+        8.1f, 0.160494f, 1.11111f, 1.02469f,
+        1.2f, 9.40741f, 0.825591f, 0.10315f,
+        6.3f, 1.98889f, -7.74201f, 0.16284f,
+        2.7f, 1.36667f, 1.27169f, 6.78528f,
+    };
+
+    auto [result, decomposed] = randomMatrix.luDecomposed();
+    REQUIRE(result);
+    requireSimilar(expected, decomposed);
+}
+
+TEST_CASE("Sparse LU decompose", "[matrix]") {
+    static Mat4f expected = {
+        8.1f, 0.160494f, 1.11111f, 1.02469f,
+        1.2f, 9.40741f, 0.825591f, 0.10315f,
+        6.3f, 1.98889f, -7.74201f, 0.16284f,
+        2.7f, 1.36667f, 1.27169f, 6.78528f,
+    };
+
+    auto [result, decomposed] = rush::SparseMat4f(randomMatrix).luDecomposed();
+    REQUIRE(result);
+    std::cout << decomposed << std::endl;
+    requireSimilar(expected, decomposed);
+}
+
+TEST_CASE("LU non invertible", "[matrix]") {
+    auto matrix = rush::Mat4f(0.0f);
+    matrix(3, 0) = 1.0f;
+    matrix(0, 3) = 4.0f;
+    auto [result, decomposed] = matrix.luDecomposed();
+    REQUIRE_FALSE(result);
+}
+
+TEST_CASE("Linear solve", "[matrix]") {
+    static Mat4f randomMatrix{
+        8.1f, 1.3f, 9.0f, 8.3f,
+        1.2f, 9.6f, 9.1f, 2.2f,
+        6.3f, 3.0f, 0.9f, 5.4f,
+        2.7f, 1.8f, 5.4f, 9.9f
+    };
+    static rush::Vec4f expected = {-0.995833f, -0.488792f, 1.84573f, 0.9721f};
+    static auto r = rush::Vec4f(5.6f, 1.3f, -6.5f, 10.25f);
+
+
+    auto [result, decomposed] = randomMatrix.luDecomposed();
+    auto x = decomposed.solveLu(r);
+
+    requireSimilar(expected, x);
+}
+
+TEST_CASE("Sparse linear solve", "[matrix]") {
+    static rush::SparseMat4f randomMatrix{
+        8.1f, 1.3f, 0.0f, 8.3f,
+        0.0f, 12.2f, 0.0f, 0.0f,
+        0.0f, 0.0f, 5.6f, 0.0f,
+        0.0f, 0.0f, 5.4f, 9.9f
+    };
+    static rush::Vec4f expected = {0.691358f, 0.0328881f, -1.60017f, 0.45573f};
+    static auto r = rush::Vec4f(5.6f, 1.3f, -6.5f, 10.25f);
+
+
+    auto [result, decomposed] = rush::SparseMat4f(randomMatrix).luDecomposed();
+    auto x = decomposed.solveLu(r);
+
+    requireSimilar(expected, x);
 }
 
 
