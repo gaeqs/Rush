@@ -260,15 +260,15 @@ namespace rush {
         } else if constexpr (Columns == 3) {
             Type det = determinant();
             Self inverse;
-            inverse[0][0] = +(d[1][1] * d[2][2] - d[2][1] * d[1][2]);
-            inverse[1][0] = -(d[1][0] * d[2][2] - d[2][0] * d[1][2]);
-            inverse[2][0] = +(d[1][0] * d[2][1] - d[2][0] * d[1][1]);
-            inverse[0][1] = -(d[0][1] * d[2][2] - d[2][1] * d[0][2]);
-            inverse[1][1] = +(d[0][0] * d[2][2] - d[2][0] * d[0][2]);
-            inverse[2][1] = -(d[0][0] * d[2][1] - d[2][0] * d[0][1]);
-            inverse[0][2] = +(d[0][1] * d[1][2] - d[1][1] * d[0][2]);
-            inverse[1][2] = -(d[0][0] * d[1][2] - d[1][0] * d[0][2]);
-            inverse[2][2] = +(d[0][0] * d[1][1] - d[1][0] * d[0][1]);
+            inverse.pushValue(0, 0, +(d[1][1] * d[2][2] - d[2][1] * d[1][2]));
+            inverse.pushValue(1, 0, -(d[1][0] * d[2][2] - d[2][0] * d[1][2]));
+            inverse.pushValue(2, 0, +(d[1][0] * d[2][1] - d[2][0] * d[1][1]));
+            inverse.pushValue(0, 1, -(d[0][1] * d[2][2] - d[2][1] * d[0][2]));
+            inverse.pushValue(1, 1, +(d[0][0] * d[2][2] - d[2][0] * d[0][2]));
+            inverse.pushValue(2, 1, -(d[0][0] * d[2][1] - d[2][0] * d[0][1]));
+            inverse.pushValue(0, 2, +(d[0][1] * d[1][2] - d[1][1] * d[0][2]));
+            inverse.pushValue(1, 2, -(d[0][0] * d[1][2] - d[1][0] * d[0][2]));
+            inverse.pushValue(2, 2, +(d[0][0] * d[1][1] - d[1][0] * d[0][1]));
             return inverse / det;
         } else {
             // Based of https://github.com/g-truc/glm/blob/master/glm/gtc/matrix_inverse.inl
@@ -292,22 +292,22 @@ namespace rush {
             Type s17 = d[1][0] * d[2][1] - d[2][0] * d[1][1];
 
             Self inv;
-            inv[0][0] = +(d[1][1] * s00 - d[1][2] * s01 + d[1][3] * s02);
-            inv[1][0] = -(d[1][0] * s00 - d[1][2] * s03 + d[1][3] * s04);
-            inv[2][0] = +(d[1][0] * s01 - d[1][1] * s03 + d[1][3] * s05);
-            inv[3][0] = -(d[1][0] * s02 - d[1][1] * s04 + d[1][2] * s05);
-            inv[0][1] = -(d[0][1] * s00 - d[0][2] * s01 + d[0][3] * s02);
-            inv[1][1] = +(d[0][0] * s00 - d[0][2] * s03 + d[0][3] * s04);
-            inv[2][1] = -(d[0][0] * s01 - d[0][1] * s03 + d[0][3] * s05);
-            inv[3][1] = +(d[0][0] * s02 - d[0][1] * s04 + d[0][2] * s05);
-            inv[0][2] = +(d[0][1] * s06 - d[0][2] * s07 + d[0][3] * s08);
-            inv[1][2] = -(d[0][0] * s06 - d[0][2] * s09 + d[0][3] * s10);
-            inv[2][2] = +(d[0][0] * s07 - d[0][1] * s09 + d[0][3] * s11);
-            inv[3][2] = -(d[0][0] * s08 - d[0][1] * s10 + d[0][2] * s11);
-            inv[0][3] = -(d[0][1] * s12 - d[0][2] * s13 + d[0][3] * s14);
-            inv[1][3] = +(d[0][0] * s12 - d[0][2] * s15 + d[0][3] * s16);
-            inv[2][3] = -(d[0][0] * s13 - d[0][1] * s15 + d[0][3] * s17);
-            inv[3][3] = +(d[0][0] * s14 - d[0][1] * s16 + d[0][2] * s17);
+            inv.pushValue(0, 0, +(d[1][1] * s00 - d[1][2] * s01 + d[1][3] * s02));
+            inv.pushValue(1, 0, -(d[1][0] * s00 - d[1][2] * s03 + d[1][3] * s04));
+            inv.pushValue(2, 0, +(d[1][0] * s01 - d[1][1] * s03 + d[1][3] * s05));
+            inv.pushValue(3, 0, -(d[1][0] * s02 - d[1][1] * s04 + d[1][2] * s05));
+            inv.pushValue(0, 1, -(d[0][1] * s00 - d[0][2] * s01 + d[0][3] * s02));
+            inv.pushValue(1, 1, +(d[0][0] * s00 - d[0][2] * s03 + d[0][3] * s04));
+            inv.pushValue(2, 1, -(d[0][0] * s01 - d[0][1] * s03 + d[0][3] * s05));
+            inv.pushValue(3, 1, +(d[0][0] * s02 - d[0][1] * s04 + d[0][2] * s05));
+            inv.pushValue(0, 2, +(d[0][1] * s06 - d[0][2] * s07 + d[0][3] * s08));
+            inv.pushValue(1, 2, -(d[0][0] * s06 - d[0][2] * s09 + d[0][3] * s10));
+            inv.pushValue(2, 2, +(d[0][0] * s07 - d[0][1] * s09 + d[0][3] * s11));
+            inv.pushValue(3, 2, -(d[0][0] * s08 - d[0][1] * s10 + d[0][2] * s11));
+            inv.pushValue(0, 3, -(d[0][1] * s12 - d[0][2] * s13 + d[0][3] * s14));
+            inv.pushValue(1, 3, +(d[0][0] * s12 - d[0][2] * s15 + d[0][3] * s16));
+            inv.pushValue(2, 3, -(d[0][0] * s13 - d[0][1] * s15 + d[0][3] * s17));
+            inv.pushValue(3, 3, +(d[0][0] * s14 - d[0][1] * s16 + d[0][2] * s17));
 
             Type det = d[0][0] * inv[0][0] + d[0][1] * inv[1][0]
                        + d[0][2] * inv[2][0] + d[0][3] * inv[3][0];
@@ -555,9 +555,13 @@ namespace rush {
         const Type& s) const requires
         HasAdd<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) + s;
+
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r) + s);
+            }
         }
+
         return result;
     }
 
@@ -568,9 +572,13 @@ namespace rush {
         const Type& s) const requires
         HasSub<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) - s;
+
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r) - s);
+            }
         }
+
         return result;
     }
 
@@ -619,9 +627,13 @@ namespace rush {
         const Type& s) const requires
         HasShl<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = column(i) << s;
+
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r) << s);
+            }
         }
+
         return result;
     }
 
@@ -632,9 +644,13 @@ namespace rush {
         const Type& s) const requires
         HasShr<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = column(i) >> s;
+
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r) >> s);
+            }
         }
+
         return result;
     }
 
@@ -664,9 +680,13 @@ namespace rush {
         const Type& s) const requires
         HasBitOr<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = column(i) | s;
+
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r) | s);
+            }
         }
+
         return result;
     }
 
@@ -677,9 +697,13 @@ namespace rush {
         const Type& s) const requires
         HasBitXor<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = column(i) ^ s;
+
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r) ^ s);
+            }
         }
+
         return result;
     }
 
@@ -711,7 +735,7 @@ namespace rush {
         Self result;
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                result.pushValue(c, r, operator()(c, r), s);
+                result.pushValue(c, r, operator()(c, r) || s);
             }
         }
         return result;
@@ -738,9 +762,13 @@ namespace rush {
         const Mat<Columns, Rows, Type, ORep, OAlloc>& other) const requires
         HasAdd<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = column(i) + other[i];
+
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r) + other(c, r));
+            }
         }
+
         return result;
     }
 
@@ -752,9 +780,13 @@ namespace rush {
         const Mat<Columns, Rows, Type, ORep, OAlloc>& other) const requires
         HasSub<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = column(i) - other[i];
+
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r) - other(c, r));
+            }
         }
+
         return result;
     }
 
