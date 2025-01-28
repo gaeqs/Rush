@@ -240,23 +240,13 @@ namespace rush {
         , typename Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>::Self
     Mat<Columns, Rows, Type, Representation, Allocator>::inverse() const
-        requires
-        HasAdd<Type> &&
-        HasSub<Type> &&
-        HasMul<Type> &&
-        HasDiv<Type> &&
-        (Columns ==
-         Rows) &&
-        (Columns < 5) {
+        requires HasAdd<Type> && HasSub<Type> && HasMul<Type> && HasDiv<Type> && (Columns == Rows) && (Columns < 5) {
         auto& d = *this;
         if constexpr (Columns == 1) {
             return {Type(1) / d[0][0]};
         } else if constexpr (Columns == 2) {
             Type det = determinant();
-            return {
-                d[1][1] / det, -d[0][1] / det,
-                -d[1][0] / det, d[0][0] / det
-            };
+            return {d[1][1] / det, -d[0][1] / det, -d[1][0] / det, d[0][0] / det};
         } else if constexpr (Columns == 3) {
             Type det = determinant();
             Self inverse;
