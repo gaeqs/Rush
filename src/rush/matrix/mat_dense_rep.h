@@ -23,11 +23,10 @@ namespace rush {
             using value_type = T;
 
             SparseIterator(Rep collection, size_t index): _collection(collection), _index(index) {
-                if (index < MaxValue && _collection->value(_index) == 0) {
+                if (_index < MaxValue && _collection->value(_index) == 0) {
                     this->operator++();
                 }
             }
-
 
             value_type operator*() const {
                 return _collection->value(_index);
@@ -39,6 +38,13 @@ namespace rush {
 
             [[nodiscard]] size_t column() const {
                 return _index / Rows;
+            }
+
+            void jumpToColumn(size_t column) {
+                _index = column * Rows;
+                if (_index < MaxValue && _collection->value(_index) == 0) {
+                    this->operator++();
+                }
             }
 
             // Prefix increment
@@ -168,25 +174,25 @@ namespace rush {
                 return data.cbegin();
             }
 
-            auto sparseBegin() {
+            auto sparseBegin() const {
                 return SparseIterator<const Representation*, Type, Rows, Columns * Rows, false>(
                     this, 0
                 );
             }
 
-            auto sparseEnd() {
+            auto sparseEnd() const {
                 return SparseIterator<const Representation*, Type, Rows, Columns * Rows, false>(
                     this, std::numeric_limits<size_t>::max()
                 );
             }
 
-            auto reverseSparseBegin() {
+            auto reverseSparseBegin() const {
                 return SparseIterator<const Representation*, Type, Rows, Columns * Rows, true>(
                     this, Columns * Rows - 1
                 );
             }
 
-            auto reverseSparseEnd() {
+            auto reverseSparseEnd() const {
                 return SparseIterator<const Representation*, Type, Rows, Columns * Rows, true>(
                     this, std::numeric_limits<size_t>::max()
                 );

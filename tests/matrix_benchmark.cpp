@@ -39,6 +39,58 @@ TEST_CASE("Big matrix multiplication (double)", "[!benchmark][matrix]") {
     };
 }
 
+TEST_CASE("Big sparse matrix multiplication (double)", "[!benchmark][matrix]") {
+    using BigMat = rush::Mat<1000, 1000, double, rush::MatDenseRep, rush::HeapAllocator>;
+    BENCHMARK_ADVANCED("1000 0.3%")(Catch::Benchmark::Chronometer meter) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> distr(0.0, 1.0);
+
+        BigMat a([&](size_t c, size_t r) {
+            return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
+        });
+        BigMat b([&](size_t c, size_t r) {
+            return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
+        });
+
+        meter.measure([a, b]() {
+            return a * b;
+        });
+    };
+    BENCHMARK_ADVANCED("1000 3%")(Catch::Benchmark::Chronometer meter) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> distr(0.0, 1.0);
+
+        BigMat a([&](size_t c, size_t r) {
+            return c == r ? distr(gen) : (distr(gen) < 0.03 ? distr(gen) : 0.0);
+        });
+        BigMat b([&](size_t c, size_t r) {
+            return c == r ? distr(gen) : (distr(gen) < 0.03 ? distr(gen) : 0.0);
+        });
+
+        meter.measure([a, b]() {
+            return a * b;
+        });
+    };
+    BENCHMARK_ADVANCED("1000 50%")(Catch::Benchmark::Chronometer meter) {
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> distr(0.0, 1.0);
+
+        BigMat a([&](size_t c, size_t r) {
+            return c == r ? distr(gen) : (distr(gen) < 0.5 ? distr(gen) : 0.0);
+        });
+        BigMat b([&](size_t c, size_t r) {
+            return c == r ? distr(gen) : (distr(gen) < 0.5 ? distr(gen) : 0.0);
+        });
+
+        meter.measure([a, b]() {
+            return a * b;
+        });
+    };
+}
+
 TEST_CASE("Big dense LU decomposition (double)", "[!benchmark][matrix]") {
     BENCHMARK_ADVANCED("100x100 0.3%")(Catch::Benchmark::Chronometer meter) {
         using BigMat = rush::Mat<100, 100, double, rush::MatDenseRep, rush::HeapAllocator>;
@@ -50,7 +102,7 @@ TEST_CASE("Big dense LU decomposition (double)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -64,7 +116,7 @@ TEST_CASE("Big dense LU decomposition (double)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -78,7 +130,7 @@ TEST_CASE("Big dense LU decomposition (double)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -95,7 +147,7 @@ TEST_CASE("Big sparse LU decomposition (double)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -109,7 +161,7 @@ TEST_CASE("Big sparse LU decomposition (double)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.03 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -123,7 +175,7 @@ TEST_CASE("Big sparse LU decomposition (double)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.5 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -137,7 +189,7 @@ TEST_CASE("Big sparse LU decomposition (double)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -151,7 +203,7 @@ TEST_CASE("Big sparse LU decomposition (double)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -168,7 +220,7 @@ TEST_CASE("Big sparse LU decomposition (float)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -182,7 +234,7 @@ TEST_CASE("Big sparse LU decomposition (float)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.03 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -196,7 +248,7 @@ TEST_CASE("Big sparse LU decomposition (float)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.5 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -210,7 +262,7 @@ TEST_CASE("Big sparse LU decomposition (float)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };
@@ -224,7 +276,7 @@ TEST_CASE("Big sparse LU decomposition (float)", "[!benchmark][matrix]") {
             return c == r ? distr(gen) : (distr(gen) < 0.003 ? distr(gen) : 0.0);
         });
 
-        meter.measure([a]() {
+        meter.measure([&a]() {
             return a.luDecomposed();
         });
     };

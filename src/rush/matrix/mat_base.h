@@ -233,13 +233,13 @@ namespace rush {
 
         auto crend() const;
 
-        auto sparseBegin();
+        auto sparseBegin() const;
 
-        auto sparseEnd();
+        auto sparseEnd() const;
 
-        auto reverseSparseBegin();
+        auto reverseSparseBegin() const;
 
-        auto reverseSparseEnd();
+        auto reverseSparseEnd() const;
 
         // ENDREGION
 

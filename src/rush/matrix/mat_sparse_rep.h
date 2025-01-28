@@ -9,7 +9,6 @@
 #include <rush/vector/vec.h>
 
 namespace rush {
-
     struct MatSparseRep {
         static constexpr bool PinnedMemory = false;
 
@@ -60,13 +59,21 @@ namespace rush {
         class SparseIterator {
             Rep _collection;
             size_t _index;
+            size_t _columnMaxIndex;
+            size_t _column;
 
         public:
             using iterator_category = std::forward_iterator_tag;
             using difference_type = std::ptrdiff_t;
             using value_type = T;
 
-            SparseIterator(Rep collection, size_t index): _collection(collection), _index(index) {}
+            SparseIterator(Rep collection, size_t index)
+                : _collection(collection),
+                  _index(index),
+                  _columnMaxIndex(0),
+                  _column(Reverse ? _collection->cols.size() - 2 : 0) {
+                computeColumn();
+            }
 
 
             value_type operator*() const {
@@ -78,19 +85,27 @@ namespace rush {
             }
 
             [[nodiscard]] size_t column() const {
-                size_t column = 1;
-                while (_collection->cols[column] <= _index) {
-                    ++column;
-                }
-                return column - 1;
+                return _column;
+            }
+
+            void jumpToColumn(size_t column) {
+                _index = _collection->cols[column];
+                _column = column;
+                computeColumn();
             }
 
             // Prefix increment
             SparseIterator& operator++() {
                 if constexpr (Reverse) {
                     --_index;
+                    if (_columnMaxIndex > _index) {
+                        computeColumn();
+                    }
                 } else {
                     ++_index;
+                    if (_columnMaxIndex <= _index) {
+                        computeColumn();
+                    }
                 }
                 return *this;
             }
@@ -104,11 +119,32 @@ namespace rush {
 
             bool operator==(const SparseIterator& b) const {
                 return _collection == b._collection && _index == b._index;
-            };
+            }
 
             bool operator!=(const SparseIterator& b) const {
                 return _collection != b._collection || _index != b._index;
-            };
+            }
+
+        private:
+            void computeColumn() {
+                if constexpr (Reverse) {
+                    size_t column = _column;
+                    while (column > 0 && _collection->cols[column] > _index) {
+                        --column;
+                    }
+                    _column = column;
+                    _columnMaxIndex = _collection->cols[column];
+                } else {
+                    size_t column = _column + 1;
+                    while (_collection->cols.size() > column && _collection->cols[column] <= _index) {
+                        ++column;
+                    }
+                    _column = column - 1;
+                    if (_collection->cols.size() > column) {
+                        _columnMaxIndex = _collection->cols[column];
+                    }
+                }
+            }
         };
 
         template<size_t Columns, size_t Rows, typename Type, typename UnusedAllocator = StaticAllocator>
@@ -223,19 +259,19 @@ namespace rush {
                 return Iterator<const Representation*, ColumnType, true>(this, 0);
             }
 
-            auto sparseBegin() {
+            auto sparseBegin() const {
                 return SparseIterator<const Representation*, Type, false>(this, 0);
             }
 
-            auto sparseEnd() {
+            auto sparseEnd() const {
                 return SparseIterator<const Representation*, Type, false>(this, vals.size());
             }
 
-            auto reverseSparseBegin() {
+            auto reverseSparseBegin() const {
                 return SparseIterator<const Representation*, Type, true>(this, vals.size() - 1);
             }
 
-            auto reverseSparseEnd() {
+            auto reverseSparseEnd() const {
                 return SparseIterator<const Representation*, Type, true>(
                     this,
                     std::numeric_limits<size_t>::max()

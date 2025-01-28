@@ -5,8 +5,6 @@
 #ifndef RUSH_MAT_EXTRA_H
 #define RUSH_MAT_EXTRA_H
 
-#include <rush/vector/vec_base.h>
-#include <rush/vector/vec_ref.h>
 #include <ostream>
 
 template<size_t C, size_t R, typename Type, typename Representation, typename Allocator>

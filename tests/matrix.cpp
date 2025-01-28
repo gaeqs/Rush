@@ -520,6 +520,13 @@ TEST_CASE("Sparse linear solve", "[matrix]") {
 }
 
 
+TEST_CASE("Sparse transpose", "[matrix]") {
+    static rush::Mat4f expected = randomMatrix.transpose();
+    auto sparse = rush::SparseMat4f(randomMatrix);
+    REQUIRE(sparse.transpose() == expected);
+}
+
+
 #ifdef RUSH_GLM
 
 #include <glm/glm.hpp>

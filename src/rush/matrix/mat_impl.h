@@ -202,10 +202,38 @@ namespace rush {
         , typename Allocator>
     Mat<Rows, Columns, Type, Representation, Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>::transpose() const {
-        return Mat<Rows, Columns, Type, Representation, Allocator>
-        ([this](size_t c, size_t r) {
-            return operator()(r, c);
-        });
+        if constexpr (std::is_same_v<Representation, MatSparseRep>) {
+            Mat transposed;
+            transposed.rep.vals.resize(rep.vals.size());
+            transposed.rep.rows.resize(rep.vals.size());
+
+            for (size_t i = 0; i < rep.vals.size(); i++) {
+                ++transposed.rep.cols[rep.rows[i] + 1];
+            }
+
+            for (size_t i = 1; i <= Columns; ++i) {
+                transposed.rep.cols[i] += rep.cols[i - 1];
+            }
+
+            auto positions = transposed.rep.cols;
+            for (size_t col = 0; col < Columns; ++col) {
+                for (size_t idx = rep.cols[col]; idx < rep.cols[col + 1]; ++idx) {
+                    size_t row = rep.rows[idx];
+                    Type value = rep.vals[idx];
+
+                    size_t pos = positions[row]++;
+                    transposed.rep.vals[pos] = value;
+                    transposed.rep.rows[pos] = col;
+                }
+            }
+
+            return transposed;
+        } else {
+            return Mat<Rows, Columns, Type, Representation, Allocator>
+            ([this](size_t c, size_t r) {
+                return operator()(r, c);
+            });
+        }
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation
@@ -363,9 +391,15 @@ namespace rush {
     Mat<Columns, Rows, Type, Representation, Allocator>::operator-() const
         requires HasSub<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = -rep.column(i);
+
+        auto it = sparseBegin();
+        auto end = sparseEnd();
+
+        while (it != end) {
+            result.pushValue(it.column(), it.row(), -*it);
+            ++it;
         }
+
         return result;
     }
 
@@ -376,7 +410,7 @@ namespace rush {
         const Type& s) requires HasAdd<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) += s;
+                pushValue(c, r, operator()(c, r) + s);
             }
         }
         return *this;
@@ -389,7 +423,7 @@ namespace rush {
         const Type& s) requires HasSub<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) -= s;
+                pushValue(c, r, operator()(c, r) - s);
             }
         }
         return *this;
@@ -402,7 +436,7 @@ namespace rush {
         const Type& s) requires HasMul<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) *= s;
+                pushValue(c, r, operator()(c, r) * s);
             }
         }
         return *this;
@@ -415,7 +449,7 @@ namespace rush {
         const Type& s) requires HasDiv<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) /= s;
+                pushValue(c, r, operator()(c, r) / s);
             }
         }
         return *this;
@@ -428,7 +462,7 @@ namespace rush {
         const Type& s) requires HasShl<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) <<= s;
+                pushValue(c, r, operator()(c, r) << s);
             }
         }
         return *this;
@@ -441,7 +475,7 @@ namespace rush {
         const Type& s) requires HasShr<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) >>= s;
+                pushValue(c, r, operator()(c, r) >> s);
             }
         }
         return *this;
@@ -454,7 +488,7 @@ namespace rush {
         const Type& s) requires HasBitAnd<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) &= s;
+                pushValue(c, r, operator()(c, r) & s);
             }
         }
         return *this;
@@ -467,7 +501,7 @@ namespace rush {
         const Type& s) requires HasBitOr<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) |= s;
+                pushValue(c, r, operator()(c, r) | s);
             }
         }
         return *this;
@@ -480,7 +514,7 @@ namespace rush {
         const Type& s) requires HasBitXor<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) ^= s;
+                pushValue(c, r, operator()(c, r) ^ s);
             }
         }
         return *this;
@@ -494,7 +528,7 @@ namespace rush {
         const Mat<Columns, Rows, Type, OAlloc>& o) requires HasAdd<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) += o.rep.value(c, r);
+                pushValue(c, r, operator()(c, r) + o(c, r));
             }
         }
         return *this;
@@ -508,7 +542,7 @@ namespace rush {
         const Mat<Columns, Rows, Type, OAlloc>& o) requires HasSub<Type> {
         for (size_t c = 0; c < Columns; ++c) {
             for (size_t r = 0; r < Rows; ++r) {
-                rep.value(c, r) -= o.rep.value(c, r);
+                pushValue(c, r, operator()(c, r) - o(c, r));
             }
         }
         return *this;
@@ -547,9 +581,15 @@ namespace rush {
         const Type& s) const requires
         HasMul<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) * s;
+
+        auto it = sparseBegin();
+        auto end = sparseEnd();
+
+        while (it != end) {
+            result.pushValue(it.column(), it.row(), *it * s);
+            ++it;
         }
+
         return result;
     }
 
@@ -560,9 +600,15 @@ namespace rush {
         const Type& s) const requires
         HasDiv<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) / s;
+
+        auto it = sparseBegin();
+        auto end = sparseEnd();
+
+        while (it != end) {
+            result.pushValue(it.column(), it.row(), *it / s);
+            ++it;
         }
+
         return result;
     }
 
@@ -574,7 +620,7 @@ namespace rush {
         HasShl<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) << s;
+            result[i] = column(i) << s;
         }
         return result;
     }
@@ -587,7 +633,7 @@ namespace rush {
         HasShr<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) >> s;
+            result[i] = column(i) >> s;
         }
         return result;
     }
@@ -599,9 +645,15 @@ namespace rush {
         const Type& s) const requires
         HasBitAnd<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) & s;
+
+        auto it = sparseBegin();
+        auto end = sparseEnd();
+
+        while (it != end) {
+            result.pushValue(it.column(), it.row(), *it & s);
+            ++it;
         }
+
         return result;
     }
 
@@ -613,7 +665,7 @@ namespace rush {
         HasBitOr<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) | s;
+            result[i] = column(i) | s;
         }
         return result;
     }
@@ -626,7 +678,7 @@ namespace rush {
         HasBitXor<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) ^ s;
+            result[i] = column(i) ^ s;
         }
         return result;
     }
@@ -638,9 +690,15 @@ namespace rush {
         const Type& s) const requires
         HasAnd<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) && s;
+
+        auto it = sparseBegin();
+        auto end = sparseEnd();
+
+        while (it != end) {
+            result.pushValue(it.column(), it.row(), *it && s);
+            ++it;
         }
+
         return result;
     }
 
@@ -651,8 +709,10 @@ namespace rush {
         const Type& s) const requires
         HasOr<Type> {
         Self result;
-        for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) || s;
+        for (size_t c = 0; c < Columns; ++c) {
+            for (size_t r = 0; r < Rows; ++r) {
+                result.pushValue(c, r, operator()(c, r), s);
+            }
         }
         return result;
     }
@@ -679,7 +739,7 @@ namespace rush {
         HasAdd<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) + other[i];
+            result[i] = column(i) + other[i];
         }
         return result;
     }
@@ -693,7 +753,7 @@ namespace rush {
         HasSub<Type> {
         Self result;
         for (size_t i = 0; i < Columns; ++i) {
-            result[i] = rep.column(i) - other[i];
+            result[i] = column(i) - other[i];
         }
         return result;
     }
@@ -719,7 +779,7 @@ namespace rush {
         if constexpr (std::is_same_v<Mat, Mat<Columns, Rows, Type, OAlloc>>) {
             if (this == &other) return true;
         }
-        return std::equal(cbegin(), cend(), other.cbegin());
+        return std::equal(sparseBegin(), sparseEnd(), other.sparseBegin(), other.sparseEnd());
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
@@ -729,7 +789,7 @@ namespace rush {
         if constexpr (std::is_same_v<Mat, Mat<Columns, Rows, Type, OAlloc>>) {
             if (this == &other) return false;
         }
-        return !std::equal(cbegin(), cend(), other.cbegin());
+        return !std::equal(sparseBegin(), sparseEnd(), other.sparseBegin(), other.sparseEnd());
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation
@@ -781,22 +841,22 @@ namespace rush {
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
-    auto Mat<Columns, Rows, Type, Representation, Allocator>::sparseBegin() {
+    auto Mat<Columns, Rows, Type, Representation, Allocator>::sparseBegin() const {
         return rep.sparseBegin();
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
-    auto Mat<Columns, Rows, Type, Representation, Allocator>::sparseEnd() {
+    auto Mat<Columns, Rows, Type, Representation, Allocator>::sparseEnd() const {
         return rep.sparseEnd();
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
-    auto Mat<Columns, Rows, Type, Representation, Allocator>::reverseSparseBegin() {
+    auto Mat<Columns, Rows, Type, Representation, Allocator>::reverseSparseBegin() const {
         return rep.reverseSparseBegin();
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation, typename Allocator>
-    auto Mat<Columns, Rows, Type, Representation, Allocator>::reverseSparseEnd() {
+    auto Mat<Columns, Rows, Type, Representation, Allocator>::reverseSparseEnd() const {
         return rep.reverseSparseEnd();
     }
 
@@ -804,7 +864,7 @@ namespace rush {
         , typename Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>::translate(
-        const rush::Vec<3, Type>& t) requires (Columns == 4 && Rows == 4) {
+        const Vec<3, Type>& t) requires (Columns == 4 && Rows == 4) {
         Type o = Type(1);
         Type z = Type(0);
         return Mat(
