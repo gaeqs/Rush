@@ -7,7 +7,6 @@
 
 #include <functional>
 #include <utility>
-#include <algorithm>
 
 #include <rush/algorithm.h>
 #include <rush/vector/vec.h>
@@ -30,7 +29,7 @@ namespace rush {
         static_assert(Columns > 0, "Column amount cannot be zero.");
         static_assert(Rows > 0, "Row amount cannot be zero.");
 
-        using Self = Mat<Columns, Rows, Type>;
+        using Self = Mat<Columns, Rows, Type, Representation, Allocator>;
         using ColumnType = rush::Vec<Rows, Type>;
         using Rep = typename Representation::
         template Representation<Columns, Rows, Type, Allocator>;
@@ -48,37 +47,40 @@ namespace rush {
 
         explicit Mat(std::function<Type(size_t, size_t)> populator);
 
-        explicit Mat(std::function<Type(size_t, size_t, size_t, size_t)>
-            populator);
+        explicit Mat(std::function<Type(size_t, size_t, size_t, size_t)> populator);
 
         template<size_t OColumns, size_t ORows, typename ORep, typename OAlloc>
             requires(Columns > OColumns || Rows > ORows)
-        explicit
         Mat(const Mat<OColumns, ORows, Type, ORep, OAlloc>& other, Type diagonal);
+
+        template<typename ORep, typename OAlloc>
+        Mat(const Mat<Columns, Rows, Type, ORep, OAlloc>& other);
 
         [[nodiscard]] constexpr size_t size() const;
 
-        const Type* toPointer() const;
+        const Type* toPointer() const requires Representation::PinnedMemory;
 
-        Type* toPointer();
+        Type* toPointer() requires Representation::PinnedMemory;
 
         // REGION ACCESSORS
 
-        typename Rep::ColumnRef column(size_t column);
+        typename Rep::ColumnRef column(size_t column) requires Representation::PinnedMemory;
 
         typename Rep::ColumnType column(size_t column) const;
 
-        typename Rep::RowRef row(size_t row);
+        typename Rep::RowRef row(size_t row) requires Representation::PinnedMemory;
 
         typename Rep::RowType row(size_t row) const;
 
-        typename Rep::ColumnRef operator[](size_t column);
+        typename Rep::ColumnRef operator[](size_t column) requires Representation::PinnedMemory;
 
         typename Rep::ColumnType operator[](size_t column) const;
 
-        Type& operator()(size_t column, size_t row);
+        Type& operator()(size_t column, size_t row) requires Representation::PinnedMemory;
 
         const Type& operator()(size_t column, size_t row) const;
+
+        void pushValue(size_t column, size_t row, const Type& value);
 
         // REGION OPERATORS
 
@@ -100,8 +102,23 @@ namespace rush {
                                       (Columns == Rows) &&
                                       (Columns < 5);
 
-        template<typename To, typename OAlloc = Allocator>
-        Mat<Columns, Rows, To, OAlloc> cast() const;
+        std::pair<bool, Self> luDecomposed() const requires HasAdd<Type> &&
+                                                            HasSub<Type> &&
+                                                            HasMul<Type> &&
+                                                            HasDiv<Type> &&
+                                                            (Columns == Rows);
+
+        template<typename ORep, typename OAlloc = Allocator>
+        bool luDecomposed(Mat<Columns, Rows, Type, ORep, OAlloc>& out) const requires HasAdd<Type> &&
+            HasSub<Type> &&
+            HasMul<Type> &&
+            HasDiv<Type> &&
+            (Columns == Rows);
+
+        Vec<Rows, Type> solveLu(const Vec<Rows, Type>& r);
+
+        template<typename To, typename ORep, typename OAlloc = Allocator>
+        Mat<Columns, Rows, To, ORep, OAlloc> cast() const;
 
         Self& operator+();
 
@@ -187,17 +204,14 @@ namespace rush {
             typename ORep = MatDenseRep,
             typename OAlloc = Allocator>
         Mat<OC, Rows, Type, Representation, Allocator>
-        operator*(const rush::Mat<OC, OR, Type, ORep, OAlloc>& other) const
-            requires
-            (Columns == OR && HasAdd<Type> && HasMul<Type>);
+        operator*(const Mat<OC, OR, Type, ORep, OAlloc>& other) const
+            requires(Columns == OR && HasAdd<Type> && HasMul<Type>);
 
-        template<typename OAlloc>
-        bool
-        operator==(const Mat<Columns, Rows, Type, OAlloc>& other) const;
+        template<typename ORep, typename OAlloc>
+        bool operator==(const Mat<Columns, Rows, Type, ORep, OAlloc>& other) const;
 
-        template<typename OAlloc>
-        bool
-        operator!=(const Mat<Columns, Rows, Type, OAlloc>& other) const;
+        template<typename ORep, typename OAlloc>
+        bool operator!=(const Mat<Columns, Rows, Type, ORep, OAlloc>& other) const;
 
         // ENDREGION
 
@@ -219,6 +233,14 @@ namespace rush {
 
         auto crend() const;
 
+        auto sparseBegin() const;
+
+        auto sparseEnd() const;
+
+        auto reverseSparseBegin() const;
+
+        auto reverseSparseEnd() const;
+
         // ENDREGION
 
         // REGION STATIC CREATION
@@ -230,8 +252,7 @@ namespace rush {
          * @return the translation matrix.
          */
         static Mat
-        translate(const rush::Vec<3, Type>& t) requires (
-            Columns == 4 && Rows == 4);
+        translate(const Vec<3, Type>& t) requires (Columns == 4 && Rows == 4);
 
         /**
          * Creates a scale matrix that scales
@@ -239,8 +260,7 @@ namespace rush {
          * @param s the given mount of units.
          * @return the scale matrix.
          */
-        static Mat
-        scale(const rush::Vec<3, Type>& s) requires (Columns == 4 && Rows == 4);
+        static Mat scale(const Vec<3, Type>& s) requires (Columns == 4 && Rows == 4);
 
         /**
          * Creates a rotation matrix that rotates
@@ -249,8 +269,7 @@ namespace rush {
          * @param radians the angle.
          * @return the rotation matrix.
          */
-        static Mat
-        rotationX(Type radians) requires (Columns == 4 && Rows == 4);
+        static Mat rotationX(Type radians) requires (Columns == 4 && Rows == 4);
 
         /**
          * Creates a rotation matrix that rotates
@@ -259,8 +278,7 @@ namespace rush {
          * @param radians the angle.
          * @return the rotation matrix.
          */
-        static Mat
-        rotationY(Type radians) requires (Columns == 4 && Rows == 4);
+        static Mat rotationY(Type radians) requires (Columns == 4 && Rows == 4);
 
         /**
          * Creates a rotation matrix that rotates
@@ -269,8 +287,7 @@ namespace rush {
          * @param radians the angle.
          * @return the rotation matrix.
          */
-        static Mat
-        rotationZ(Type radians) requires (Columns == 4 && Rows == 4);
+        static Mat rotationZ(Type radians) requires (Columns == 4 && Rows == 4);
 
         /**
          * Creates a model matrix that transforms points
@@ -280,11 +297,8 @@ namespace rush {
          * @param t the translation.
          * @return the model matrix.
          */
-        static Mat
-        model(const rush::Vec<3, Type>& s,
-              const rush::Quat<Type>& r,
-              const rush::Vec<3, Type>& t) requires (
-            Columns == 4 && Rows == 4);
+        static Mat model(const Vec<3, Type>& s, const Quat<Type>& r, const Vec<3, Type>& t)
+            requires (Columns == 4 && Rows == 4);
 
         /**
          * Creates a normal matrix that transforms normals
@@ -293,10 +307,7 @@ namespace rush {
          * @param r the rotation.
          * @return the model matrix.
          */
-        static Mat
-        normal(const rush::Vec<3, Type>& s,
-               const rush::Quat<Type>& r) requires (
-            Columns == 4 && Rows == 4);
+        static Mat normal(const Vec<3, Type>& s, const Quat<Type>& r) requires (Columns == 4 && Rows == 4);
 
         /**
          * Creates a view matrix for a camera that at
@@ -309,36 +320,25 @@ namespace rush {
          * @return the view matrix.
          */
         template<Hand Hand = Hand::Right>
-        static Mat lookAt(
-            const rush::Vec<3, Type>& origin,
-            const rush::Vec<3, Type>& direction,
-            const rush::Vec<3, Type>& up) requires (
-            Columns == 4 && Rows == 4);
+        static Mat lookAt(const Vec<3, Type>& origin, const Vec<3, Type>& direction, const Vec<3, Type>& up)
+            requires (Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right,
             ProjectionFormat Format = ProjectionFormat::OpenGL>
-        static Mat frustum(Type left, Type right,
-                           Type bottom, Type top,
-                           Type near, Type far) requires (
-            Columns == 4 && Rows == 4);
+        static Mat frustum(Type left, Type right, Type bottom, Type top, Type near, Type far)
+            requires (Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right,
             ProjectionFormat Format = ProjectionFormat::OpenGL>
-        static Mat orthogonal(Type left, Type right,
-                              Type bottom, Type top,
-                              Type near, Type far) requires (
-            Columns == 4 && Rows == 4);
+        static Mat orthogonal(Type left, Type right, Type bottom, Type top, Type near, Type far)
+            requires (Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right,
             ProjectionFormat Format = ProjectionFormat::OpenGL>
-        static Mat perspective(Type fovY, Type aspectRatio,
-                               Type near, Type far) requires (
-            Columns == 4 && Rows == 4);
+        static Mat perspective(Type fovY, Type aspectRatio, Type near, Type far) requires (Columns == 4 && Rows == 4);
 
         template<Hand Hand = Hand::Right>
-        static Mat infinitePerspective(Type fovY, Type aspectRatio,
-                                       Type near) requires (
-            Columns == 4 && Rows == 4);
+        static Mat infinitePerspective(Type fovY, Type aspectRatio, Type near) requires (Columns == 4 && Rows == 4);
 
         // ENDREGION
 
@@ -347,16 +347,16 @@ namespace rush {
 #ifdef RUSH_GLM
 
         Mat(const glm::mat<Columns, Rows, Type>& o) {
-            for(size_t c = 0; c < Columns; ++c) {
-                for(size_t r = 0; r < Columns; ++r) {
+            for (size_t c = 0; c < Columns; ++c) {
+                for (size_t r = 0; r < Columns; ++r) {
                     operator()(c, r) = o[c][r];
                 }
             }
         }
 
         Mat(const glm::mat<Columns, Rows, Type>&& o) {
-            for(size_t c = 0; c < Columns; ++c) {
-                for(size_t r = 0; r < Columns; ++r) {
+            for (size_t c = 0; c < Columns; ++c) {
+                for (size_t r = 0; r < Columns; ++r) {
                     operator()(c, r) = std::move(o[c][r]);
                 }
             }
@@ -364,8 +364,8 @@ namespace rush {
 
         operator glm::mat<Columns, Rows, Type>() const {
             glm::mat<Columns, Rows, Type> result;
-            for(size_t c = 0; c < Columns; ++c) {
-                for(size_t r = 0; r < Columns; ++r) {
+            for (size_t c = 0; c < Columns; ++c) {
+                for (size_t r = 0; r < Columns; ++r) {
                     result[c][r] = operator()(c, r);
                 }
             }

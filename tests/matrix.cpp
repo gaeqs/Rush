@@ -1,4 +1,6 @@
 #include <numbers>
+#include <random>
+#include <ranges>
 #include <rush/matrix/mat.h>
 
 #include "test_common.h"
@@ -16,10 +18,48 @@ using Mat2f = rush::Mat<2, 2, float>;
 using Mat3f = rush::Mat<3, 3, float>;
 using Mat4f = rush::Mat<4, 4, float>;
 
-const Mat4f randomMatrix{8.1f, 1.3f, 9.0f, 8.3f,
-                         1.2f, 9.6f, 9.1f, 2.2f,
-                         6.3f, 3.0f, 0.9f, 5.4f,
-                         2.7f, 1.8f, 5.4f, 9.9f};
+const Mat4f randomMatrix{
+    8.1f, 1.3f, 9.0f, 8.3f,
+    1.2f, 9.6f, 9.1f, 2.2f,
+    6.3f, 3.0f, 0.9f, 5.4f,
+    2.7f, 1.8f, 5.4f, 9.9f
+};
+
+template<typename Matrix>
+Matrix generateMatrix(size_t c, size_t r) {
+    std::random_device os_seed;
+    uint32_t seed = os_seed();
+    std::mt19937 generator(seed);
+    std::uniform_real_distribution valueDistribution(0.0f, 100.0f);
+
+    auto m = Matrix();
+    for (size_t x = 0; x < c; x++) {
+        for (size_t y = 0; y < r; y++) {
+            m.pushValue(x, y, valueDistribution(generator));
+        }
+    }
+
+    return m;
+}
+
+template<typename Matrix>
+Matrix generateSparseMatrix(size_t c, size_t r, float probability) {
+    std::random_device os_seed;
+    uint32_t seed = os_seed();
+    std::mt19937 generator(seed);
+    std::uniform_real_distribution valueDistribution(0.0f, 100.0f);
+
+    auto m = Matrix();
+    for (size_t x = 0; x < c; x++) {
+        for (size_t y = 0; y < r; y++) {
+            if (probability * 100.0f >= valueDistribution(generator)) {
+                m.pushValue(x, y, valueDistribution(generator));
+            }
+        }
+    }
+
+    return m;
+}
 
 TEST_CASE("Matrix creation", "[matrix]") {
     REQUIRE_NOTHROW(Mat3());
@@ -32,7 +72,7 @@ TEST_CASE("Matrix creation", "[matrix]") {
     REQUIRE(Mat3(100) == Mat3(100, 0, 0, 0, 100, 0, 0, 0, 100));
 
     REQUIRE(Mat3([](size_t c, size_t r) { return static_cast<int>(r + c * 3); })
-            == Mat3(0, 1, 2, 3, 4, 5, 6, 7, 8));
+        == Mat3(0, 1, 2, 3, 4, 5, 6, 7, 8));
 
     Mat2 mat(0, 1, 2, 3);
     REQUIRE(Mat3(mat, 1) == Mat3(0, 1, 0, 2, 3, 0, 0, 0, 1));
@@ -195,10 +235,15 @@ TEST_CASE("Matrix scale", "[matrix]") {
     Mat4f scale = Mat4f::scale({1.0f, 2.0f, 1.0f});
     V4f vec = {10.0f, 20.0f, 30.0f, 1.0f};
     requireSimilar(scale * vec, {10.0f, 40.0f, 30.0f, 1.0f});
-    requireSimilar(scale, {1.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 2.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 1.0f, 0.0f,
-                           0.0f, 0.0f, 0.0f, 1.0f});
+    requireSimilar(
+        scale,
+        Mat4f{
+            1.0f, 0.0f, 0.0f, 0.0f,
+            0.0f, 2.0f, 0.0f, 0.0f,
+            0.0f, 0.0f, 1.0f, 0.0f,
+            0.0f, 0.0f, 0.0f, 1.0f
+        }
+    );
     requireSimilar(scale.inverse(), Mat4f::scale({1.0f, 0.5f, 1.0f}));
 }
 
@@ -249,16 +294,246 @@ TEST_CASE("Matrix model", "[matrix]") {
     requireSimilar(m1, m2);
 }
 
+TEST_CASE("Sparse matrix diagonal", "[matrix]") {
+    auto dense = rush::Mat4f(1.0f);
+    auto sparse = rush::SparseMat4f(1.0f);
+    REQUIRE(dense == sparse);
+}
+
+TEST_CASE("Sparse matrix fill", "[matrix]") {
+    auto dense = rush::Mat4f([](size_t c, size_t r) {
+        return c * 4 + r;
+    });
+    auto sparse = rush::SparseMat4f([](size_t c, size_t r) {
+        return c * 4 + r;
+    });
+    REQUIRE(dense == sparse);
+}
+
+TEST_CASE("Sparse matrix random", "[matrix]") {
+    std::random_device os_seed;
+    uint32_t seed = os_seed();
+    std::mt19937 generator(seed);
+    std::uniform_real_distribution valueDistribution(0.0f, 100.0f);
+    std::uniform_int_distribution<size_t> positionDistribution(0, 3);
+
+    auto dense = rush::Mat4f();
+    auto sparse = rush::SparseMat4f();
+
+    for (size_t i = 0; i < 1000; i++) {
+        float value = valueDistribution(generator);
+        size_t column = positionDistribution(generator);
+        size_t row = positionDistribution(generator);
+        dense.pushValue(column, row, value);
+        sparse.pushValue(column, row, value);
+    }
+
+    std::cout << dense << std::endl;
+    std::cout << sparse << std::endl;
+    REQUIRE(dense == sparse);
+}
+
+TEST_CASE("Sparse matrix operations", "[matrix]") {
+    auto d1 = generateMatrix<rush::Mat4f>(4, 4);
+    auto d2 = generateMatrix<rush::Mat4f>(4, 4);
+
+    auto s1 = rush::SparseMat4f(d1);
+    auto s2 = rush::SparseMat4f(d2);
+
+    REQUIRE(d1 + d2 == s1 + s2);
+    REQUIRE(d1 - d2 == s1 - s2);
+    REQUIRE(d1 * d2 == s1 * s2);
+    REQUIRE(d1.inverse() == s1.inverse());
+    std::cout << d1.inverse() << std::endl;
+}
+
+TEST_CASE("Sparse matrix sparse iterator", "[matrix]") {
+    auto m = generateSparseMatrix<rush::Mat<10, 100, float, rush::MatSparseRep>>(10, 100, 0.2f);
+
+    auto it = m.sparseBegin();
+    auto end = m.sparseEnd();
+
+    std::cout << m << std::endl;
+    for (; it != end; ++it) {
+        std::cout << it.column() << ", " << it.row() << " -> " << *it << std::endl;
+        REQUIRE(*it == m(it.column(), it.row()));
+    }
+}
+
+
+TEST_CASE("Sparse matrix sparse iterator 2", "[matrix]") {
+    auto m = rush::Mat<10, 10, float, rush::MatSparseRep>();
+    m.pushValue(2, 2, 10.0f);
+    m.pushValue(2, 5, 20.0f);
+    m.pushValue(4, 9, 30.0f);
+    m.pushValue(9, 5, 50.0f);
+    m.pushValue(8, 9, 40.0f);
+
+    std::vector<std::pair<rush::Vec2i, float>> data = {
+        {{2, 2}, 10.0f},
+        {{2, 5}, 20.0f},
+        {{4, 9}, 30.0f},
+        {{8, 9}, 40.0f},
+        {{9, 5}, 50.0f}
+    };
+
+    auto it = m.sparseBegin();
+    for (auto [index, value]: data) {
+        REQUIRE(*it == value);
+        REQUIRE(it.column() == index.x());
+        REQUIRE(it.row() == index.y());
+        ++it;
+    }
+    REQUIRE(it == m.sparseEnd());
+
+    auto reversed = m.reverseSparseBegin();
+    for (auto [index, value]: std::ranges::reverse_view(data)) {
+        REQUIRE(*reversed == value);
+        REQUIRE(reversed.column() == index.x());
+        REQUIRE(reversed.row() == index.y());
+        ++reversed;
+    }
+
+    auto end = m.reverseSparseEnd();
+    REQUIRE(reversed == end);
+}
+
+
+TEST_CASE("Dense matrix sparse iterator", "[matrix]") {
+    auto m = generateSparseMatrix<rush::Mat<10, 100, float>>(10, 100, 0.2f);
+
+    auto it = m.sparseBegin();
+    auto end = m.sparseEnd();
+
+    std::cout << m << std::endl;
+    for (; it != end; ++it) {
+        REQUIRE(*it == m(it.column(), it.row()));
+    }
+}
+
+
+TEST_CASE("Dense matrix sparse iterator 2", "[matrix]") {
+    auto m = rush::Mat<10, 10, float>();
+    m.pushValue(2, 2, 10.0f);
+    m.pushValue(2, 5, 20.0f);
+    m.pushValue(4, 9, 30.0f);
+    m.pushValue(9, 5, 50.0f);
+    m.pushValue(8, 9, 40.0f);
+
+    std::vector<std::pair<rush::Vec2i, float>> data = {
+        {{2, 2}, 10.0f},
+        {{2, 5}, 20.0f},
+        {{4, 9}, 30.0f},
+        {{8, 9}, 40.0f},
+        {{9, 5}, 50.0f}
+    };
+
+    auto it = m.sparseBegin();
+    for (auto [index, value]: data) {
+        REQUIRE(*it == value);
+        REQUIRE(it.column() == index.x());
+        REQUIRE(it.row() == index.y());
+        ++it;
+    }
+    REQUIRE(it == m.sparseEnd());
+
+    auto reversed = m.reverseSparseBegin();
+    for (auto [index, value]: std::ranges::reverse_view(data)) {
+        REQUIRE(*reversed == value);
+        REQUIRE(reversed.column() == index.x());
+        REQUIRE(reversed.row() == index.y());
+        ++reversed;
+    }
+
+    auto end = m.reverseSparseEnd();
+    REQUIRE(reversed == end);
+}
+
+
+TEST_CASE("LU decompose", "[matrix]") {
+    static Mat4f expected = {
+        8.1f, 0.160494f, 1.11111f, 1.02469f,
+        1.2f, 9.40741f, 0.825591f, 0.10315f,
+        6.3f, 1.98889f, -7.74201f, 0.16284f,
+        2.7f, 1.36667f, 1.27169f, 6.78528f,
+    };
+
+    auto [result, decomposed] = randomMatrix.luDecomposed();
+    REQUIRE(result);
+    requireSimilar(expected, decomposed);
+}
+
+TEST_CASE("Sparse LU decompose", "[matrix]") {
+    static Mat4f expected = {
+        8.1f, 0.160494f, 1.11111f, 1.02469f,
+        1.2f, 9.40741f, 0.825591f, 0.10315f,
+        6.3f, 1.98889f, -7.74201f, 0.16284f,
+        2.7f, 1.36667f, 1.27169f, 6.78528f,
+    };
+
+    auto [result, decomposed] = rush::SparseMat4f(randomMatrix).luDecomposed();
+    REQUIRE(result);
+    std::cout << decomposed << std::endl;
+    requireSimilar(expected, decomposed);
+}
+
+TEST_CASE("LU non invertible", "[matrix]") {
+    auto matrix = rush::Mat4f(0.0f);
+    matrix(3, 0) = 1.0f;
+    matrix(0, 3) = 4.0f;
+    auto [result, decomposed] = matrix.luDecomposed();
+    REQUIRE_FALSE(result);
+}
+
+TEST_CASE("Linear solve", "[matrix]") {
+    static Mat4f randomMatrix{
+        8.1f, 1.3f, 9.0f, 8.3f,
+        1.2f, 9.6f, 9.1f, 2.2f,
+        6.3f, 3.0f, 0.9f, 5.4f,
+        2.7f, 1.8f, 5.4f, 9.9f
+    };
+    static rush::Vec4f expected = {-0.995833f, -0.488792f, 1.84573f, 0.9721f};
+    static auto r = rush::Vec4f(5.6f, 1.3f, -6.5f, 10.25f);
+
+
+    auto [result, decomposed] = randomMatrix.luDecomposed();
+    auto x = decomposed.solveLu(r);
+
+    requireSimilar(expected, x);
+}
+
+TEST_CASE("Sparse linear solve", "[matrix]") {
+    static rush::SparseMat4f randomMatrix{
+        8.1f, 1.3f, 0.0f, 8.3f,
+        0.0f, 12.2f, 0.0f, 0.0f,
+        0.0f, 0.0f, 5.6f, 0.0f,
+        0.0f, 0.0f, 5.4f, 9.9f
+    };
+    static rush::Vec4f expected = {0.691358f, 0.0328881f, -1.60017f, 0.45573f};
+    static auto r = rush::Vec4f(5.6f, 1.3f, -6.5f, 10.25f);
+
+
+    auto [result, decomposed] = rush::SparseMat4f(randomMatrix).luDecomposed();
+    auto x = decomposed.solveLu(r);
+
+    requireSimilar(expected, x);
+}
+
+
+TEST_CASE("Sparse transpose", "[matrix]") {
+    static rush::Mat4f expected = randomMatrix.transpose();
+    auto sparse = rush::SparseMat4f(randomMatrix);
+    REQUIRE(sparse.transpose() == expected);
+}
+
 
 #ifdef RUSH_GLM
 
 #include <glm/glm.hpp>
 
-void consumer(rush::Mat4f) {
-}
+void consumer(rush::Mat4f) {}
 
-void consumerRef(const rush::Mat4f&) {
-}
+void consumerRef(const rush::Mat4f&) {}
 
 TEST_CASE("Rush - GLM (Matrix)", "[matrix]") {
     glm::mat4 glm(1.0f, 2.0f, 3.0f, 4.0f,
