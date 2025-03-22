@@ -11,7 +11,9 @@ option(RUSH_BUILD_SHARED "Build Rush as a shared library" OFF)
 find_package(glm) # OPTIONAL.
 
 add_library(rush INTERFACE)
-target_include_directories(rush INTERFACE $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src> $<INSTALL_INTERFACE:src>)
+target_include_directories(rush INTERFACE
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/src>
+        $<INSTALL_INTERFACE:>)
 target_compile_features(rush INTERFACE cxx_std_20)
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -30,15 +32,22 @@ if (glm_FOUND)
     target_compile_definitions(rush INTERFACE RUSH_GLM)
 endif ()
 
-# Instalar la librería para que otros la usen con find_package()
-include(GNUInstallDirs)
-install(TARGETS rush EXPORT rushExport)
-install(DIRECTORY src/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-install(EXPORT rushExport
-        FILE RushConfig.cmake
-        NAMESPACE rush::rush
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/rush
+install(TARGETS rush
+        EXPORT rushTargets
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib
+        RUNTIME DESTINATION bin
+        INCLUDES DESTINATION include/rush
 )
 
-add_subdirectory(tests)
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/src/
+        DESTINATION include
+        FILES_MATCHING PATTERN "*.h*"
+)
+
+install(EXPORT rushTargets
+        FILE RushTargets.cmake
+        NAMESPACE rush::
+        DESTINATION lib/cmake/rush
+)
