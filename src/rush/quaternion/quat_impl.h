@@ -113,23 +113,23 @@ namespace rush {
 
     template<typename Type>
     Type Quat<Type>::pitch() const {
-        double sin = 2.0f * (s * x + y * z);
-        double cos = 1.0f - 2.0f * (x * x + y * y);
+        Type sin = 2.0f * (s * x + y * z);
+        Type cos = 1.0f - 2.0f * (x * x + y * y);
         return std::atan2(sin, cos);
     }
 
     template<typename Type>
     Type Quat<Type>::yaw() const {
-        double sin = 2.0f * (s * y - z * x);
+        Type sin = 2.0f * (s * y - z * x);
         if (std::abs(sin) >= 1.0f)
-            return std::copysign(std::numbers::pi_v<float> / 2.0f, sin);
+            return std::copysign(std::numbers::pi_v<Type> / 2.0f, sin);
         return std::asin(sin);
     }
 
     template<typename Type>
     Type Quat<Type>::roll() const {
-        double sin = 2.0f * (s * z + x * y);
-        double cos = 1.0f - 2.0f * (y * y + z * z);
+        Type sin = 2.0f * (s * z + x * y);
+        Type cos = 1.0f - 2.0f * (y * y + z * z);
         return std::atan2(sin, cos);
     }
 
@@ -422,22 +422,22 @@ namespace rush {
 
     template<typename Type>
     auto Quat<Type>::rbegin() {
-        return std::reverse_iterator<double*>(&z + 1);
+        return std::reverse_iterator<Type*>(&z + 1);
     }
 
     template<typename Type>
     auto Quat<Type>::rend() {
-        return std::reverse_iterator<double*>(&s);
+        return std::reverse_iterator<Type*>(&s);
     }
 
     template<typename Type>
     auto Quat<Type>::crbegin() const {
-        return std::reverse_iterator<const double*>(&z + 1);
+        return std::reverse_iterator<const Type*>(&z + 1);
     }
 
     template<typename Type>
     auto Quat<Type>::crend() const {
-        return std::reverse_iterator<const double*>(&s);
+        return std::reverse_iterator<const Type*>(&s);
     }
 }
 

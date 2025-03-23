@@ -28,7 +28,7 @@ namespace rush {
                  (Size > 1 && sizeof...(T) == Size)
     Vec<Size, Type, Allocator>::Vec(T... list) {
         auto it = begin();
-        ((*it++ = list), ...);
+        ((*it++ = static_cast<Type>(list)), ...);
     }
 
     template<size_t Size, typename Type, typename Allocator>
