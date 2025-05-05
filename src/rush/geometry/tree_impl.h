@@ -5,8 +5,6 @@
 #ifndef TREE_IMPL_H
 #define TREE_IMPL_H
 
-#endif //TREE_IMPL_H
-
 namespace rush {
     template<typename Storage, typename Bounds>
     bool TreeContent<Storage, Bounds>::operator==(const TreeContent& o) const {
@@ -56,7 +54,7 @@ namespace rush {
 
     template<typename TreeBounds, typename Storage, typename Bounds,
             typename FilterBounds>
-    const typename TreeIterator<TreeBounds, Storage, Bounds, FilterBounds>::reference
+    typename TreeIterator<TreeBounds, Storage, Bounds, FilterBounds>::reference
     TreeIterator<TreeBounds, Storage, Bounds, FilterBounds>::operator*() const {
         return _current->getStorage();
     }
@@ -128,3 +126,5 @@ struct std::hash<rush::TreeContent<Storage, Bounds>> {
         return hasher(s.storage);
     }
 };
+
+#endif //TREE_IMPL_H
