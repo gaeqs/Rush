@@ -1066,38 +1066,38 @@ namespace rush {
     Mat<Columns, Rows, Type, Representation, Allocator>::frustum(
         Type left, Type right,
         Type bottom, Type top,
-        Type near, Type far) requires (Columns == 4 && Rows == 4) {
+        Type n, Type f) requires (Columns == 4 && Rows == 4) {
         Mat m = Mat();
-        m(0, 0) = Type(2) * near / (right - left);
-        m(1, 1) = Type(2) * near / (top - bottom);
+        m(0, 0) = Type(2) * n / (right - left);
+        m(1, 1) = Type(2) * n / (top - bottom);
 
         if constexpr (Format == ProjectionFormat::DirectX) {
             if constexpr (Hand == Hand::Left) {
                 m(2, 0) = -(right + left) / (right - left);
                 m(2, 1) = -(top + bottom) / (top - bottom);
-                m(2, 2) = far / (far - near);
+                m(2, 2) = f / (f - n);
                 m(2, 3) = Type(1);
-                m(3, 2) = -far * near / (far - near);
+                m(3, 2) = -f * n / (f - n);
             } else {
                 m(2, 0) = (right + left) / (right - left);
                 m(2, 1) = (top + bottom) / (top - bottom);
-                m(2, 2) = far / (far - near);
+                m(2, 2) = f / (f - n);
                 m(2, 3) = -Type(1);
-                m(3, 2) = -far * near / (far - near);
+                m(3, 2) = -f * n / (f - n);
             }
         } else {
             if constexpr (Hand == Hand::Left) {
                 m(2, 0) = -(right + left) / (right - left);
                 m(2, 1) = -(top + bottom) / (top - bottom);
-                m(2, 2) = (far + near) / (far - near);
+                m(2, 2) = (f + n) / (f - n);
                 m(2, 3) = Type(1);
-                m(3, 2) = -Type(2) * far * near / (far - near);
+                m(3, 2) = -Type(2) * f * n / (f - n);
             } else {
                 m(2, 0) = (right + left) / (right - left);
                 m(2, 1) = (top + bottom) / (top - bottom);
-                m(2, 2) = -(far + near) / (far - near);
+                m(2, 2) = -(f + n) / (f - n);
                 m(2, 3) = -Type(1);
-                m(3, 2) = -Type(2) * far * near / (far - near);
+                m(3, 2) = -Type(2) * f * n / (f - n);
             }
         }
 
@@ -1115,34 +1115,34 @@ namespace rush {
     Mat<Columns, Rows, Type, Representation, Allocator>::orthogonal(
         Type left, Type right,
         Type bottom, Type top,
-        Type near, Type far) requires (Columns == 4 && Rows == 4) {
+        Type n, Type f) requires (Columns == 4 && Rows == 4) {
         Mat m = Mat(Type(1));
         m(0, 0) = Type(2) / (right - left);
         m(1, 1) = Type(2) / (top - bottom);
 
         if constexpr (Format == ProjectionFormat::DirectX) {
             if constexpr (Hand == Hand::Left) {
-                m(2, 2) = Type(1) / (far - near);
+                m(2, 2) = Type(1) / (f - n);
                 m(3, 0) = -(right + left) / (right - left);
                 m(3, 1) = -(top + bottom) / (top - bottom);
-                m(3, 2) = -near / (far - near);
+                m(3, 2) = -n / (f - n);
             } else {
-                m(2, 2) = -Type(1) / (far - near);
+                m(2, 2) = -Type(1) / (f - n);
                 m(3, 0) = -(right + left) / (right - left);
                 m(3, 1) = -(top + bottom) / (top - bottom);
-                m(3, 2) = -near / (far - near);
+                m(3, 2) = -n / (f - n);
             }
         } else {
             if constexpr (Hand == Hand::Left) {
-                m(2, 2) = Type(2) / (far - near);
+                m(2, 2) = Type(2) / (f - n);
                 m(3, 0) = -(right + left) / (right - left);
                 m(3, 1) = -(top + bottom) / (top - bottom);
-                m(3, 2) = -(far + near) / (far - near);
+                m(3, 2) = -(f + n) / (f - n);
             } else {
-                m(2, 2) = -Type(2) / (far - near);
+                m(2, 2) = -Type(2) / (f - n);
                 m(3, 0) = -(right + left) / (right - left);
                 m(3, 1) = -(top + bottom) / (top - bottom);
-                m(3, 2) = -(far + near) / (far - near);
+                m(3, 2) = -(f + n) / (f - n);
             }
         }
 
@@ -1159,12 +1159,12 @@ namespace rush {
     Mat<Columns, Rows, Type, Representation, Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>::perspective(Type fovY,
                                                                      Type aspectRatio,
-                                                                     Type near,
-                                                                     Type far) requires (
+                                                                     Type n,
+                                                                     Type f) requires (
         Columns == 4 && Rows == 4) {
-        Type top = std::tan(fovY / Type(2)) * near;
+        Type top = std::tan(fovY / Type(2)) * n;
         Type right = top * aspectRatio;
-        return frustum<Hand, Format>(-right, right, -top, top, near, far);
+        return frustum<Hand, Format>(-right, right, -top, top, n, f);
     }
 
     template<size_t Columns, size_t Rows, typename Type, typename Representation
@@ -1172,16 +1172,16 @@ namespace rush {
     template<Hand Hand>
     Mat<Columns, Rows, Type, Representation, Allocator>
     Mat<Columns, Rows, Type, Representation, Allocator>::infinitePerspective(
-        Type fovY, Type aspectRatio, Type near) requires (
+        Type fovY, Type aspectRatio, Type n) requires (
         Columns == 4 && Rows == 4) {
-        Type top = std::tan(fovY / Type(2)) * near;
+        Type top = std::tan(fovY / Type(2)) * n;
         Type right = top * aspectRatio;
 
         Mat m = Mat();
-        m(0, 0) = near / right;
-        m(1, 1) = near / top;
+        m(0, 0) = n / right;
+        m(1, 1) = n / top;
 
-        m(3, 2) = -Type(2) * near;
+        m(3, 2) = -Type(2) * n;
 
         if constexpr (Hand == Hand::Left) {
             m(2, 2) = Type(1);
