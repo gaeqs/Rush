@@ -30,6 +30,16 @@ namespace rush {
     using Vec2l = rush::Vec<2, int64_t>;
     using Vec3l = rush::Vec<3, int64_t>;
     using Vec4l = rush::Vec<4, int64_t>;
+
+    using Vec1ui = rush::Vec<1, uint32_t>;
+    using Vec2ui = rush::Vec<2, uint32_t>;
+    using Vec3ui = rush::Vec<3, uint32_t>;
+    using Vec4ui = rush::Vec<4, uint32_t>;
+
+    using Vec1ul = rush::Vec<1, uint64_t>;
+    using Vec2ul = rush::Vec<2, uint64_t>;
+    using Vec3ul = rush::Vec<3, uint64_t>;
+    using Vec4ul = rush::Vec<4, uint64_t>;
 }
 
 
