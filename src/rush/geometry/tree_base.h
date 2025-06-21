@@ -23,6 +23,13 @@ namespace rush {
         bool operator==(const TreeContent& o) const;
     };
 
+    template<typename Bounds>
+    struct TreeContent<void, Bounds> {
+        Bounds bounds;
+
+        bool operator==(const TreeContent& o) const;
+    };
+
     template<typename TreeBounds, typename Storage, typename Bounds>
     class AbstractTree {
     public:

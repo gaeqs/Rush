@@ -51,3 +51,5 @@ install(EXPORT rushTargets
         NAMESPACE rush::
         DESTINATION lib/cmake/rush
 )
+
+add_subdirectory(tests)

@@ -7,8 +7,15 @@
 
 namespace rush {
     template<typename Storage, typename Bounds>
-    bool TreeContent<Storage, Bounds>::operator==(const TreeContent& o) const {
+    bool TreeContent<Storage, Bounds>::operator==(const TreeContent& o) const
+    {
         return storage == o.storage;
+    }
+
+    template<typename Bounds>
+    bool TreeContent<void, Bounds>::operator==(const TreeContent& o) const
+    {
+        return true;
     }
 
     template<typename TreeBounds, typename Storage, typename Bounds,

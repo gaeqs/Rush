@@ -9,162 +9,177 @@
 
 #include <rush/vector/vec.h>
 
-namespace rush {
+namespace rush
+{
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> abs(const Vec<Size, Type, Allocator>& v) {
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return std::abs(v[i]); }
-        };
+    Vec<Size, Type, Allocator> abs(const Vec<Size, Type, Allocator>& v)
+    {
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return std::abs(v[i]); }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> sqrt(const Vec<Size, Type, Allocator>& v) {
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return std::sqrt(v[i]); }
-        };
+    Vec<Size, Type, Allocator> sqrt(const Vec<Size, Type, Allocator>& v)
+    {
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return std::sqrt(v[i]); }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> cos(const Vec<Size, Type, Allocator>& v) {
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return std::cos(v[i]); }
-        };
+    Vec<Size, Type, Allocator> cos(const Vec<Size, Type, Allocator>& v)
+    {
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return std::cos(v[i]); }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> sin(const Vec<Size, Type, Allocator>& v) {
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return std::sin(v[i]); }
-        };
+    Vec<Size, Type, Allocator> sin(const Vec<Size, Type, Allocator>& v)
+    {
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return std::sin(v[i]); }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> tan(const Vec<Size, Type, Allocator>& v) {
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return std::tan(v[i]); }
-        };
+    Vec<Size, Type, Allocator> tan(const Vec<Size, Type, Allocator>& v)
+    {
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return std::tan(v[i]); }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> acos(const Vec<Size, Type, Allocator>& v) {
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return std::acos(v[i]); }
-        };
+    Vec<Size, Type, Allocator> acos(const Vec<Size, Type, Allocator>& v)
+    {
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return std::acos(v[i]); }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> asin(const Vec<Size, Type, Allocator>& v) {
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return std::asin(v[i]); }
-        };
+    Vec<Size, Type, Allocator> asin(const Vec<Size, Type, Allocator>& v)
+    {
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return std::asin(v[i]); }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> atan(const Vec<Size, Type, Allocator>& v) {
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return std::atan(v[i]); }
-        };
+    Vec<Size, Type, Allocator> atan(const Vec<Size, Type, Allocator>& v)
+    {
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return std::atan(v[i]); }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> degrees(const Vec<Size, Type, Allocator>& v) {
+    Vec<Size, Type, Allocator> degrees(const Vec<Size, Type, Allocator>& v)
+    {
         constexpr Type RELATION = Type(180) / std::numbers::pi_v<Type>;
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return v[i] * RELATION; }
-        };
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return v[i] * RELATION; }};
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> radians(const Vec<Size, Type, Allocator>& v) {
+    Vec<Size, Type, Allocator> radians(const Vec<Size, Type, Allocator>& v)
+    {
         constexpr Type RELATION = std::numbers::pi_v<Type> / Type(180);
-        return Vec<Size, Type, Allocator>{
-            [v](size_t i) { return v[i] * RELATION; }
-        };
+        return Vec<Size, Type, Allocator>{[v](size_t i) { return v[i] * RELATION; }};
     }
 
-    template<size_t Size, typename Type,
-        typename AAllocator>
-    Type min(const Vec<Size, Type, AAllocator>& v) {
+    template<size_t Size, typename Type, typename AAllocator>
+    Type min(const Vec<Size, Type, AAllocator>& v)
+    {
         Type min = v[0];
-        for (const Type& x: v) {
-            if (x < min) min = x;
+        for (const Type& x : v) {
+            if (x < min) {
+                min = x;
+            }
         }
         return min;
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> min(const Vec<Size, Type, Allocator>& v,
-                                   Type min) {
-        return Vec<Size, Type, Allocator>{
-            [v, &min](size_t i) { return std::min(v[i], min); }
-        };
+    Vec<Size, Type, Allocator> min(const Vec<Size, Type, Allocator>& v, Type min)
+    {
+        return Vec<Size, Type, Allocator>{[v, &min](size_t i) { return std::min(v[i], min); }};
     }
 
-    template<size_t Size, typename Type,
-        typename AAllocator, typename BAllocator>
-    Vec<Size, Type, AAllocator> min(const Vec<Size, Type, AAllocator>& v,
-                                    const Vec<Size, Type, BAllocator>& w) {
-        return Vec<Size, Type, AAllocator>{
-            [v, w](size_t i) { return std::min(v[i], w[i]); }
-        };
+    template<size_t Size, typename Type, typename AAllocator, typename BAllocator>
+    Vec<Size, Type, AAllocator> min(const Vec<Size, Type, AAllocator>& v, const Vec<Size, Type, BAllocator>& w)
+    {
+        return Vec<Size, Type, AAllocator>{[v, w](size_t i) { return std::min(v[i], w[i]); }};
     }
 
-    template<size_t Size, typename Type,
-        typename AAllocator>
-    Type max(const Vec<Size, Type, AAllocator>& v) {
+    template<size_t Size, typename Type, typename Allocator, typename Iterator>
+    Vec<Size, Type, Allocator> min(Iterator beg, Iterator end)
+    {
+        if (beg == end) {
+            return Vec<Size, Type, Allocator>();
+        }
+
+        Vec<Size, Type, Allocator> result = *beg;
+        for (auto it = beg + 1; it != end; ++it) {
+            const Vec<Size, Type, Allocator>& v = *it;
+            for (size_t i = 0; i < Size; ++i) {
+                result[i] = std::min(result[i], v[i]);
+            }
+        }
+
+        return result;
+    }
+
+    template<size_t Size, typename Type, typename AAllocator>
+    Type max(const Vec<Size, Type, AAllocator>& v)
+    {
         Type max = v[0];
-        for (const Type& x: v) {
-            if (x > max) max = x;
+        for (const Type& x : v) {
+            if (x > max) {
+                max = x;
+            }
         }
         return max;
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> max(const Vec<Size, Type, Allocator>& v,
-                                   const Type& max) {
-        return Vec<Size, Type, Allocator>{
-            [v, max](size_t i) { return std::max(v[i], max); }
-        };
+    Vec<Size, Type, Allocator> max(const Vec<Size, Type, Allocator>& v, const Type& max)
+    {
+        return Vec<Size, Type, Allocator>{[v, max](size_t i) { return std::max(v[i], max); }};
     }
 
-    template<size_t Size, typename Type,
-        typename AAllocator, typename BAllocator>
-    Vec<Size, Type, AAllocator> max(const Vec<Size, Type, AAllocator>& v,
-                                    const Vec<Size, Type, BAllocator>& w) {
-        return Vec<Size, Type, AAllocator>{
-            [v, w](size_t i) { return std::max(v[i], w[i]); }
-        };
+    template<size_t Size, typename Type, typename AAllocator, typename BAllocator>
+    Vec<Size, Type, AAllocator> max(const Vec<Size, Type, AAllocator>& v, const Vec<Size, Type, BAllocator>& w)
+    {
+        return Vec<Size, Type, AAllocator>{[v, w](size_t i) { return std::max(v[i], w[i]); }};
+    }
+
+    template<size_t Size, typename Type, typename Allocator, typename Iterator>
+    Vec<Size, Type, Allocator> max(Iterator beg, Iterator end)
+    {
+        if (beg == end) {
+            return Vec<Size, Type, Allocator>();
+        }
+
+        Vec<Size, Type, Allocator> result = *beg;
+        for (auto it = beg + 1; it != end; ++it) {
+            const Vec<Size, Type, Allocator>& v = *it;
+            for (size_t i = 0; i < Size; ++i) {
+                result[i] = std::max(result[i], v[i]);
+            }
+        }
+
+        return result;
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator> clamp(const Vec<Size, Type, Allocator>& v,
-                                     const Type& min,
-                                     const Type& max) {
-        return Vec<Size, Type, Allocator>{
-            [v, min, max](size_t i) { return std::clamp(v[i], min, max); }
-        };
+    Vec<Size, Type, Allocator> clamp(const Vec<Size, Type, Allocator>& v, const Type& min, const Type& max)
+    {
+        return Vec<Size, Type, Allocator>{[v, min, max](size_t i) { return std::clamp(v[i], min, max); }};
     }
 
-    template<size_t Size, typename Type,
-        typename AAllocator, typename BAllocator, typename CAllocator>
-    Vec<Size, Type, AAllocator> clamp(const Vec<Size, Type, AAllocator>& v,
-                                      const Vec<Size, Type, BAllocator>& min,
-                                      const Vec<Size, Type, CAllocator>& max) {
-        return Vec<Size, Type, AAllocator>{
-            [v, min, max](size_t i) { return std::clamp(v[i], min[i], max[i]); }
-        };
+    template<size_t Size, typename Type, typename AAllocator, typename BAllocator, typename CAllocator>
+    Vec<Size, Type, AAllocator> clamp(const Vec<Size, Type, AAllocator>& v, const Vec<Size, Type, BAllocator>& min,
+                                      const Vec<Size, Type, CAllocator>& max)
+    {
+        return Vec<Size, Type, AAllocator>{[v, min, max](size_t i) { return std::clamp(v[i], min[i], max[i]); }};
     }
 
-    template<size_t Size, typename Type,
-        typename AAllocator, typename BAllocator>
-    Vec<Size, Type, AAllocator> mix(const Vec<Size, Type, AAllocator>& a,
-                                    const Vec<Size, Type, BAllocator>& b,
-                                    const Type& x) {
+    template<size_t Size, typename Type, typename AAllocator, typename BAllocator>
+    Vec<Size, Type, AAllocator> mix(const Vec<Size, Type, AAllocator>& a, const Vec<Size, Type, BAllocator>& b,
+                                    const Type& x)
+    {
         return b * x + a * (Type(1) - x);
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Type avg(const Vec<Size, Type, Allocator>& v) {
+    Type avg(const Vec<Size, Type, Allocator>& v)
+    {
         Type result = v[0];
         for (size_t i = 1; i < Size; ++i) {
             result += v[i];
@@ -173,21 +188,16 @@ namespace rush {
     }
 
     template<size_t Size, typename Type, typename Allocator>
-    Vec<Size, Type, Allocator>
-    pow(const Vec<Size, Type, Allocator>& v, const Type& p) {
-        return Vec<Size, Type, Allocator>{
-            [v, p](size_t i) { return std::pow(v[i], p); }
-        };
+    Vec<Size, Type, Allocator> pow(const Vec<Size, Type, Allocator>& v, const Type& p)
+    {
+        return Vec<Size, Type, Allocator>{[v, p](size_t i) { return std::pow(v[i], p); }};
     }
 
-    template<size_t Size, typename Type,
-        typename AAllocator, typename BAllocator>
-    Vec<Size, Type, AAllocator> pow(const Vec<Size, Type, AAllocator>& v,
-                                    const Vec<Size, Type, BAllocator>& p) {
-        return Vec<Size, Type, AAllocator>{
-            [v, p](size_t i) { return std::pow(v[i], p[i]); }
-        };
+    template<size_t Size, typename Type, typename AAllocator, typename BAllocator>
+    Vec<Size, Type, AAllocator> pow(const Vec<Size, Type, AAllocator>& v, const Vec<Size, Type, BAllocator>& p)
+    {
+        return Vec<Size, Type, AAllocator>{[v, p](size_t i) { return std::pow(v[i], p[i]); }};
     }
-}
+} // namespace rush
 
-#endif //RUSH_VEC_MATH_H
+#endif // RUSH_VEC_MATH_H

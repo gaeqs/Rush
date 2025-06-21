@@ -19,7 +19,8 @@ add_executable(rush-tests
         tree.cpp
         tree_benchmark.cpp
         pool.cpp
-        plane.cpp)
+        plane.cpp
+        mesh.cpp)
 target_link_libraries(rush-tests PUBLIC rush Catch2::Catch2WithMain)
 
 catch_discover_tests(rush-tests)
