@@ -4,6 +4,8 @@
 
 #include "test_common.h"
 
+#include <random>
+
 TEST_CASE("Mesh", "[mesh]")
 {
     rush::Mesh<3, float, int> mesh;
@@ -45,4 +47,27 @@ TEST_CASE("Mesh", "[mesh]")
         std::cout << vertex.position << " ";
     }
     std::cout << std::endl;
+}
+
+TEST_CASE("Mesh weld benchmark", "[!benchmark][mesh]")
+{
+    constexpr size_t SIZE = 10000;
+
+    std::random_device os_seed;
+    uint32_t seed = os_seed();
+    std::mt19937 generator(seed);
+    std::uniform_real_distribution d(-10.0f, 10.0f);
+
+    BENCHMARK_ADVANCED("Add")(Catch::Benchmark::Chronometer meter)
+    {
+        rush::Mesh<3, float, void> mesh;
+
+        for (size_t i = 0; i < SIZE; ++i) {
+            mesh.vertices.push_back(rush::Vertex<3, float, void>({
+                {d(generator), d(generator), d(generator)}
+            }));
+        }
+
+        meter.measure([&mesh] { mesh.weld(); });
+    };
 }

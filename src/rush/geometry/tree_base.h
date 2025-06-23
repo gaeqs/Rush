@@ -5,18 +5,18 @@
 #ifndef TREE_BASE_H
 #define TREE_BASE_H
 
-#include <array>
 #include <vector>
 #include <rush/allocator/pool.h>
 
-namespace rush {
+namespace rush
+{
 
-    template<typename TreeBounds, typename Storage, typename Bounds,
-            typename FilterBounds = TreeBounds>
+    template<typename TreeBounds, typename Storage, typename Bounds, typename FilterBounds = TreeBounds>
     class TreeIterator;
 
     template<typename Storage, typename Bounds>
-    struct TreeContent {
+    struct TreeContent
+    {
         Bounds bounds;
         Storage storage;
 
@@ -24,25 +24,24 @@ namespace rush {
     };
 
     template<typename Bounds>
-    struct TreeContent<void, Bounds> {
+    struct TreeContent<void, Bounds>
+    {
         Bounds bounds;
 
         bool operator==(const TreeContent& o) const;
     };
 
     template<typename TreeBounds, typename Storage, typename Bounds>
-    class AbstractTree {
-    public:
-
+    class AbstractTree
+    {
+      public:
         using Content = TreeContent<Storage, Bounds>;
 
         virtual ~AbstractTree() = default;
 
-        [[nodiscard]] virtual const std::vector<TreeContent<Storage, Bounds>>&
-        getStorage() const = 0;
+        [[nodiscard]] virtual const std::vector<TreeContent<Storage, Bounds>>& getStorage() const = 0;
 
-        [[nodiscard]] virtual std::vector<TreeContent<Storage, Bounds>>&
-        getStorage() = 0;
+        [[nodiscard]] virtual std::vector<TreeContent<Storage, Bounds>>& getStorage() = 0;
 
         virtual std::vector<AbstractTree*> getChildren() const = 0;
 
@@ -63,12 +62,12 @@ namespace rush {
      * @tparam Bounds the type of the bounds of the elements inside the tree.
      * @tparam FilterBounds the type of the optional bounds used to filter.
      */
-    template<typename TreeBounds, typename Storage, typename Bounds,
-            typename FilterBounds>
-    class TreeIterator {
+    template<typename TreeBounds, typename Storage, typename Bounds, typename FilterBounds>
+    class TreeIterator
+    {
         using iterator_category = std::forward_iterator_tag;
         using difference_type = std::ptrdiff_t;
-        using value_type = std::vector<TreeContent<Storage, Bounds> >;
+        using value_type = std::vector<TreeContent<Storage, Bounds>>;
         using pointer = const value_type*;
         using reference = const value_type&;
 
@@ -78,11 +77,10 @@ namespace rush {
         std::optional<FilterBounds> _filter;
         bool _end;
 
-    public:
+      public:
         explicit TreeIterator(AbstractTree<TreeBounds, Storage, Bounds>* root);
 
-        TreeIterator(AbstractTree<TreeBounds, Storage, Bounds>* root,
-                     const FilterBounds& filter);
+        TreeIterator(AbstractTree<TreeBounds, Storage, Bounds>* root, const FilterBounds& filter);
 
         explicit TreeIterator();
 
@@ -100,8 +98,8 @@ namespace rush {
 
         bool operator!=(const TreeIterator& p);
     };
-}
+} // namespace rush
 
 #include <rush/geometry/tree_impl.h>
 
-#endif //TREE_BASE_H
+#endif // TREE_BASE_H

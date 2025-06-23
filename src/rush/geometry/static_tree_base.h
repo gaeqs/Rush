@@ -6,11 +6,19 @@
 #define RUSH_STATIC_TREE_BASE_H
 
 #include <rush/geometry/tree_base.h>
-#include <rush/allocator/pool.h>
+#include <rush/geometry/aabb_base.h>
 #include <unordered_set>
 
 namespace rush
 {
+
+    template<typename Storage, typename Bounds>
+    struct NodeInfo {
+        const TreeContent<Storage, Bounds>* content;
+        size_t numberOfElements;
+        size_t depth;
+    };
+
     template<typename Storage, typename Bounds, size_t Dimensions, typename Type>
     struct StaticTreeRayCastResult
     {
@@ -44,6 +52,8 @@ namespace rush
         void forEachIntersection(const Collider& collider,
                                  std::function<void(const TreeContent<Storage, Bounds>&)> consumer,
                                  bool skipCollisionCheck) const;
+
+        void forEachNode(std::function<void(NodeInfo<Storage, Bounds>)> consumer) const;
 
         template<typename RAllocator>
         StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type> raycast(Ray<Dimensions, Type, RAllocator> ray) const;
@@ -91,6 +101,8 @@ namespace rush
                                  std::function<void(const TreeContent<Storage, Bounds>&)> consumer,
                                  bool skipCollisionCheck) const;
 
+        void forEachNode(std::function<void(NodeInfo<Storage, Bounds>)> consumer) const;
+
         template<typename RAllocator>
         StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type> raycast(Ray<Dimensions, Type, RAllocator> ray) const;
 
@@ -131,6 +143,8 @@ namespace rush
         template<typename Collider>
         void forEachIntersection(const Collider& collider,
                                  std::function<void(const TreeContent<Storage, Bounds>&)> consumer) const;
+
+        void forEachNode(std::function<void(NodeInfo<Storage, Bounds>)> consumer) const;
     };
 } // namespace rush
 

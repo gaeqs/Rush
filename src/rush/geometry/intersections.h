@@ -24,9 +24,8 @@ namespace rush {
     [[nodiscard]] bool
     intersects(const AABB<Dimensions, Type, AAllocator>& aabb,
                const Vec<Dimensions, Type, BAllocator>& point) {
-        Vec rad = rush::abs(aabb.center - point);
-        for (size_t i = 0; i < Dimensions; i++) {
-            if (rad[i] > aabb.radius[i]) return false;
+        for (size_t i = 0; i < Dimensions; ++i) {
+            if (std::abs(aabb.center[i] - point[i]) > aabb.radius[i]) return false;
         }
         return true;
     }

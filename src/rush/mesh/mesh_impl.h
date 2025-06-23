@@ -31,8 +31,7 @@ namespace rush
         }
 
         auto aabb = AABB<Dimensions, Type>::fromEdges(min, max);
-        StaticTree<std::pair<size_t, LocalVertex*>, Vec<Dimensions, Type>, Dimensions, Type, 10000000, 4> tree(aabb,
-                                                                                                               indexed);
+        StaticTree<std::pair<size_t, LocalVertex*>, Vec<Dimensions, Type>, Dimensions, Type, 10, 5> tree(aabb, indexed);
 
         Sphere<Dimensions, Type> sphere({}, 0.001f);
 

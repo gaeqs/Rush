@@ -85,6 +85,13 @@ namespace rush
     }
 
     template<typename Storage, typename Bounds, size_t Dimensions, typename Type>
+    void StaticTreeLeaf<Storage, Bounds, Dimensions, Type>::forEachNode(
+        std::function<void(NodeInfo<Storage, Bounds>)> consumer) const
+    {
+        consumer(NodeInfo(_elements, _size, 0));
+    }
+
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type>
     template<typename RAllocator>
     StaticTreeRayCastResult<Storage, Bounds, Dimensions, Type> StaticTreeLeaf<
         Storage, Bounds, Dimensions, Type>::raycast(Ray<Dimensions, Type, RAllocator> ray) const
@@ -157,7 +164,6 @@ namespace rush
 
         // Let's fetch only the elements that are in more than
         // one child.
-
         to = pivot;
         pivot = from;
 
@@ -178,12 +184,11 @@ namespace rush
             // Special case: maybe the element is not inside any
             // children but inside the parent?
             if (childCount != 1) {
-                continue;
+                if (pivot != i) {
+                    std::swap(pool[i], pool[pivot]);
+                    ++pivot;
+                }
             }
-            if (pivot != i) {
-                std::swap(pool[i], pool[pivot]);
-            }
-            ++pivot;
         }
 
         _size = pivot - from;
@@ -270,6 +275,18 @@ namespace rush
         }
         for (const auto& child : _children) {
             child.forEachIntersection(collider, consumer, skipCollisionCheck);
+        }
+    }
+
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
+    void StaticTreeNode<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::forEachNode(
+        std::function<void(NodeInfo<Storage, Bounds>)> consumer) const
+    {
+        consumer(NodeInfo(_elements, _size, Depth));
+
+        for (const auto& child : _children) {
+            child.forEachNode(consumer);
         }
     }
 
@@ -416,6 +433,15 @@ namespace rush
     {
         _root.forEachIntersection(collider, consumer, false);
     }
+
+    template<typename Storage, typename Bounds, size_t Dimensions, typename Type, size_t MaxObjects, size_t Depth>
+        requires(Depth > 0)
+    void StaticTree<Storage, Bounds, Dimensions, Type, MaxObjects, Depth>::forEachNode(
+        std::function<void(NodeInfo<Storage, Bounds>)> consumer) const
+    {
+        _root.forEachNode(consumer);
+    }
+
 } // namespace rush
 
 #endif // RUSH_STATIC_TREE_IMPL_H
